@@ -58,7 +58,7 @@ async function auth(req) {
   const h = req.headers.authorization || '';
   const t = verify(h.replace(/^Bearer\s+/i, ''));
   if (!t) return null;
-  const r = await sql('SELECT id,name,gems,owned,equip,banned,last_daily_reward,created_at,rep,bio FROM users WHERE id=$1', [t.uid]);
+  const r = await sql('SELECT id,name,gems,owned,equip,banned,last_daily_reward,created_at,rep,bio,items,crystal_pending FROM users WHERE id=$1', [t.uid]);
   if (!r[0] || r[0].banned) return null;
   return r[0];
 }
@@ -76,19 +76,35 @@ function kstWeek(offsetWeeks) {
 }
 
 // 상점 아이템 (서버 기준 가격)
+// 상점 상품 (서버 기준 가격). kind: cosmetic(장착) · skin(몬스터 스킨) · item(소모품) · crystal(연구 포인트)
+const EL_NAMES = ['화염', '물', '자연', '전격', '달', '대지', '얼음', '바람', '별', '암흑'];
+const SKINS = [{ v: 'gold', n: '황금', p: 180 }, { v: 'shadow', n: '그림자', p: 150 }, { v: 'crystal', n: '크리스탈', p: 150 }];
 const ITEMS = [
-  { id: 'aura_gold', slot: 'aura', name: '황금 오라', desc: '모든 몬스터에 황금빛 오라', price: 300 },
-  { id: 'aura_rainbow', slot: 'aura', name: '무지개 오라', desc: '모든 몬스터에 무지갯빛 오라', price: 450 },
-  { id: 'aura_abyss', slot: 'aura', name: '심연 오라', desc: '보랏빛 심연의 기운', price: 400 },
-  { id: 'theme_night', slot: 'theme', name: '달밤의 숲', desc: '맵 테마: 푸른 달밤', price: 200 },
-  { id: 'theme_sunset', slot: 'theme', name: '황혼의 숲', desc: '맵 테마: 노을빛 황혼', price: 200 },
-  { id: 'theme_sakura', slot: 'theme', name: '벚꽃 정원', desc: '맵 테마: 분홍빛 정원', price: 250 },
-  { id: 'title_tamer', slot: 'title', name: '몬스터 조련사', desc: '랭킹에 표시되는 칭호', price: 100 },
-  { id: 'title_fusion', slot: 'title', name: '융합의 대가', desc: '랭킹에 표시되는 칭호', price: 250 },
-  { id: 'title_heaven', slot: 'title', name: '하늘이내려준자', desc: '전설 칭호', price: 800 }
+  { id: 'aura_gold', kind: 'cosmetic', slot: 'aura', name: '황금 오라', desc: '모든 몬스터에 황금빛 오라', price: 300 },
+  { id: 'aura_rainbow', kind: 'cosmetic', slot: 'aura', name: '무지개 오라', desc: '모든 몬스터에 무지갯빛 오라', price: 450 },
+  { id: 'aura_abyss', kind: 'cosmetic', slot: 'aura', name: '심연 오라', desc: '보랏빛 심연의 기운', price: 400 },
+  { id: 'aura_frost', kind: 'cosmetic', slot: 'aura', name: '서리 오라', desc: '푸른 얼음 결정의 기운', price: 350 },
+  { id: 'theme_night', kind: 'cosmetic', slot: 'theme', name: '달밤의 숲', desc: '맵 테마: 푸른 달밤', price: 200 },
+  { id: 'theme_sunset', kind: 'cosmetic', slot: 'theme', name: '황혼의 숲', desc: '맵 테마: 노을빛 황혼', price: 200 },
+  { id: 'theme_sakura', kind: 'cosmetic', slot: 'theme', name: '벚꽃 정원', desc: '맵 테마: 분홍빛 정원', price: 250 },
+  { id: 'theme_cosmos', kind: 'cosmetic', slot: 'theme', name: '우주 정원', desc: '맵 테마: 별이 흐르는 보랏빛 우주', price: 300 },
+  { id: 'title_tamer', kind: 'cosmetic', slot: 'title', name: '몬스터 조련사', desc: '랭킹에 표시되는 칭호', price: 100 },
+  { id: 'title_fusion', kind: 'cosmetic', slot: 'title', name: '융합의 대가', desc: '랭킹에 표시되는 칭호', price: 250 },
+  { id: 'title_myth', kind: 'cosmetic', slot: 'title', name: '궁극의 지배자', desc: '랭킹에 표시되는 희귀 칭호', price: 500 },
+  { id: 'title_heaven', kind: 'cosmetic', slot: 'title', name: '하늘이내려준자', desc: '전설 칭호', price: 800 },
+  ...EL_NAMES.flatMap((n, e) => SKINS.map(k => ({ id: 'skin_' + e + '_' + k.v, kind: 'skin', slot: 'skin_' + e, el: e, variant: k.v, name: k.n + ' ' + n + ' 스킨', desc: n + ' 속성 몬스터 전체가 ' + k.n + ' 색으로 바뀌어요', price: k.p }))),
+  { id: 'boost_eth', kind: 'item', name: '에테르 부스터', desc: '이번 스테이지 시작 에테르 +50%', price: 30 },
+  { id: 'shield', kind: 'item', name: '수호석 방패', desc: '이번 스테이지 시작 수호석 +5', price: 30 },
+  { id: 'egg', kind: 'item', name: '황금 알', desc: '시작할 때 ★3 몬스터 1마리 지급', price: 40 },
+  { id: 'bless', kind: 'item', name: '축복 두루마리', desc: '시작할 때 축복 카드 1장 선택', price: 30 },
+  { id: 'myth_call', kind: 'item', name: '궁극 소환서', desc: '★7 궁극 몬스터 1마리를 3웨이브 동안 소환 (고유 스킬 사용, 합성·판매 불가)', price: 120 },
+  { id: 'revive', kind: 'item', name: '부활의 깃털', desc: '수호석이 0이 되면 수호석 10으로 부활 (스테이지당 1회)', price: 60 },
+  { id: 'cr_100', kind: 'crystal', amount: 100, name: '💠 연구 포인트 100', desc: '연구소 영구 강화에 쓰는 준자 결정', price: 80 },
+  { id: 'cr_300', kind: 'crystal', amount: 300, name: '💠 연구 포인트 300', desc: '+10% 보너스 포함 묶음', price: 220 },
+  { id: 'cr_800', kind: 'crystal', amount: 800, name: '💠 연구 포인트 800', desc: '+25% 보너스 포함 대용량 묶음', price: 520 }
 ];
 
-function publicUser(u) { return { id: u.id, name: u.name, gems: u.gems, owned: u.owned || [], equip: u.equip || {}, rep: u.rep || null, bio: u.bio || '', admin: isAdmin(u) }; }
+function publicUser(u) { return { id: u.id, name: u.name, gems: u.gems, owned: u.owned || [], equip: u.equip || {}, items: u.items || {}, crystalPending: u.crystal_pending || 0, rep: u.rep || null, bio: u.bio || '', admin: isAdmin(u) }; }
 
 async function addGems(uid, amount, reason) {
   const r = await tx([

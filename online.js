@@ -67,6 +67,7 @@
       syncing = false;
       await push(true);
     } catch (e) { syncing = false }
+    try { await claimCrystal() } catch (e) { }
     refreshTitle();
   }
   async function push(now) {
@@ -85,7 +86,7 @@
   function refreshTitle() {
     const has = !!localStorage.getItem(SAVE + '_run');
     const bc = $('#bCont'); if (bc) bc.style.display = has ? '' : 'none';
-    const b = $('#best'); if (b) b.textContent = meta.stage ? '🏆 최고 기록: ' + meta.stage + '판 클리어' : ''; try { stageUI() } catch (e) { }
+    const b = $('#best'); if (b) b.textContent = meta.stage ? '🏆 최고 기록: STAGE ' + meta.stage : ''; try { stageUI() } catch (e) { }
   }
 
   // 게임 종료 → 점수 등록
@@ -113,7 +114,7 @@
       const j = await api('/api/score', 'POST', { mode: 'stage', wave: stage, kills: hp });
       USER.gems = j.gems; renderAcct();
       const el = $('#rkRes');
-      if (el) el.innerHTML = `<b style="color:#ffd75a">🏆 주간 판 랭킹 ${j.me ? j.me.rank + '위' : '-'}</b> / ${j.total}명` + (j.newBest ? ' · 신기록!' : '');
+      if (el) el.innerHTML = `<b style="color:#ffd75a">🏆 주간 스테이지 랭킹 ${j.me ? j.me.rank + '위' : '-'}</b> / ${j.total}명` + (j.newBest ? ' · 신기록!' : '');
     } catch (e) { const el = $('#rkRes'); if (el) el.textContent = '랭킹 등록 실패: ' + e.message }
   };
 
@@ -143,41 +144,151 @@
     $('#mRank').classList.add('on'); $('#rkList').innerHTML = '<p>불러오는 중…</p>'; $('#rkInfo').textContent = '';
     try {
       const j = await api('/api/score?mode=' + rkMode);
-      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 판 랭킹 · 가장 높은 판 (같으면 남은 수호석)' : '🗓 ' + j.period + ' 주간 랭킹 (월요일 초기화)')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? j.me.wave + '판' : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
-      $('#rkList').innerHTML = j.top.length ? j.top.map((t, ix) => `<div class="rk${t.me ? ' me' : ''}" data-pf="${esc(t.name)}" data-ix="${ix}"><div class="n">${t.rank <= 3 ? ['🥇', '🥈', '🥉'][t.rank - 1] : t.rank}</div><div class="nm">${t.title ? `<small>「${esc(titleName(t.title))}」</small>` : ''}${esc(t.name)}</div><div class="w">${rkMode === 'stage' ? t.wave + '판' : 'WAVE ' + t.wave}</div><small style="color:#9aa4c2;width:56px;text-align:right">${rkMode === 'stage' ? '💎' + t.kills : t.kills + '마리'}</small></div>`).join('') : '<p>아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!</p>';
+      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 스테이지 랭킹 · 최고 스테이지 (같으면 남은 수호석)' : '🗓 ' + j.period + ' 주간 랭킹 (월요일 초기화)')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? 'STAGE ' + j.me.wave : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
+      $('#rkList').innerHTML = j.top.length ? j.top.map((t, ix) => `<div class="rk${t.me ? ' me' : ''}" data-pf="${esc(t.name)}" data-ix="${ix}"><div class="n">${t.rank <= 3 ? ['🥇', '🥈', '🥉'][t.rank - 1] : t.rank}</div><div class="nm">${t.title ? `<small>「${esc(titleName(t.title))}」</small>` : ''}${esc(t.name)}</div><div class="w">${rkMode === 'stage' ? 'STAGE ' + t.wave : 'WAVE ' + t.wave}</div><small style="color:#9aa4c2;width:56px;text-align:right">${rkMode === 'stage' ? '💎' + t.kills : t.kills + '마리'}</small></div>`).join('') : '<p>아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!</p>';
       j.top.forEach((t, ix) => { const row = document.querySelector(`.rk[data-ix="${ix}"]`); if (!row) return; const slot = document.createElement('div'); slot.className = 'rkic'; if (t.rep) slot.appendChild(iconCanvas(t.rep.e, t.rep.s, 34, t.rep.f)); row.insertBefore(slot, row.children[1]); row.onclick = () => openProfile(t.name) });
     } catch (e) { $('#rkList').innerHTML = '<p>랭킹을 불러오지 못했어요: ' + esc(e.message) + '</p>' }
   }
 
   // 상점
-  const PV = { aura_gold: 'radial-gradient(circle,#ffd75a,#7a5a05)', aura_rainbow: 'conic-gradient(#f55,#fd5,#5f5,#5df,#a5f,#f55)', aura_abyss: 'radial-gradient(circle,#d68bff,#2a0d45)', theme_night: 'linear-gradient(#1a2a5a,#0b1430)', theme_sunset: 'linear-gradient(#ff9a3e,#7a2a4a)', theme_sakura: 'linear-gradient(#ffc6e0,#c46a9a)', title_tamer: 'linear-gradient(#3a2a66,#1a1233)', title_fusion: 'linear-gradient(#5a2a96,#1a1233)', title_heaven: 'linear-gradient(#fff3c0,#d9a54e)' };
-  async function openShop() {
+  const PV = { aura_gold: 'radial-gradient(circle,#ffd75a,#7a5a05)', aura_rainbow: 'conic-gradient(#f55,#fd5,#5f5,#5df,#a5f,#f55)', aura_abyss: 'radial-gradient(circle,#d68bff,#2a0d45)', theme_night: 'linear-gradient(#1a2a5a,#0b1430)', theme_sunset: 'linear-gradient(#ff9a3e,#7a2a4a)', theme_sakura: 'linear-gradient(#ffc6e0,#c46a9a)', theme_cosmos: 'radial-gradient(circle at 30% 30%,#b79bff,#1a0d45)', aura_frost: 'radial-gradient(circle,#8fe9ff,#0d3a5a)', title_myth: 'linear-gradient(#ffd75a,#7a3ab0)', title_tamer: 'linear-gradient(#3a2a66,#1a1233)', title_fusion: 'linear-gradient(#5a2a96,#1a1233)', title_heaven: 'linear-gradient(#fff3c0,#d9a54e)' };
+  // ===== 상점 (탭: 전투 아이템 · 연구 포인트 · 스킨 · 꾸미기) =====
+  let SHOP = null, shTab = 'item';
+  const IT_IC = { myth_call: '📕', boost_eth: '💰', shield: '🛡', egg: '🥚', bless: '📜', revive: '🪶', cr_100: '💠', cr_300: '💠', cr_800: '💠' };
+  const SH_NOTE = { item: '스테이지 시작 전에 골라서 써요. 오늘의 도전·레이드에서는 쓸 수 없어요.', crystal: '연구소에서 시작 에테르·수호석·소환 비용 등 <b>영구 능력</b>을 올리는 포인트예요.', skin: '속성별로 몬스터 색이 바뀌어요. <b>능력치에는 영향이 없어요.</b>', cosmetic: '오라·맵 테마·칭호. <b>승패에 영향이 없어요.</b>' };
+  function skinPreview(it) { const prev = EQUIP[it.slot]; EQUIP[it.slot] = it.id; const c = iconCanvas(it.el, 5, 52); if (prev) EQUIP[it.slot] = prev; else delete EQUIP[it.slot]; return c }
+  async function claimCrystal() {
+    if (!USER || !USER.crystalPending) return 0;
+    try { const r = await api('/api/shop', 'POST', { action: 'claimCrystal' }); if (r.amount > 0) { meta.crystal = (meta.crystal || 0) + r.amount; saveMeta(); push(true) } setUser(r.user); return r.amount } catch (e) { return 0 }
+  }
+  window.claimCrystal = claimCrystal;
+  function renderShop() {
+    if (!SHOP) return;
+    document.querySelectorAll('[data-sh]').forEach(b => b.classList.toggle('on', b.dataset.sh === shTab));
+    $('#shGems').textContent = USER ? USER.gems : '-';
+    $('#shNote').innerHTML = SH_NOTE[shTab] + (shTab === 'crystal' ? ` 보유 💠 <b style="color:#7fe3ff">${meta.crystal || 0}</b>` : '');
+    const L = $('#shList'); L.innerHTML = '';
+    const list = SHOP.filter(it => it.kind === shTab);
+    if (shTab === 'skin') {
+      for (let e = 0; e < 10; e++) {
+        const grp = list.filter(it => it.el === e);
+        const box = document.createElement('div'); box.className = 'skg';
+        box.innerHTML = `<b>${EMO[e]} ${ELS[e].n}</b><div class="skr"></div>`;
+        const row = box.querySelector('.skr');
+        grp.forEach(it => {
+          const own = USER && USER.owned.includes(it.id), on = USER && USER.equip[it.slot] === it.id;
+          const c = document.createElement('div'); c.className = 'skc' + (on ? ' on' : '');
+          c.appendChild(skinPreview(it));
+          c.insertAdjacentHTML('beforeend', `<small>${esc(it.name.split(' ')[0])}</small>` + (!USER ? `<button class="btn" disabled>로그인</button>` : own ? `<button class="btn ${on ? '' : 'gold'}" data-eq="${it.id}" data-slot="${it.slot}">${on ? '해제' : '장착'}</button>` : `<button class="btn gold" data-buy="${it.id}" ${USER.gems < it.price ? 'disabled' : ''}>💎${it.price}</button>`));
+          row.appendChild(c);
+        });
+        L.appendChild(box);
+      }
+    } else {
+      L.innerHTML = list.map(it => {
+        const own = USER && USER.owned.includes(it.id), on = USER && USER.equip[it.slot] === it.id;
+        let btn;
+        if (!USER) btn = `<button class="btn" disabled>로그인 필요</button>`;
+        else if (it.kind === 'item') btn = `<div class="qb"><button class="btn gold" data-buy="${it.id}" data-q="1" ${USER.gems < it.price ? 'disabled' : ''}>💎${it.price}</button><button class="btn" data-buy="${it.id}" data-q="5" ${USER.gems < it.price * 5 ? 'disabled' : ''}>×5 💎${it.price * 5}</button></div>`;
+        else if (it.kind === 'crystal') btn = `<button class="btn gold" data-buy="${it.id}" ${USER.gems < it.price ? 'disabled' : ''}>💎 ${it.price}</button>`;
+        else btn = own ? `<button class="btn ${on ? '' : 'gold'}" data-eq="${it.id}" data-slot="${it.slot}">${on ? '해제' : '장착'}</button>` : `<button class="btn gold" data-buy="${it.id}" ${USER.gems < it.price ? 'disabled' : ''}>💎 ${it.price}</button>`;
+        const cnt = it.kind === 'item' && USER ? `<span class="cnt">보유 ${(USER.items || {})[it.id] || 0}</span>` : '';
+        const pv = IT_IC[it.id] ? `<div class="pv ic">${IT_IC[it.id]}</div>` : `<div class="pv" style="background:${PV[it.id] || '#333'}"></div>`;
+        return `<div class="shi">${pv}<div class="tx"><b>${esc(it.name)}${on ? ' ✅' : ''}</b> ${cnt}<br>${esc(it.desc)}</div>${btn}</div>`;
+      }).join('');
+    }
+    L.querySelectorAll('[data-buy]').forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      try {
+        const r = await api('/api/shop', 'POST', { action: 'buy', item: b.dataset.buy, qty: Number(b.dataset.q || 1) }); setUser(r.user); snd(880, .2, 'triangle', .06, 1760);
+        if (r.bought.kind === 'crystal') { const a = await claimCrystal(); toast('💠 연구 포인트 +' + a + ' · 연구소에서 쓰세요!') }
+        else if (r.bought.kind === 'item') toast('🎒 ' + r.bought.name + ' ×' + r.qty + ' 획득!');
+        else toast('🎁 ' + r.bought.name + ' 획득·장착!');
+        renderShop();
+      } catch (e) { toast('⚠️ ' + e.message); renderShop() }
+    });
+    L.querySelectorAll('[data-eq]').forEach(b => b.onclick = async () => {
+      const on = USER.equip[b.dataset.slot] === b.dataset.eq;
+      try { const r = await api('/api/shop', 'POST', { action: 'equip', slot: b.dataset.slot, item: on ? null : b.dataset.eq }); setUser(r.user); renderShop(); try { lastE = -1; ui() } catch (e) { } } catch (e) { toast('⚠️ ' + e.message) }
+    });
+  }
+  async function openShop(tab) {
+    if (tab) shTab = tab;
     $('#mShop').classList.add('on'); $('#shList').innerHTML = '<p>불러오는 중…</p>';
     try {
       const j = await api('/api/shop');
       j.items.forEach(i => ITEM_NAME[i.id] = i.name);
       if (j.user) setUser(j.user);
-      $('#shGems').textContent = USER ? USER.gems : '-';
-      $('#shList').innerHTML = j.items.map(it => {
-        const own = USER && USER.owned.includes(it.id), on = USER && USER.equip[it.slot] === it.id;
-        const btn = !USER ? `<button class="btn" disabled>로그인 필요</button>` : own ? `<button class="btn ${on ? '' : 'gold'}" data-eq="${it.id}" data-slot="${it.slot}">${on ? '해제' : '장착'}</button>` : `<button class="btn gold" data-buy="${it.id}" ${USER.gems < it.price ? 'disabled' : ''}>💎 ${it.price}</button>`;
-        return `<div class="shi"><div class="pv" style="background:${PV[it.id] || '#333'}"></div><div class="tx"><b>${esc(it.name)}${on ? ' ✅' : ''}</b><br>${esc(it.desc)}</div>${btn}</div>`;
-      }).join('');
-      document.querySelectorAll('[data-buy]').forEach(b => b.onclick = async () => {
-        try { const r = await api('/api/shop', 'POST', { action: 'buy', item: b.dataset.buy }); setUser(r.user); snd(880, .2, 'triangle', .06, 1760); toast('🎁 ' + r.bought.name + ' 획득·장착!'); openShop() } catch (e) { toast('⚠️ ' + e.message) }
-      });
-      document.querySelectorAll('[data-eq]').forEach(b => b.onclick = async () => {
-        const on = USER.equip[b.dataset.slot] === b.dataset.eq;
-        try { const r = await api('/api/shop', 'POST', { action: 'equip', slot: b.dataset.slot, item: on ? null : b.dataset.eq }); setUser(r.user); openShop() } catch (e) { toast('⚠️ ' + e.message) }
-      });
+      SHOP = j.items; await claimCrystal(); renderShop();
     } catch (e) { $('#shList').innerHTML = '<p>상점을 불러오지 못했어요: ' + esc(e.message) + '</p>' }
   }
+  document.querySelectorAll('[data-sh]').forEach(b => b.onclick = () => { shTab = b.dataset.sh; renderShop() });
+
+  // ===== 스테이지 준비: 전투 아이템 고르기 =====
+  const PREP = [['boost_eth', '💰', '에테르 부스터', '시작 에테르 +50%'], ['shield', '🛡', '수호석 방패', '시작 수호석 +5'], ['egg', '🥚', '황금 알', '★3 몬스터 1마리'], ['bless', '📜', '축복 두루마리', '축복 카드 1장'], ['myth_call', '📕', '궁극 소환서', '★7 궁극 몬스터 3웨이브 소환']];
+  document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mPrep"><div class="card" style="text-align:center"><div style="color:#ffd75a;letter-spacing:3px;font-size:12px;font-weight:900">READY</div><h2 id="ppT" style="margin:2px 0"></h2><p id="ppZ" style="margin:0 0 8px;color:#b9a8d8"></p><div id="ppL"></div><p id="ppR" style="font-size:12px"></p><div class="row"><button class="btn" id="ppShop">🛍 아이템 사기</button><button class="btn gold" id="ppGo">⚔️ 출전!</button></div><div class="row"><button class="btn" data-close>취소</button></div></div></div>`);
+  let prepSel = {};
+  function openPrep(n, start) {
+    prepSel = {};
+    const it = (USER && USER.items) || {};
+    $('#ppT').textContent = 'STAGE ' + n; $('#ppZ').textContent = zoneName(n) + ' · 10웨이브';
+    const draw = () => {
+      $('#ppL').innerHTML = PREP.map(([id, ic, nm, d]) => { const c = it[id] || 0; return `<button class="ppi${prepSel[id] ? ' on' : ''}" data-pp="${id}" ${c ? '' : 'disabled'}><span>${ic}</span><b>${nm}</b><small>${d}</small><i>${c}개</i></button>` }).join('');
+      $('#ppR').innerHTML = (it.revive || 0) ? `🪶 부활의 깃털 ${it.revive}개 보유 · 수호석이 0이 되면 쓸지 물어봐요` : '🪶 부활의 깃털이 있으면 쓰러져도 한 번 부활할 수 있어요';
+      document.querySelectorAll('[data-pp]').forEach(b => b.onclick = () => { prepSel[b.dataset.pp] = !prepSel[b.dataset.pp]; draw() });
+    };
+    draw();
+    $('#ppShop').onclick = () => { $('#mPrep').classList.remove('on'); openShop('item') };
+    $('#ppGo').onclick = async () => {
+      const want = Object.keys(prepSel).filter(k => prepSel[k]);
+      let used = [];
+      if (want.length) { try { const r = await api('/api/shop', 'POST', { action: 'use', items: want }); used = r.used; setUser(r.user) } catch (e) { toast('⚠️ ' + e.message); return } }
+      $('#mPrep').classList.remove('on');
+      start();
+      if (used.includes('boost_eth')) S.eth = Math.round(S.eth * 1.5);
+      if (used.includes('shield')) S.hp += 5;
+      if (used.includes('myth_call')) summonMythTemp();
+      if (used.includes('egg')) { const i = S.slots.findIndex((x, k) => !x && k < S.unlocked); if (i >= 0) { const e = Math.floor(Math.random() * 10); S.slots[i] = mkMon(e, 3); reg(S.slots[i]) } }
+      if (used.length) { banner('🎒 아이템 사용', used.map(u => IT_IC[u]).join(' '), '#ffd75a'); saveRun(); ui() }
+      if (used.includes('bless')) { const tb = () => { if (cardsOpen) return setTimeout(tb, 500); offerCards() }; setTimeout(tb, 500) }
+    };
+    $('#mPrep').classList.add('on');
+  }
+  { const b = $('#bNew'); const orig = b.onclick; b.onclick = () => { const it = (USER && USER.items) || {}; if (USER && PREP.some(([id]) => it[id] > 0)) openPrep(stageSel(), orig); else orig() } }
+  { const b = $('#bRetry'); const orig = b.onclick; b.onclick = () => { const it = (USER && USER.items) || {}; if (USER && S.mode === 'stage' && PREP.some(([id]) => it[id] > 0)) { const n = S.hp > 0 && S.wave - (S.base || 0) > STAGE.waves ? S.stage + 1 : S.stage; meta.sel = n; $('#mOver').classList.remove('on'); openPrep(n, () => { begin(newStage(n)); saveRun(); if ((meta.lab || {}).card) offerCards() }) } else orig() } }
+
+  // ===== 부활의 깃털 =====
+  document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mRev"><div class="card" style="text-align:center"><div style="font-size:54px">🪶</div><h2>부활할까요?</h2><p id="rvT"></p><div class="row"><button class="btn" id="rvNo">포기하기</button><button class="btn gold" id="rvYes">부활! (수호석 10)</button></div></div></div>`);
+  window.tryRevive = () => {
+    if (!USER || S.mode !== 'stage' || S.revived || !((USER.items || {}).revive > 0)) return false;
+    S.hold = 1; S.revived = 1;
+    $('#rvT').innerHTML = `STAGE ${S.stage} · ${S.wave - (S.base || 0)}/10 웨이브<br>부활의 깃털 <b style="color:#ffd75a">${USER.items.revive}개</b> 보유`;
+    $('#mRev').classList.add('on');
+    $('#rvYes').onclick = async () => {
+      $('#rvYes').disabled = true;
+      try {
+        const r = await api('/api/shop', 'POST', { action: 'use', items: ['revive'] }); setUser(r.user);
+        if (r.used.includes('revive')) { S.hp = 10; for (const e of S.enemies) e.d = Math.max(0, e.d - 500); banner('🪶 부활!', '수호석 10 · 적을 밀어냈어요', '#ffd75a'); flash = .5; flashC = '#fff3c0'; $('#mRev').classList.remove('on'); S.hold = 0; ui(); return }
+      } catch (e) { toast('⚠️ ' + e.message) } finally { $('#rvYes').disabled = false }
+      $('#mRev').classList.remove('on'); S.hold = 0; gameOver();
+    };
+    $('#rvNo').onclick = () => { $('#mRev').classList.remove('on'); S.hold = 0; gameOver() };
+    return true;
+  };
 
   // ===== 프로필 · 대표 몬스터 · 대결 =====
   let DUEL = null;
   try { DUEL = JSON.parse(localStorage.getItem('jm_duel') || 'null') } catch (e) { }
   document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mProf"><div class="card" style="text-align:center"><div id="pfBody"></div><div class="row"><button class="btn gold" data-close>닫기</button></div></div></div>`);
   document.head.insertAdjacentHTML('beforeend', `<style>
+  .shtabs{display:flex;gap:4px;flex-wrap:wrap}.shtabs .tab{flex:1;font-size:12px;padding:7px 2px}
+  .shi .pv.ic{display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,#2a1d4a,#120c24)}.shi .cnt{font-size:11px;color:#7fe3ff;font-weight:800}
+  .qb{display:flex;flex-direction:column;gap:4px}.qb .btn{padding:6px 8px;font-size:12px;min-width:74px}
+  .skg{background:#0d1222;border-radius:12px;padding:6px 8px;margin:6px 0;text-align:left}.skg>b{font-size:13px}.skr{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
+  .skc{background:#161c33;border:1px solid #ffffff14;border-radius:10px;padding:4px;text-align:center}.skc.on{border-color:#ffd75a;box-shadow:0 0 12px #ffd75a55}.skc canvas{width:52px;height:52px}.skc small{display:block;font-size:11px;color:#c9bde6}.skc .btn{width:100%;padding:5px 2px;font-size:11.5px;margin-top:3px}
+  .ppi{display:grid;grid-template-columns:40px 1fr auto;grid-template-rows:auto auto;align-items:center;text-align:left;width:100%;background:#0d1222;border:2px solid #ffffff14;border-radius:12px;padding:6px 10px;margin:5px 0;color:#fff}
+  .ppi span{grid-row:1/3;font-size:26px}.ppi b{font-size:14px}.ppi small{grid-column:2;color:#b9a8d8;font-size:11.5px}.ppi i{grid-row:1/3;grid-column:3;font-style:normal;color:#7fe3ff;font-weight:900;font-size:13px}
+  .ppi.on{border-color:#ffd75a;background:linear-gradient(135deg,#3a2a0a,#1a1230);box-shadow:0 0 14px #ffd75a44}.ppi:disabled{opacity:.35}
   .rkic{width:34px;height:34px;flex:none}.rkic canvas{width:34px;height:34px}.rk{cursor:pointer}
   .pfrep{width:150px;height:150px;margin:4px auto;border-radius:50%;display:grid;place-items:center;position:relative}
   .pfrep canvas{width:140px;height:140px}
@@ -202,7 +313,7 @@
       B.innerHTML = `${p.title ? `<div style="color:#d08bff;font-size:13px">「${esc(titleName(p.title))}」</div>` : ''}<h2 style="font-size:24px;margin:2px 0">${esc(p.name)}</h2>
         <div class="pfrep ${p.aura || ''}" id="pfRep"></div><div style="font-weight:800;color:#ffe3a1">${esc(repName)}${p.rep ? ' ' + (p.rep.s === 7 ? '👑' : p.rep.s === 6 ? '✦' : '★'.repeat(p.rep.s)) : ''}</div>
         ${p.bio ? `<p style="margin:6px 0">“${esc(p.bio)}”</p>` : ''}
-        <div class="pfst"><div><b>${p.weekBest}판</b>이번 주</div><div><b>${p.best}판</b>역대 최고</div><div><b>${p.dex}</b>도감</div><div><b>${p.awaken}</b>✦각성</div><div><b>${p.mythic}</b>👑신수</div><div><b>${p.ach}</b>🎖업적</div></div>
+        <div class="pfst"><div><b>S${p.weekBest}</b>이번 주</div><div><b>S${p.best}</b>역대 최고</div><div><b>${p.dex}</b>도감</div><div><b>${p.awaken}</b>✦각성</div><div><b>${p.mythic}</b>👑신수</div><div><b>${p.ach}</b>🎖업적</div></div>
         <div style="font-size:12.5px;color:#9aa4c2">⚔️ 대결 ${p.duel.wins}승 ${p.duel.losses}패 · 방어 성공 ${p.duel.defends}회</div>
         <div id="pfAct" style="margin-top:10px"></div>`;
       if (p.rep) $('#pfRep').appendChild(iconCanvas(p.rep.e, p.rep.s, 140, p.rep.f)); else $('#pfRep').innerHTML = '<div style="font-size:50px">❔</div>';
@@ -215,7 +326,7 @@
         $('#pfPick').onclick = () => repPicker();
         loadDuels();
       } else if (USER) {
-        A.innerHTML = `<div class="row"><button class="btn daily" id="pfDuel">⚔️ 대결 신청 · 이 플레이어 기록 넘기기</button></div><p style="font-size:12px">상대의 이번 주 최고기록을 한 판에 넘기면 승리! (승리 시 💎15, 하루 3회)</p>`;
+        A.innerHTML = `<div class="row"><button class="btn daily" id="pfDuel">⚔️ 대결 신청 · 이 플레이어 기록 넘기기</button></div><p style="font-size:12px">상대의 최고 스테이지를 클리어하면 승리! (승리 시 💎15, 하루 3회)</p>`;
         $('#pfDuel').onclick = () => startDuel(p.name);
       } else A.innerHTML = '<p>로그인하면 대결을 신청할 수 있어요</p>';
     } catch (e) { B.innerHTML = '<p>프로필을 불러오지 못했어요: ' + esc(e.message) + '</p>' }
@@ -230,7 +341,7 @@
     try {
       const j = await api('/api/duel');
       const lab = { win: '<b class="w">승리</b>', lose: '<b class="l">패배</b>', draw: '<b>무승부</b>', open: '진행 중' };
-      $('#pfDuels').innerHTML = j.duels.length ? j.duels.map(d => d.mine ? `<div class="dl">⚔️ ${esc(d.to_name)}에게 도전 · ${d.target_wave}판 도전 · ${lab[d.status]}</div>` : `<div class="dl">🛡 ${esc(d.from_name)}의 도전 · ${d.status === 'lose' ? '<b class="w">방어 성공</b>' : d.status === 'win' ? '<b class="l">방어 실패</b>' : lab[d.status]} (${d.target_wave}판)</div>`).join('') : '<p>아직 대결 기록이 없어요. 랭킹에서 상대를 눌러 대결을 신청해 보세요!</p>';
+      $('#pfDuels').innerHTML = j.duels.length ? j.duels.map(d => d.mine ? `<div class="dl">⚔️ ${esc(d.to_name)}에게 도전 · STAGE ${d.target_wave} 도전 · ${lab[d.status]}</div>` : `<div class="dl">🛡 ${esc(d.from_name)}의 도전 · ${d.status === 'lose' ? '<b class="w">방어 성공</b>' : d.status === 'win' ? '<b class="l">방어 실패</b>' : lab[d.status]} (STAGE ${d.target_wave})</div>`).join('') : '<p>아직 대결 기록이 없어요. 랭킹에서 상대를 눌러 대결을 신청해 보세요!</p>';
     } catch (e) { $('#pfDuels').textContent = e.message }
   }
   async function startDuel(name) {
@@ -239,7 +350,7 @@
       DUEL = d; localStorage.setItem('jm_duel', JSON.stringify(d));
       document.querySelectorAll('.modal').forEach(m => m.classList.remove('on'));
       begin(newStage(d.target_wave)); saveRun();
-      banner('⚔️ 대결 시작!', d.target + '의 최고 기록 ' + d.target_wave + '판을 클리어하세요', '#ff5c7a');
+      banner('⚔️ 대결 시작!', d.target + '의 최고 기록 STAGE ' + d.target_wave + ' 클리어하기', '#ff5c7a');
     } catch (e) { toast('⚠️ ' + e.message) }
   }
   async function finishDuel(wave) {
@@ -247,12 +358,12 @@
     try {
       const r = await api('/api/duel', 'POST', { action: 'finish', id: d.id, wave });
       if (USER) { USER.gems = r.gems; renderAcct() }
-      const T = $('#overTx'); T.insertAdjacentHTML('beforeend', `<br><b style="font-size:16px;color:${r.status === 'win' ? '#7dffb0' : '#ff7a8a'}">⚔️ 대결 ${r.status === 'win' ? '승리!' : r.status === 'draw' ? '무승부' : '패배'}</b> <small>${esc(r.target)} ${r.target_wave}판 · ${r.status === 'win' ? '클리어 성공' : '클리어 실패'}${r.reward ? ' · 💎+' + r.reward : ''}</small>`);
+      const T = $('#overTx'); T.insertAdjacentHTML('beforeend', `<br><b style="font-size:16px;color:${r.status === 'win' ? '#7dffb0' : '#ff7a8a'}">⚔️ 대결 ${r.status === 'win' ? '승리!' : r.status === 'draw' ? '무승부' : '패배'}</b> <small>${esc(r.target)} STAGE ${r.target_wave} · ${r.status === 'win' ? '클리어 성공' : '클리어 실패'}${r.reward ? ' · 💎+' + r.reward : ''}</small>`);
     } catch (e) { }
   }
   setInterval(() => {
     const h = $('#duelHud'); if (!h) return;
-    if (DUEL && S && S.mode === 'stage' && !S.over) { h.style.display = 'block'; h.textContent = `⚔️ vs ${DUEL.target} · ${DUEL.target_wave}판 클리어 도전` + (S.stage !== DUEL.target_wave ? ' (다른 판 진행 중)' : '') }
+    if (DUEL && S && S.mode === 'stage' && !S.over) { h.style.display = 'block'; h.textContent = `⚔️ vs ${DUEL.target} · STAGE ${DUEL.target_wave} 클리어 도전` + (S.stage !== DUEL.target_wave ? ' (다른 스테이지 진행 중)' : '') }
     else h.style.display = 'none';
   }, 700);
   async function duelNews() {
@@ -318,7 +429,7 @@
   // 버튼 연결
   $('#bDaily').onclick = startDaily;
   $('#bRank').onclick = () => openRank('stage');
-  $('#bShop').onclick = openShop;
+  $('#bShop').onclick = () => openShop();
   $('#bCharge').onclick = () => toast('💳 보석 충전은 결제 연동 후 열려요');
   document.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => openRank(b.dataset.rk));
   // 게임오버 화면에 랭킹 버튼
