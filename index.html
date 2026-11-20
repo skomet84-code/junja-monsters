@@ -68,6 +68,14 @@ button:disabled{opacity:.4;cursor:default}
 .sk{background:linear-gradient(180deg,#1d2440,#121729);border-color:#e9c27a33}
 .chip{background:linear-gradient(180deg,#1d2440,#121729);border-color:#e9c27a44}
 .dx{background:linear-gradient(180deg,#1a2038,#0d1222);border-color:#e9c27a33}
+
+.info{height:100px;min-height:100px;padding:5px 8px}
+.acts3{display:flex;flex-direction:column;gap:2px;flex:none}
+.acts3 .btn{padding:2px 8px;font-size:11.5px;line-height:1.15;display:flex;flex-direction:column;align-items:center;min-width:76px}
+.acts3 .btn small{font-size:9.5px;font-weight:700;opacity:.85}
+.btn.evo{background:#2a2f4a;color:#9aa4c2}
+.btn.evo.on{background:linear-gradient(180deg,#d6b3ff,#8a5cff);color:#fff;border-color:#e6d2ff;box-shadow:0 0 12px #a77bff88;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 20px #c49bffcc}}
 .how{font-size:13px;line-height:1.7;color:#cfd5ea;background:#0d1222;border-radius:12px;padding:10px 12px;margin:8px 0}
 </style>
 </head>
@@ -256,7 +264,7 @@ function gameOver(){S.over=true;S.running=false;try{localStorage.removeItem(SAVE
  $('#overTx').innerHTML='WAVE <b style="color:var(--gold)">'+w+'</b>에서 막혔어요.<br>최고 기록: WAVE '+meta.best+' 클리어<br>처치 '+S.kills+'마리';setTimeout(()=>$('#mOver').classList.add('on'),600)}
 // ===================== ACTIONS =====================
 function summon(ei){if(S.over)return;if(S.eth<SUMMON){toast('에테르가 부족해요');return}const i=S.slots.findIndex(x=>!x);if(i<0){toast('빈 칸이 없어요 · 같은 몬스터를 합쳐 보세요');return}
- S.eth-=SUMMON;const m=mkMon(ei,1);S.slots[i]=m;reg(m);const p=SLOTP[i];burst(p[0],p[1],ELS[ei].c,14,130);fx({k:'ring',x:p[0],y:p[1],c:ELS[ei].c,r0:8,r1:44,life:.35});snd(660,.08,'triangle',.05,990);S.sel=i;if(!S.running)saveRun();ui()}
+ S.eth-=SUMMON;const m=mkMon(ei,1);S.slots[i]=m;reg(m);const p=SLOTP[i];burst(p[0],p[1],ELS[ei].c,14,130);fx({k:'ring',x:p[0],y:p[1],c:ELS[ei].c,r0:8,r1:44,life:.35});snd(660,.08,'triangle',.05,990);S.sel=i;if(!S.running)saveRun();ui();if(partner(i)>=0)toast('✨ 같은 몬스터 2마리! 진화 버튼을 눌러 보세요')}
 function reg(m){const key=m.e+'_'+m.s;if(!meta.dex[key]){meta.dex[key]=1;saveMeta();if(m.s>1)setTimeout(()=>toast('📖 도감 등록: '+ELS[m.e].names[m.s-1]),300)}}
 function canMerge(a,b){return a&&b&&a!==b&&a.e===b.e&&a.s===b.s&&a.s<5}
 function merge(from,to){const a=S.slots[from],b=S.slots[to];if(!canMerge(a,b))return false;const cost=MERGE[a.s];if(S.eth<cost){toast('진화에 '+cost+' 에테르가 필요해요');return false}
@@ -265,9 +273,12 @@ function merge(from,to){const a=S.slots[from],b=S.slots[to];if(!canMerge(a,b))re
  shake=4+b.s*2;flash=.18+b.s*.05;flashC=el.c;hitstop=.05;banner('진화! '+el.names[b.s-1],'★'.repeat(b.s)+(b.s===5?' · 궁극기 '+el.ult+' 해금':''),el.c);
  snd(520,.1,'triangle',.06,1040);setTimeout(()=>snd(780,.2,'triangle',.06,1560),90);if(b.s>=4)setTimeout(()=>snd(1040,.35,'sine',.05,2080),180);
  S.sel=to;if(!S.running)saveRun();ui();return true}
+function partner(i){const a=S.slots[i];if(!a)return -1;return S.slots.findIndex((b,j)=>j!==i&&canMerge(a,b))}
+function evolveSel(){const i=S.sel;if(i<0)return;const j=partner(i);if(j<0){toast('같은 몬스터('+ELS[S.slots[i].e].names[S.slots[i].s-1]+')가 1마리 더 있어야 진화해요');return}merge(j,i)}
+function sellValue(m){let v=SUMMON*Math.pow(2,m.s-1);for(let s=1;s<m.s;s++)v+=MERGE[s]*Math.pow(2,m.s-1-s);return Math.floor(v*.5)}
 function upCost(e){return Math.round(120*Math.pow(1.6,S.up[e]))}
 function upgrade(e){const c=upCost(e);if(S.eth<c){toast('강화에 '+c+' 에테르가 필요해요');return}S.eth-=c;S.up[e]++;const el=ELS[e];S.slots.forEach((m,i)=>{if(m&&m.e===e){const p=SLOTP[i];burst(p[0],p[1],el.c,14,160);fx({k:'ring',x:p[0],y:p[1],c:el.c2,r0:6,r1:50,life:.35})}});banner(el.n+' 강화 Lv.'+S.up[e],el.n+' 속성 몬스터 전체 공격력 +15%',el.c);snd(700,.12,'triangle',.06,1200);if(!S.running)saveRun();ui()}
-function sell(i){const m=S.slots[i];if(!m)return;let v=SUMMON*Math.pow(2,m.s-1);for(let s=1;s<m.s;s++)v+=MERGE[s]*Math.pow(2,m.s-1-s);v=Math.floor(v*.5);S.eth+=v;S.slots[i]=null;S.sel=-1;toast('판매 +'+v+' 에테르');if(!S.running)saveRun();ui()}
+function sell(i){const m=S.slots[i];if(!m)return;const v=sellValue(m);S.eth+=v;S.slots[i]=null;S.sel=-1;toast('판매 +'+v+' 에테르');if(!S.running)saveRun();ui()}
 // ===================== INPUT =====================
 let drag=null;
 function toLogic(ev){const r=cv.getBoundingClientRect();return[((ev.clientX-r.left)-offX)/scale,((ev.clientY-r.top)-offY)/scale]}
@@ -282,7 +293,7 @@ cv.addEventListener('pointerup',ev=>{if(!drag)return;const d=drag;drag=null;cons
 cv.addEventListener('pointercancel',()=>{drag=null});
 // ===================== RENDER =====================
 function resize(){const r=cv.parentElement.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);cv.width=r.width*dpr;cv.height=r.height*dpr;scale=Math.min(r.width/W,r.height/H);offX=(r.width-W*scale)/2;offY=(r.height-H*scale)/2}
-window.addEventListener('resize',resize);
+window.addEventListener('resize',resize);try{new ResizeObserver(()=>resize()).observe(document.getElementById('stage'))}catch(e){}
 let bgCache=null;
 function makeBg(){const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const g=c.getContext('2d');g.scale(2,2);
  let gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#16372e');gr.addColorStop(1,'#0f2a26');g.fillStyle=gr;g.fillRect(0,0,W,H);
@@ -454,8 +465,8 @@ function loop(ts){const t=ts/1000;let dt=Math.min(.05,(ts-(last||ts))/1000);last
 function iconCanvas(el,st,size){const c=document.createElement('canvas');c.width=c.height=size*2;const g=c.getContext('2d');g.scale(2,2);const r=SPR[el+'_'+st]?size*.4:size*(st===1?.4:.3);drawMon(g,el,st,size/2,SPR[el+'_'+st]?size*.6:size/2+(st===1?0:size*.05),r,0,1,0);return c}
 function buildSummon(){const box=$('#summon');box.innerHTML='';ELS.forEach((e,i)=>{const b=document.createElement('button');b.className='sm';b.appendChild(iconCanvas(i,1,40));b.insertAdjacentHTML('beforeend',`<span style="color:${e.c}">${e.n}</span><i>${SUMMON}</i>`);b.onclick=()=>summon(i);box.appendChild(b)})}
 function ui(){const info=$('#info');const m=S.sel>=0?S.slots[S.sel]:null;
- if(m){const el=ELS[m.e],st=mstat(m);const nxt=m.s<5?`다음: <b style="font-size:12px">${el.names[m.s]}</b> (같은 몬스터 1마리 + ${MERGE[m.s]}✨)`:`궁극기 <b style="font-size:12px;color:${el.c}">${el.ult}</b> 자동 발동`;
-  info.innerHTML='';info.appendChild(iconCanvas(m.e,m.s,42));info.insertAdjacentHTML('beforeend',`<div class="tx"><b>${el.names[m.s-1]}</b> <span class="st">${'★'.repeat(m.s)}</span> · ${el.n}<br>공격 ${Math.round(st.dmg)} · 속도 ${st.rate.toFixed(1)}/초<br>${nxt}</div><div style="display:flex;flex-direction:column;gap:4px"><button class="btn gold" id="bUp" style="padding:5px 8px;font-size:11.5px">⬆ 강화 Lv${S.up[m.e]}<br>${upCost(m.e)}✨</button><button class="btn red" id="bSell" style="padding:4px 8px;font-size:11.5px">판매</button></div>`);$('#bSell').onclick=()=>sell(S.sel);$('#bUp').onclick=()=>upgrade(m.e)}
+ if(m){const el=ELS[m.e],st=mstat(m);const nxt=m.s<5?`다음: <b style="font-size:12px">${el.names[m.s]}</b> `:`궁극기 <b style="font-size:12px;color:${el.c}">${el.ult}</b> 자동 발동`;
+  info.innerHTML='';info.appendChild(iconCanvas(m.e,m.s,42));info.insertAdjacentHTML('beforeend',`<div class="tx"><b>${el.names[m.s-1]}</b> <span class="st">${'★'.repeat(m.s)}</span> · ${el.n}<br>공격 ${Math.round(st.dmg)} · 속도 ${st.rate.toFixed(1)}/초<br>${nxt}</div><div class="acts3">${m.s<5?`<button class="btn evo${partner(S.sel)>=0?' on':''}" id="bEvo">✨ 진화<small>${partner(S.sel)>=0?MERGE[m.s]+'✨':'1마리 더 필요'}</small></button>`:''}<button class="btn gold" id="bUp">⬆ 강화 Lv${S.up[m.e]}<small>${upCost(m.e)}✨</small></button><button class="btn red" id="bSell">판매<small>+${sellValue(m)}</small></button></div>`);$('#bSell').onclick=()=>sell(S.sel);$('#bUp').onclick=()=>upgrade(m.e);const be=$('#bEvo');if(be)be.onclick=()=>evolveSel()}
  else{const n=new Set(S.slots.filter(Boolean).map(m=>m.e)).size;const sy=synergy();info.innerHTML=`<div class="tx" style="text-align:center"><b>🌈 속성 시너지 ${n}/10</b> · 공격력 <span class="st">+${Math.round(sy*100)}%</span><br>3종 +10% · 5종 +20% · 7종 +35% · 10종 +60%<br>몬스터를 끌어서 같은 몬스터에 겹치면 진화!</div>`}
  const go=$('#bGo');go.disabled=S.over;go.className='go'+(S.running?' run':'');go.textContent=S.running?(auto?'🔁 연속 전투 중':'⚔️ 전투 중'):(auto?'🔁 ':'')+S.wave+' 웨이브 시작 ▶'}
 let lastE=-1,lastEn=-1,lastW=-1,lastH=-1;
