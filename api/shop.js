@@ -26,10 +26,10 @@ module.exports = L.wrap(async (req, res) => {
       r = await L.sql(`UPDATE users SET gems=gems-$2, owned=owned||jsonb_build_array($3::text), equip=jsonb_set(equip,ARRAY[$4::text],to_jsonb($3::text))
         WHERE id=$1 AND gems>=$2 AND NOT (owned ? $3) RETURNING ${RET}`, [u.id, price, it.id, it.slot]);
     } else if (it.kind === 'item') {
-      r = await L.sql(`UPDATE users SET gems=gems-$2, items=jsonb_set(items,ARRAY[$3::text],to_jsonb(coalesce((items->>$3)::int,0)+$4))
-        WHERE id=$1 AND gems>=$2 RETURNING ${RET}`, [u.id, price, it.id, qty]);
+      r = await L.sql(`UPDATE users SET gems=gems-$2::int, items=jsonb_set(items,ARRAY[$3::text],to_jsonb(coalesce((items->>$3::text)::int,0)+$4::int))
+        WHERE id=$1 AND gems>=$2::int RETURNING ${RET}`, [u.id, price, it.id, qty]);
     } else if (it.kind === 'crystal') {
-      r = await L.sql(`UPDATE users SET gems=gems-$2, crystal_pending=crystal_pending+$3 WHERE id=$1 AND gems>=$2 RETURNING ${RET}`, [u.id, price, it.amount]);
+      r = await L.sql(`UPDATE users SET gems=gems-$2::int, crystal_pending=crystal_pending+$3::int WHERE id=$1 AND gems>=$2::int RETURNING ${RET}`, [u.id, price, it.amount]);
     }
     if (!r || !r[0]) return L.json(res, 400, { error: '보석이 부족해요' });
     await log(it, price);
@@ -53,7 +53,7 @@ module.exports = L.wrap(async (req, res) => {
     const used = [];
     let last = null;
     for (const id of [...new Set(want)]) {
-      const r = await L.sql(`UPDATE users SET items=jsonb_set(items,ARRAY[$2::text],to_jsonb((items->>$2)::int-1)) WHERE id=$1 AND coalesce((items->>$2)::int,0)>0 RETURNING ${RET}`, [u.id, id]);
+      const r = await L.sql(`UPDATE users SET items=jsonb_set(items,ARRAY[$2::text],to_jsonb((items->>$2::text)::int-1)) WHERE id=$1 AND coalesce((items->>$2::text)::int,0)>0 RETURNING ${RET}`, [u.id, id]);
       if (r[0]) { used.push(id); last = r[0]; }
     }
     const fresh = last || (await L.sql(`SELECT ${RET} FROM users WHERE id=$1`, [u.id]))[0];
