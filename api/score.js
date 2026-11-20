@@ -17,7 +17,7 @@ async function board(mode, per, uid) {
 
 module.exports = L.wrap(async (req, res) => {
   const mode = (req.query && req.query.mode) || (L.body(req).mode) || 'normal';
-  if (!['normal', 'daily'].includes(mode)) return L.json(res, 400, { error: 'mode' });
+  if (!['normal', 'daily', 'stage'].includes(mode)) return L.json(res, 400, { error: 'mode' });
   if (req.method === 'GET') {
     const u = await L.auth(req);
     return L.json(res, 200, await board(mode, period(mode), u && u.id));
@@ -27,7 +27,7 @@ module.exports = L.wrap(async (req, res) => {
     if (!u) return L.json(res, 401, { error: '로그인이 필요해요' });
     const b = L.body(req);
     const wave = Math.floor(Number(b.wave)), kills = Math.floor(Number(b.kills) || 0);
-    if (!(wave >= 0 && wave <= 300) || kills < 0 || kills > wave * 120 + 50) return L.json(res, 400, { error: '기록이 올바르지 않아요' });
+    if (!(wave >= 0 && wave <= 300) || kills < 0 || (mode === 'stage' ? kills > 60 || wave < 1 : kills > wave * 120 + 50)) return L.json(res, 400, { error: '기록이 올바르지 않아요' });
     const per = period(mode);
     const prev = (await L.sql('SELECT wave,kills FROM scores WHERE user_id=$1 AND mode=$2 AND period=$3', [u.id, mode, per]))[0];
     await L.sql('INSERT INTO plays(user_id,mode,wave,kills) VALUES($1,$2,$3,$4)', [u.id, mode, wave, kills]);

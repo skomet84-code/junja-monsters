@@ -6,8 +6,8 @@ async function profileOf(name) {
   const sv = (await L.sql('SELECT meta FROM saves WHERE user_id=$1', [u.id]))[0];
   const m = (sv && sv.meta) || {};
   const dex = m.dex || {};
-  const week = (await L.sql("SELECT wave FROM scores WHERE user_id=$1 AND mode='normal' AND period=$2", [u.id, L.kstWeek()]))[0];
-  const all = (await L.sql('SELECT coalesce(max(wave),0) AS w, count(*) AS n FROM plays WHERE user_id=$1', [u.id]))[0];
+  const week = (await L.sql("SELECT wave FROM scores WHERE user_id=$1 AND mode='stage' AND period=$2", [u.id, L.kstWeek()]))[0];
+  const all = (await L.sql("SELECT coalesce(max(wave) FILTER (WHERE mode='stage'),0) AS w, coalesce(max(wave) FILTER (WHERE mode='normal'),0) AS ow, count(*) AS n FROM plays WHERE user_id=$1", [u.id]))[0];
   const d = (await L.sql(`SELECT
       count(*) FILTER (WHERE from_id=$1 AND status='win') AS wins,
       count(*) FILTER (WHERE from_id=$1 AND status='lose') AS losses,
@@ -15,7 +15,7 @@ async function profileOf(name) {
     FROM duels WHERE from_id=$1 OR to_id=$1`, [u.id]))[0];
   return {
     name: u.name, title: (u.equip || {}).title || null, aura: (u.equip || {}).aura || null, rep: u.rep || null, bio: u.bio || '',
-    since: u.created_at, weekBest: week ? week.wave : 0, best: Math.max(all.w || 0, m.best || 0), plays: all.n,
+    since: u.created_at, weekBest: week ? week.wave : 0, best: Math.max(all.w || 0, m.stage || 0), oldBest: Math.max(all.ow || 0, m.best || 0), plays: all.n,
     dex: Object.keys(dex).length, mythic: Object.keys(dex).filter(k => k.endsWith('_7')).length, awaken: Object.keys(dex).filter(k => k.endsWith('_6')).length,
     ach: Object.keys(m.ach || {}).length, duel: d
   };

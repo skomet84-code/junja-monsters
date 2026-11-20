@@ -18,10 +18,10 @@ module.exports = L.wrap(async (req, res) => {
     const t = (await L.sql('SELECT id,name,banned FROM users WHERE lower(name)=lower($1)', [String(b.target || '')]))[0];
     if (!t || t.banned) return L.json(res, 404, { error: '상대를 찾을 수 없어요' });
     if (t.id === u.id) return L.json(res, 400, { error: '자기 자신과는 대결할 수 없어요' });
-    const wk = (await L.sql("SELECT wave FROM scores WHERE user_id=$1 AND mode='normal' AND period=$2", [t.id, L.kstWeek()]))[0];
-    const all = (await L.sql("SELECT coalesce(max(wave),0) AS w FROM plays WHERE user_id=$1 AND mode='normal'", [t.id]))[0];
+    const wk = (await L.sql("SELECT wave FROM scores WHERE user_id=$1 AND mode='stage' AND period=$2", [t.id, L.kstWeek()]))[0];
+    const all = (await L.sql("SELECT coalesce(max(wave),0) AS w FROM plays WHERE user_id=$1 AND mode='stage'", [t.id]))[0];
     const target = wk ? wk.wave : all.w;
-    if (!target) return L.json(res, 400, { error: '상대의 기록이 아직 없어요' });
+    if (!target) return L.json(res, 400, { error: '상대가 아직 판을 클리어한 기록이 없어요' });
     await L.sql("UPDATE duels SET status='expired' WHERE from_id=$1 AND status='open'", [u.id]);
     const d = (await L.sql('INSERT INTO duels(from_id,to_id,target_wave) VALUES($1,$2,$3) RETURNING id,target_wave', [u.id, t.id, target]))[0];
     return L.json(res, 200, { id: d.id, target: t.name, target_wave: d.target_wave });
@@ -32,7 +32,7 @@ module.exports = L.wrap(async (req, res) => {
     const d = (await L.sql(`SELECT d.id,d.target_wave,t.name AS to_name FROM duels d JOIN users t ON t.id=d.to_id
       WHERE d.id=$1 AND d.from_id=$2 AND d.status='open' AND d.created_at > now() - interval '6 hours'`, [Number(b.id), u.id]))[0];
     if (!d) return L.json(res, 400, { error: '진행 중인 대결이 없어요' });
-    const status = wave > d.target_wave ? 'win' : wave === d.target_wave ? 'draw' : 'lose';
+    const status = wave >= d.target_wave ? 'win' : 'lose';
     let reward = 0;
     if (status === 'win') {
       const n = (await L.sql("SELECT count(*) AS n FROM duels WHERE from_id=$1 AND rewarded>0 AND finished_at > now() - interval '1 day'", [u.id]))[0].n;

@@ -60,7 +60,7 @@
       const j = await api('/api/save');
       if (j.save && j.save.meta) {
         const sm = j.save.meta, lm = meta || {};
-        meta = Object.assign({ best: 0, dex: {} }, sm, { best: Math.max(sm.best || 0, lm.best || 0), dex: Object.assign({}, lm.dex || {}, sm.dex || {}), fuse: Object.assign({}, lm.fuse || {}, sm.fuse || {}), ach: Object.assign({}, lm.ach || {}, sm.ach || {}) });
+        meta = Object.assign({ best: 0, dex: {} }, sm, { best: Math.max(sm.best || 0, lm.best || 0), stage: Math.max(sm.stage || 0, lm.stage || 0), dex: Object.assign({}, lm.dex || {}, sm.dex || {}), fuse: Object.assign({}, lm.fuse || {}, sm.fuse || {}), ach: Object.assign({}, lm.ach || {}, sm.ach || {}) });
         try { localStorage.setItem(SAVE + '_meta', JSON.stringify(meta)) } catch (e) { }
         if (j.save.run) { try { localStorage.setItem(SAVE + '_run', JSON.stringify(j.save.run)) } catch (e) { } }
       }
@@ -85,12 +85,13 @@
   function refreshTitle() {
     const has = !!localStorage.getItem(SAVE + '_run');
     const bc = $('#bCont'); if (bc) bc.style.display = has ? '' : 'none';
-    const b = $('#best'); if (b) b.textContent = meta.best ? '🏆 최고 기록: WAVE ' + meta.best + ' 클리어' : '';
+    const b = $('#best'); if (b) b.textContent = meta.stage ? '🏆 최고 기록: ' + meta.stage + '판 클리어' : ''; try { stageUI() } catch (e) { }
   }
 
   // 게임 종료 → 점수 등록
   window.onGameOver = async (wave, kills, mode) => {
     const T = $('#overTx');
+    if (mode === 'stage') { if (DUEL && USER && S.stage === DUEL.target_wave) finishDuel(wave); return }
     if (DUEL && mode === 'normal' && USER) finishDuel(wave);
     if (!USER) { T.insertAdjacentHTML('beforeend', '<br><small style="color:#9aa4c2">로그인하면 이 기록이 랭킹에 올라가요</small>'); return }
     T.insertAdjacentHTML('beforeend', '<br><small id="rkRes">랭킹 등록 중…</small>');
@@ -99,6 +100,20 @@
       USER.gems = j.gems; renderAcct();
       const el = $('#rkRes');
       if (el) el.innerHTML = `<b style="color:#ffd75a">${mode === 'daily' ? '📅 오늘의 도전' : '🏆 주간'} 랭킹 ${j.me ? j.me.rank + '위' : '-'}</b> / ${j.total}명` + (j.newBest ? ' · 신기록!' : '') + (j.reward ? `<br>💎 도전 보상 +${j.reward}` : '');
+    } catch (e) { const el = $('#rkRes'); if (el) el.textContent = '랭킹 등록 실패: ' + e.message }
+  };
+
+  // 판 클리어 → 주간 판 랭킹 등록
+  window.onStageClear = async (stage, hp, kills) => {
+    const T = $('#overTx');
+    if (DUEL && USER && stage === DUEL.target_wave) finishDuel(stage);
+    if (!USER) { T.insertAdjacentHTML('beforeend', '<br><small style="color:#9aa4c2">로그인하면 이 기록이 랭킹에 올라가요</small>'); return }
+    T.insertAdjacentHTML('beforeend', '<br><small id="rkRes">랭킹 등록 중…</small>');
+    try {
+      const j = await api('/api/score', 'POST', { mode: 'stage', wave: stage, kills: hp });
+      USER.gems = j.gems; renderAcct();
+      const el = $('#rkRes');
+      if (el) el.innerHTML = `<b style="color:#ffd75a">🏆 주간 판 랭킹 ${j.me ? j.me.rank + '위' : '-'}</b> / ${j.total}명` + (j.newBest ? ' · 신기록!' : '');
     } catch (e) { const el = $('#rkRes'); if (el) el.textContent = '랭킹 등록 실패: ' + e.message }
   };
 
@@ -121,15 +136,15 @@
   }
 
   // 랭킹
-  let rkMode = 'normal';
+  let rkMode = 'stage';
   async function openRank(mode) {
     rkMode = mode || rkMode;
     document.querySelectorAll('[data-rk]').forEach(b => b.classList.toggle('on', b.dataset.rk === rkMode));
     $('#mRank').classList.add('on'); $('#rkList').innerHTML = '<p>불러오는 중…</p>'; $('#rkInfo').textContent = '';
     try {
       const j = await api('/api/score?mode=' + rkMode);
-      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : '🗓 ' + j.period + ' 주간 랭킹 (월요일 초기화)') + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · WAVE ${j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
-      $('#rkList').innerHTML = j.top.length ? j.top.map((t, ix) => `<div class="rk${t.me ? ' me' : ''}" data-pf="${esc(t.name)}" data-ix="${ix}"><div class="n">${t.rank <= 3 ? ['🥇', '🥈', '🥉'][t.rank - 1] : t.rank}</div><div class="nm">${t.title ? `<small>「${esc(titleName(t.title))}」</small>` : ''}${esc(t.name)}</div><div class="w">WAVE ${t.wave}</div><small style="color:#9aa4c2;width:56px;text-align:right">${t.kills}마리</small></div>`).join('') : '<p>아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!</p>';
+      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 판 랭킹 · 가장 높은 판 (같으면 남은 수호석)' : '🗓 ' + j.period + ' 주간 랭킹 (월요일 초기화)')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? j.me.wave + '판' : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
+      $('#rkList').innerHTML = j.top.length ? j.top.map((t, ix) => `<div class="rk${t.me ? ' me' : ''}" data-pf="${esc(t.name)}" data-ix="${ix}"><div class="n">${t.rank <= 3 ? ['🥇', '🥈', '🥉'][t.rank - 1] : t.rank}</div><div class="nm">${t.title ? `<small>「${esc(titleName(t.title))}」</small>` : ''}${esc(t.name)}</div><div class="w">${rkMode === 'stage' ? t.wave + '판' : 'WAVE ' + t.wave}</div><small style="color:#9aa4c2;width:56px;text-align:right">${rkMode === 'stage' ? '💎' + t.kills : t.kills + '마리'}</small></div>`).join('') : '<p>아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!</p>';
       j.top.forEach((t, ix) => { const row = document.querySelector(`.rk[data-ix="${ix}"]`); if (!row) return; const slot = document.createElement('div'); slot.className = 'rkic'; if (t.rep) slot.appendChild(iconCanvas(t.rep.e, t.rep.s, 34, t.rep.f)); row.insertBefore(slot, row.children[1]); row.onclick = () => openProfile(t.name) });
     } catch (e) { $('#rkList').innerHTML = '<p>랭킹을 불러오지 못했어요: ' + esc(e.message) + '</p>' }
   }
@@ -187,7 +202,7 @@
       B.innerHTML = `${p.title ? `<div style="color:#d08bff;font-size:13px">「${esc(titleName(p.title))}」</div>` : ''}<h2 style="font-size:24px;margin:2px 0">${esc(p.name)}</h2>
         <div class="pfrep ${p.aura || ''}" id="pfRep"></div><div style="font-weight:800;color:#ffe3a1">${esc(repName)}${p.rep ? ' ' + (p.rep.s === 7 ? '👑' : p.rep.s === 6 ? '✦' : '★'.repeat(p.rep.s)) : ''}</div>
         ${p.bio ? `<p style="margin:6px 0">“${esc(p.bio)}”</p>` : ''}
-        <div class="pfst"><div><b>${p.weekBest}</b>이번 주</div><div><b>${p.best}</b>역대 최고</div><div><b>${p.dex}</b>도감</div><div><b>${p.awaken}</b>✦각성</div><div><b>${p.mythic}</b>👑신수</div><div><b>${p.ach}</b>🎖업적</div></div>
+        <div class="pfst"><div><b>${p.weekBest}판</b>이번 주</div><div><b>${p.best}판</b>역대 최고</div><div><b>${p.dex}</b>도감</div><div><b>${p.awaken}</b>✦각성</div><div><b>${p.mythic}</b>👑신수</div><div><b>${p.ach}</b>🎖업적</div></div>
         <div style="font-size:12.5px;color:#9aa4c2">⚔️ 대결 ${p.duel.wins}승 ${p.duel.losses}패 · 방어 성공 ${p.duel.defends}회</div>
         <div id="pfAct" style="margin-top:10px"></div>`;
       if (p.rep) $('#pfRep').appendChild(iconCanvas(p.rep.e, p.rep.s, 140, p.rep.f)); else $('#pfRep').innerHTML = '<div style="font-size:50px">❔</div>';
@@ -215,7 +230,7 @@
     try {
       const j = await api('/api/duel');
       const lab = { win: '<b class="w">승리</b>', lose: '<b class="l">패배</b>', draw: '<b>무승부</b>', open: '진행 중' };
-      $('#pfDuels').innerHTML = j.duels.length ? j.duels.map(d => d.mine ? `<div class="dl">⚔️ ${esc(d.to_name)}에게 도전 · 목표 W${d.target_wave} → 내 기록 ${d.my_wave ?? '-'} · ${lab[d.status]}</div>` : `<div class="dl">🛡 ${esc(d.from_name)}의 도전 · ${d.status === 'lose' ? '<b class="w">방어 성공</b>' : d.status === 'win' ? '<b class="l">방어 실패</b>' : lab[d.status]} (W${d.my_wave ?? '-'})</div>`).join('') : '<p>아직 대결 기록이 없어요. 랭킹에서 상대를 눌러 대결을 신청해 보세요!</p>';
+      $('#pfDuels').innerHTML = j.duels.length ? j.duels.map(d => d.mine ? `<div class="dl">⚔️ ${esc(d.to_name)}에게 도전 · ${d.target_wave}판 도전 · ${lab[d.status]}</div>` : `<div class="dl">🛡 ${esc(d.from_name)}의 도전 · ${d.status === 'lose' ? '<b class="w">방어 성공</b>' : d.status === 'win' ? '<b class="l">방어 실패</b>' : lab[d.status]} (${d.target_wave}판)</div>`).join('') : '<p>아직 대결 기록이 없어요. 랭킹에서 상대를 눌러 대결을 신청해 보세요!</p>';
     } catch (e) { $('#pfDuels').textContent = e.message }
   }
   async function startDuel(name) {
@@ -223,8 +238,8 @@
       const d = await api('/api/duel', 'POST', { action: 'start', target: name });
       DUEL = d; localStorage.setItem('jm_duel', JSON.stringify(d));
       document.querySelectorAll('.modal').forEach(m => m.classList.remove('on'));
-      begin(newState()); saveRun();
-      banner('⚔️ 대결 시작!', d.target + '의 WAVE ' + d.target_wave + ' 넘기기', '#ff5c7a');
+      begin(newStage(d.target_wave)); saveRun();
+      banner('⚔️ 대결 시작!', d.target + '의 최고 기록 ' + d.target_wave + '판을 클리어하세요', '#ff5c7a');
     } catch (e) { toast('⚠️ ' + e.message) }
   }
   async function finishDuel(wave) {
@@ -232,12 +247,12 @@
     try {
       const r = await api('/api/duel', 'POST', { action: 'finish', id: d.id, wave });
       if (USER) { USER.gems = r.gems; renderAcct() }
-      const T = $('#overTx'); T.insertAdjacentHTML('beforeend', `<br><b style="font-size:16px;color:${r.status === 'win' ? '#7dffb0' : '#ff7a8a'}">⚔️ 대결 ${r.status === 'win' ? '승리!' : r.status === 'draw' ? '무승부' : '패배'}</b> <small>${esc(r.target)} W${r.target_wave} vs 나 W${r.wave}${r.reward ? ' · 💎+' + r.reward : ''}</small>`);
+      const T = $('#overTx'); T.insertAdjacentHTML('beforeend', `<br><b style="font-size:16px;color:${r.status === 'win' ? '#7dffb0' : '#ff7a8a'}">⚔️ 대결 ${r.status === 'win' ? '승리!' : r.status === 'draw' ? '무승부' : '패배'}</b> <small>${esc(r.target)} ${r.target_wave}판 · ${r.status === 'win' ? '클리어 성공' : '클리어 실패'}${r.reward ? ' · 💎+' + r.reward : ''}</small>`);
     } catch (e) { }
   }
   setInterval(() => {
     const h = $('#duelHud'); if (!h) return;
-    if (DUEL && S && S.mode !== 'daily' && !S.over) { const cleared = S.wave - 1; h.style.display = 'block'; h.textContent = cleared > DUEL.target_wave ? `⚔️ ${DUEL.target} 기록 돌파! (${cleared}/${DUEL.target_wave})` : `⚔️ vs ${DUEL.target} · ${cleared}/${DUEL.target_wave}`; if (cleared > DUEL.target_wave && !DUEL._b) { DUEL._b = 1; banner('⚔️ 대결 목표 돌파!', DUEL.target + '의 기록을 넘었어요', '#7dffb0') } }
+    if (DUEL && S && S.mode === 'stage' && !S.over) { h.style.display = 'block'; h.textContent = `⚔️ vs ${DUEL.target} · ${DUEL.target_wave}판 클리어 도전` + (S.stage !== DUEL.target_wave ? ' (다른 판 진행 중)' : '') }
     else h.style.display = 'none';
   }, 700);
   async function duelNews() {
@@ -302,12 +317,12 @@
 
   // 버튼 연결
   $('#bDaily').onclick = startDaily;
-  $('#bRank').onclick = () => openRank('normal');
+  $('#bRank').onclick = () => openRank('stage');
   $('#bShop').onclick = openShop;
   $('#bCharge').onclick = () => toast('💳 보석 충전은 결제 연동 후 열려요');
   document.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => openRank(b.dataset.rk));
   // 게임오버 화면에 랭킹 버튼
-  const ov = $('#bRetry'); if (ov) { const rb = document.createElement('button'); rb.className = 'btn'; rb.textContent = '🏆 랭킹'; rb.onclick = () => openRank(S.mode === 'daily' ? 'daily' : 'normal'); ov.parentNode.insertBefore(rb, ov) }
+  const ov = $('#bRetry'); if (ov) { const rb = document.createElement('button'); rb.className = 'btn'; rb.textContent = '🏆 랭킹'; rb.onclick = () => openRank(S.mode === 'daily' ? 'daily' : S.mode === 'stage' ? 'stage' : 'normal'); ov.parentNode.insertBefore(rb, ov) }
   // 다시 도전: 오늘의 도전 중이었으면 오늘의 도전으로
   const rt = $('#bRetry'); if (rt) { const old = rt.onclick; rt.onclick = () => { if (S.mode === 'daily') startDaily(); else old && old() } }
 

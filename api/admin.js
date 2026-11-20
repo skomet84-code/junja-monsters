@@ -8,7 +8,7 @@ module.exports = L.wrap(async (req, res) => {
     if (q.view === 'users') {
       const s = '%' + String(q.q || '') + '%';
       const rows = await L.sql(`SELECT u.id,u.name,u.gems,u.banned,u.created_at,u.last_login,u.owned,
-        (SELECT max(wave) FROM scores WHERE user_id=u.id AND mode='normal') AS best,
+        (SELECT max(wave) FROM scores WHERE user_id=u.id AND mode='stage') AS best,
         (SELECT count(*) FROM plays WHERE user_id=u.id) AS plays
         FROM users u WHERE u.name ILIKE $1 ORDER BY u.last_login DESC NULLS LAST LIMIT 100`, [s]);
       return L.json(res, 200, { users: rows });
@@ -31,7 +31,7 @@ module.exports = L.wrap(async (req, res) => {
       (SELECT count(*) FROM purchases) AS purchases,
       (SELECT coalesce(sum(price),0) FROM purchases) AS gemsSpent,
       (SELECT coalesce(sum(gems),0) FROM users) AS gemsHeld`))[0];
-    const weekTop = await L.sql(`SELECT u.name,s.wave,s.kills FROM scores s JOIN users u ON u.id=s.user_id WHERE s.mode='normal' AND s.period=$1 ORDER BY s.wave DESC,s.kills DESC LIMIT 10`, [week]);
+    const weekTop = await L.sql(`SELECT u.name,s.wave,s.kills FROM scores s JOIN users u ON u.id=s.user_id WHERE s.mode='stage' AND s.period=$1 ORDER BY s.wave DESC,s.kills DESC LIMIT 10`, [week]);
     const dailyTop = await L.sql(`SELECT u.name,s.wave,s.kills FROM scores s JOIN users u ON u.id=s.user_id WHERE s.mode='daily' AND s.period=$1 ORDER BY s.wave DESC,s.kills DESC LIMIT 10`, [today]);
     const items = await L.sql('SELECT item,count(*) AS n FROM purchases GROUP BY item ORDER BY n DESC');
     return L.json(res, 200, { stats: st, week, today, weekTop, dailyTop, items });

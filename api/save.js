@@ -20,6 +20,7 @@ module.exports = L.wrap(async (req, res) => {
       const c = cur.meta;
       m = Object.assign({}, c, m);
       m.best = Math.max(c.best || 0, meta.best || 0);
+      m.stage = Math.max(c.stage || 0, meta.stage || 0);
       m.dex = Object.assign({}, c.dex || {}, meta.dex || {});
       m.fuse = Object.assign({}, c.fuse || {}, meta.fuse || {});
       m.ach = Object.assign({}, c.ach || {}, meta.ach || {});
