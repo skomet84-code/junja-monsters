@@ -67,8 +67,8 @@ function isAdmin(u) { return !!u && ADMINS.includes(u.name); }
 // 한국 시간 기준 날짜/주차
 function kst() { return new Date(Date.now() + 9 * 3600 * 1000); }
 function kstDate() { return kst().toISOString().slice(0, 10); }
-function kstWeek() {
-  const d = kst(); const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+function kstWeek(offsetWeeks) {
+  const d = new Date(kst().getTime() + (offsetWeeks || 0) * 7 * 86400000); const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
   const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
   const y = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
   const w = Math.ceil(((t - y) / 86400000 + 1) / 7);

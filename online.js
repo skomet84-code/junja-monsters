@@ -265,6 +265,7 @@
   // ===== 협동 레이드: 월드 보스 =====
   document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mRaid"><div class="card" style="text-align:center;background:linear-gradient(180deg,#3a1414,#120a14)"><div id="rdBody"></div><div class="row"><button class="btn gold" id="rdClose">닫기</button></div></div></div>`);
   document.head.insertAdjacentHTML('beforeend', `<style>.rdbar{height:16px;border-radius:8px;background:#000a;border:1px solid #ff7a4a88;overflow:hidden;margin:6px 0}.rdbar i{display:block;height:100%;background:linear-gradient(90deg,#ff2d55,#ff9a3e)}
+  .rdrw{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px;background:linear-gradient(135deg,#2a1d0a,#1a1230);border:1px solid #ffd75a55;border-radius:12px;padding:8px;margin:8px 0;font-size:12px}.rdrw b{width:100%;color:#ffd75a}.rdrw span{background:#0d1222;border-radius:8px;padding:2px 7px;font-weight:800}.rdrw small{width:100%;color:#b9a8d8;font-size:11px}
   .rdtop{display:flex;align-items:center;gap:6px;background:#0d1222;border-radius:9px;padding:5px 8px;margin:3px 0;font-size:12.5px;text-align:left}.rdtop canvas{width:28px;height:28px}.rdtop b{flex:1}</style>`);
   $('#rdClose').onclick = () => $('#mRaid').classList.remove('on');
   let RAID = null;
@@ -279,13 +280,15 @@
         <div class="rdbar"><i style="width:${pct}%"></i></div><div style="font-size:12px;color:#ffb0bd">남은 체력 ${fmtN(R.hpLeft)} / ${fmtN(R.hpMax)} · 이번 주 토벌 ${R.killed}회 · 참가 ${R.players}명</div>
         <p style="font-size:12.5px">모든 플레이어가 함께 보스 체력을 깎아요! 쓰러뜨릴 때마다 더 강한 보스가 나타나고, 참가자 모두 보상 💎을 받아요.<br>약점: <b style="color:#ffd75a">${weakTo(R.element).map(a => EMO[a] + ELS[a].n).join(' ')}</b> · 출전: 내 도감 최강 ${sq.length}마리 · 60초</p>
         ${result && result.hit != null ? `<div style="font-size:18px;font-weight:900;color:#ffd75a;margin:6px 0">💥 이번 피해 ${fmtN(result.hit)}${result.killedNow ? ' · 🎉 보스 토벌!' : ''}</div>` : ''}
-        ${R.my ? `<div style="font-size:13px">내 누적 피해 <b style="color:#ffd75a">${fmtN(R.my.damage)}</b> · 오늘 남은 도전 <b>${R.my.left}</b>/3</div>` : '<p>로그인하면 레이드에 참가할 수 있어요</p>'}
-        <div class="row">${R.my ? `<button class="btn raid" id="rdGo" ${R.my.left <= 0 || !sq.length ? 'disabled' : ''}>⚔️ 도전하기</button>` : ''}${R.my && R.my.claimGems ? `<button class="btn gold" id="rdClaim">🎁 토벌 보상 💎${R.my.claimGems}</button>` : ''}</div>
+        <div class="rdrw"><b>🏆 주간 피해 순위 보상</b><span>🥇 💎500</span><span>🥈 💎300</span><span>🥉 💎200</span><span>4~10위 💎100</span><span>참가 💎30</span><small>월요일에 지난주 순위대로 받아요</small></div>
+        ${R.my ? `<div style="font-size:13px">내 누적 피해 <b style="color:#ffd75a">${fmtN(R.my.damage)}</b>${R.my.rank ? ' · 현재 <b style="color:#ffd75a">' + R.my.rank + '위</b>' : ''} · 오늘 남은 도전 <b>${R.my.left}</b>/3</div>` : '<p>로그인하면 레이드에 참가할 수 있어요</p>'}
+        <div class="row">${R.my ? `<button class="btn raid" id="rdGo" ${R.my.left <= 0 || !sq.length ? 'disabled' : ''}>⚔️ 도전하기</button>` : ''}${R.my && R.my.claimGems ? `<button class="btn gold" id="rdClaim">🎁 토벌 보상 💎${R.my.claimGems}</button>` : ''}${R.my && R.my.lastWeek && !R.my.lastWeek.claimed ? `<button class="btn gold" id="rdRank">🏆 지난주 ${R.my.lastWeek.rank}위 보상 💎${R.my.lastWeek.gems}</button>` : ''}</div>
         <h2 style="font-size:15px;margin-top:12px">🏅 이번 주 기여 순위</h2><div id="rdTop"></div>`;
       const T = $('#rdTop');
       if (!R.top.length) T.innerHTML = '<p>아직 아무도 도전하지 않았어요. 첫 일격을 날려 보세요!</p>';
-      R.top.forEach(t => { const d = document.createElement('div'); d.className = 'rdtop'; d.innerHTML = `<span style="width:22px;color:#ffd75a;font-weight:900">${t.rank}</span>`; if (t.rep) d.appendChild(iconCanvas(t.rep.e, t.rep.s, 28, t.rep.f)); d.insertAdjacentHTML('beforeend', `<b>${esc(t.name)}</b><span>${fmtN(t.damage)}</span>`); d.onclick = () => openProfile(t.name); T.appendChild(d) });
+      R.top.forEach(t => { const d = document.createElement('div'); d.className = 'rdtop'; d.innerHTML = `<span style="width:22px;color:#ffd75a;font-weight:900">${t.rank}</span>`; if (t.rep) d.appendChild(iconCanvas(t.rep.e, t.rep.s, 28, t.rep.f)); d.insertAdjacentHTML('beforeend', `<b>${esc(t.name)}</b><span>${fmtN(t.damage)}${t.rank <= 3 ? ' <i style="font-style:normal;color:#7fe3ff">💎' + [500, 300, 200][t.rank - 1] + '</i>' : ''}</span>`); d.onclick = () => openProfile(t.name); T.appendChild(d) });
       const g = $('#rdGo'); if (g) g.onclick = () => { document.querySelectorAll('.modal').forEach(m => m.classList.remove('on')); startRaid(R) };
+      const k = $('#rdRank'); if (k) k.onclick = async () => { try { const r = await api('/api/raid', 'POST', { action: 'claimRank' }); if (r.gems != null) { USER.gems = r.gems; renderAcct() } toast('🏆 지난주 ' + r.rank + '위 보상 💎' + r.claimed); openRaid(r) } catch (e) { toast('⚠️ ' + e.message) } };
       const c = $('#rdClaim'); if (c) c.onclick = async () => { try { const r = await api('/api/raid', 'POST', { action: 'claim' }); if (r.gems != null) { USER.gems = r.gems; renderAcct() } toast('🎁 토벌 보상 💎' + r.claimed); openRaid(r) } catch (e) { toast('⚠️ ' + e.message) } };
     } catch (e) { B.innerHTML = '<p>레이드 정보를 불러오지 못했어요: ' + esc(e.message) + '</p>' }
   }

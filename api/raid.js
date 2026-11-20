@@ -12,6 +12,18 @@ function stateOf(total) {
   return { level, hpMax: hpOf(level), hpLeft: hpOf(level) - (total - used), killed: level - 1 };
 }
 function reward(level) { return 30 + level * 10; }
+// 주간 피해량 순위 보상 (다음 주에 받기)
+const RANK_GEMS = [500, 300, 200];
+function rankReward(rank) { return rank <= 3 ? RANK_GEMS[rank - 1] : rank <= 10 ? 100 : 30; }
+async function lastWeekRank(uid) {
+  const lw = L.kstWeek(-1);
+  const rows = await L.sql(`SELECT user_id, rank FROM (SELECT r.user_id, rank() OVER (ORDER BY sum(r.damage) DESC) AS rank FROM raid_hits r JOIN users u ON u.id=r.user_id
+    WHERE r.week=$1 AND NOT u.banned GROUP BY r.user_id) x WHERE user_id=$2`, [lw, uid]);
+  if (!rows[0]) return null;
+  const done = await L.sql('SELECT 1 FROM raid_claims WHERE user_id=$1 AND week=$2 AND level=0', [uid, lw]);
+  const rank = Number(rows[0].rank);
+  return { week: lw, rank, gems: rankReward(rank), claimed: !!done[0] };
+}
 
 async function info(uid) {
   const week = L.kstWeek();
@@ -20,13 +32,14 @@ async function info(uid) {
   const top = await L.sql(`SELECT u.name, u.rep, sum(r.damage) AS dmg, count(*) AS tries FROM raid_hits r JOIN users u ON u.id=r.user_id
     WHERE r.week=$1 AND NOT u.banned GROUP BY u.id ORDER BY dmg DESC LIMIT 20`, [week]);
   const el = weekEl(week);
-  const out = { week, element: el, name: NAMES[el], total: tot, ...st, players: top.length, top: top.map((t, i) => ({ rank: i + 1, name: t.name, rep: t.rep, damage: Number(t.dmg), tries: t.tries })) };
+  const out = { week, rankGems: { top1: 500, top2: 300, top3: 200, top10: 100, join: 30 }, element: el, name: NAMES[el], total: tot, ...st, players: top.length, top: top.map((t, i) => ({ rank: i + 1, name: t.name, rep: t.rep, damage: Number(t.dmg), tries: t.tries })) };
   if (uid) {
     const my = (await L.sql(`SELECT coalesce(sum(damage),0) AS d, count(*) FILTER (WHERE created_at > date_trunc('day', now() AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'Asia/Seoul') AS today FROM raid_hits WHERE week=$1 AND user_id=$2`, [week, uid]))[0];
     const claimed = (await L.sql('SELECT level FROM raid_claims WHERE user_id=$1 AND week=$2', [uid, week])).map(r => r.level);
     const can = [];
     if (Number(my.d) > 0) for (let lv = 1; lv <= st.killed; lv++) if (!claimed.includes(lv)) can.push(lv);
-    out.my = { damage: Number(my.d), today: my.today, left: Math.max(0, DAILY_TRIES - my.today), claimable: can, claimGems: can.reduce((a, lv) => a + reward(lv), 0) };
+    const myRank = Number(my.d) > 0 ? Number((await L.sql('SELECT count(*) AS c FROM (SELECT sum(damage) AS s FROM raid_hits WHERE week=$1 GROUP BY user_id) x WHERE s > $2', [week, Number(my.d)]))[0].c) + 1 : null;
+    out.my = { damage: Number(my.d), rank: myRank, today: my.today, left: Math.max(0, DAILY_TRIES - my.today), claimable: can, claimGems: can.reduce((a, lv) => a + reward(lv), 0), lastWeek: await lastWeekRank(uid) };
   }
   return out;
 }
@@ -56,6 +69,14 @@ module.exports = L.wrap(async (req, res) => {
     let total = null;
     if (gems) total = await L.addGems(u.id, gems, '월드 보스 토벌 보상');
     return L.json(res, 200, Object.assign(await info(u.id), { claimed: gems, gems: total }));
+  }
+  if (b.action === 'claimRank') {
+    const lr = await lastWeekRank(u.id);
+    if (!lr || lr.claimed) return L.json(res, 400, { error: '받을 지난주 순위 보상이 없어요' });
+    const r = await L.sql('INSERT INTO raid_claims(user_id,week,level,gems) VALUES($1,$2,0,$3) ON CONFLICT DO NOTHING RETURNING level', [u.id, lr.week, lr.gems]);
+    let total = null;
+    if (r[0]) total = await L.addGems(u.id, lr.gems, '월드 보스 지난주 ' + lr.rank + '위 보상');
+    return L.json(res, 200, Object.assign(await info(u.id), { claimed: r[0] ? lr.gems : 0, gems: total, rank: lr.rank }));
   }
   return L.json(res, 400, { error: 'action' });
 });
