@@ -245,7 +245,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261120213817';
+const BUILD='20261120214346';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -309,7 +309,7 @@ try{meta=Object.assign(meta,JSON.parse(localStorage.getItem(SAVE+'_meta')||'{}')
 function saveMeta(){try{localStorage.setItem(SAVE+'_meta',JSON.stringify(meta))}catch(e){}if(window.onSave)onSave()}
 function newState(){const L=meta.lab||{};return{unlocked:BASE_SLOTS+((meta.lab||{}).slot||0),buffs:{},wave:1,hp:20+2*(L.hp||0),eth:240+40*(L.eth||0),energy:20,up:Array(10).fill(0),slots:Array(SLOTS).fill(null),enemies:[],shots:[],fx:[],nums:[],running:false,spawnQ:[],spawnT:0,kills:0,sel:-1,uid:1,freezeT:0,over:false}}
 function saveRun(){if(S.over||S.mode==='daily'||S.mode==='raid')return;try{localStorage.setItem(SAVE+'_run',JSON.stringify({wave:S.wave,hp:S.hp,eth:S.eth,energy:S.energy,up:S.up,buffs:S.buffs,unlocked:S.unlocked,slots:S.slots.map(m=>m?[m.e,m.s,m.f]:null)}))}catch(e){}if(window.onSave)onSave()}
-function loadRun(){try{const r=JSON.parse(localStorage.getItem(SAVE+'_run')||'null');if(!r)return null;const s=newState();s.wave=r.wave;s.hp=r.hp;s.eth=r.eth;s.energy=r.energy;if(r.up)s.up=r.up;if(r.unlocked)s.unlocked=Math.max(s.unlocked,r.unlocked);if(r.buffs)s.buffs=r.buffs;s.slots=r.slots.concat(Array(Math.max(0,SLOTS-r.slots.length)).fill(null)).map(a=>{if(!a)return null;const m=mkMon(a[0],a[1],s);if(a[2]!=null)m.f=a[2];return m});return s}catch(e){return null}}
+function loadRun(){try{const r=JSON.parse(localStorage.getItem(SAVE+'_run')||'null');if(!r)return null;const s=newState();s.wave=r.wave;s.hp=r.hp;s.eth=r.eth;s.energy=r.energy;if(r.up)s.up=r.up;if(!Number.isFinite(s.eth)){s.eth=0;s.up=s.up.map(u=>Math.min(u||0,12))}if(!Number.isFinite(s.energy))s.energy=0;if(r.unlocked)s.unlocked=Math.max(s.unlocked,r.unlocked);if(r.buffs)s.buffs=r.buffs;s.slots=r.slots.concat(Array(Math.max(0,SLOTS-r.slots.length)).fill(null)).map(a=>{if(!a)return null;const m=mkMon(a[0],a[1],s);if(a[2]!=null)m.f=a[2];return m});return s}catch(e){return null}}
 function mkMon(e,st,s){s=s||S;return{id:s.uid++,e,s:st,cd:Math.random()*.5,ue:0,anim:0,face:1,born:1}}
 // ===================== PATH =====================
 const SEG=[];let PLEN=0;
@@ -459,6 +459,7 @@ function update(dt){
  if(sndGate>0)sndGate-=dt;
  for(const m of S.slots)if(m){m.anim=Math.max(0,m.anim-dt);m.born=Math.max(0,m.born-dt*2.5)}
  if(S.running){
+  if(!Number.isFinite(S.eth)){S.eth=0;S.up=S.up.map(u=>Math.min(u,12))}if(!Number.isFinite(S.energy))S.energy=0;
   S.waveT=(S.waveT||0)+dt;if(S.mode!=='raid'&&S.waveT>(S.wave%5===0?BAL.enrB:BAL.enr)&&!S.enraged){S.enraged=1;banner('⏰ 시간 초과!','적이 광폭화했어요 · 밀쳐내기·둔화 무시','#ff5c7a');shake=8}
   S.spawnT-=dt;if(S.spawnQ.length&&S.spawnT<=0){const q=S.spawnQ.shift();spawn(q.t);S.spawnT=q.d}
   for(const e of S.enemies){if(e.hp<=0)continue;e.ph+=dt*6;e.hit=Math.max(0,e.hit-dt);if(e.shT>0)e.shT-=dt;
@@ -497,14 +498,14 @@ function gameOver(){S.over=true;S.running=false;if(S.mode!=='daily'){try{localSt
  $('#overTx').innerHTML='WAVE <b style="color:var(--gold)">'+w+'</b>에서 막혔어요.<br>최고 기록: WAVE '+meta.best+' 클리어<br>처치 '+S.kills+'마리<br><br><b style="color:#7fe3ff;font-size:17px">💠 준자 결정 +'+cr+(nb?' (신기록 보너스!)':'')+'</b><br>연구소에서 영구 능력을 올려 보세요';setTimeout(()=>$('#mOver').classList.add('on'),600)}
 // ===================== ACTIONS =====================
 function summonCost(){return (S&&S.mode==='daily')?SUMMON:SUMMON-3*((meta.lab||{}).cost||0)}
-function summon(ei){if(S.over)return;if(S.mode==='raid'){toast('레이드에서는 도감 군단으로만 싸워요');return}if(S.allowed&&!S.allowed.includes(ei)){toast('오늘의 도전에서는 사용할 수 없는 속성이에요');return}const SC=summonCost();if(S.eth<SC){toast('에테르가 부족해요');return}const i=S.slots.findIndex((x,k)=>!x&&k<S.unlocked);if(i<0){toast(S.unlocked<SLOTS?'빈 칸이 없어요 · 🔒 자물쇠 칸을 눌러 자리를 늘릴 수 있어요':'빈 칸이 없어요 · 같은 몬스터를 합쳐 보세요');return}
+function summon(ei){if(S.over)return;if(S.mode==='raid'){toast('레이드에서는 도감 군단으로만 싸워요');return}if(S.allowed&&!S.allowed.includes(ei)){toast('오늘의 도전에서는 사용할 수 없는 속성이에요');return}const SC=summonCost();if(!(S.eth>=SC)){toast('에테르가 부족해요');return}const i=S.slots.findIndex((x,k)=>!x&&k<S.unlocked);if(i<0){toast(S.unlocked<SLOTS?'빈 칸이 없어요 · 🔒 자물쇠 칸을 눌러 자리를 늘릴 수 있어요':'빈 칸이 없어요 · 같은 몬스터를 합쳐 보세요');return}
  S.eth-=SC;const m=mkMon(ei,Math.random()<.25*bf('lucky')?2:1);if(m.s===2)setTimeout(()=>toast('🥚 행운의 알! 바로 2단계로 부화'),200);S.slots[i]=m;reg(m);const p=SLOTP[i];burst(p[0],p[1],ELS[ei].c,14,130);fx({k:'ring',x:p[0],y:p[1],c:ELS[ei].c,r0:8,r1:44,life:.35});snd(660,.08,'triangle',.05,990);S.sel=i;if(!S.running)saveRun();ui();if(S.slots.some((b,j)=>j!==i&&canMerge(m,b)))toast('✨ 같은 몬스터 2마리! 진화 버튼을 눌러 보세요')}
 function reg(m){if(m.s>=2)unlock('evo2');if(m.s>=3)unlock('evo3');if(m.s>=5)unlock('evo5');if(m.s===6)unlock('awaken');const key=m.e+'_'+m.s;if(!meta.dex[key]){meta.dex[key]=1;saveMeta();if(m.s>1)setTimeout(()=>toast('📖 도감 등록: '+ELS[m.e].names[m.s-1]),300)}}
 function canMerge(a,b){return a&&b&&a!==b&&a.e===b.e&&a.s===b.s&&a.s<6}
 function canFuse(a,b){return a&&b&&a!==b&&a.e!==b.e&&a.s===b.s&&a.s<5&&a.f==null&&b.f==null&&!!recipe(a.e,b.e)}
 function canMyth(a,b){return a&&b&&a!==b&&a.s===6&&b.s===6&&a.e!==b.e&&!!mythRec(a.e,b.e)}
 function canCombine(a,b){return canMerge(a,b)||canFuse(a,b)||canMyth(a,b)}
-function merge(from,to){if(S.mode==='raid')return false;const a=S.slots[from],b=S.slots[to];const fuse=canFuse(a,b),myth=canMyth(a,b);if(!canMerge(a,b)&&!fuse&&!myth)return false;const cost=myth?MYTHCOST:fuse?Math.round(FUSECOST[a.s]*(1-.4*bf('fuse'))):MERGE[a.s];if(S.eth<cost){toast((myth?'궁극 강림':fuse?'융합':'진화')+'에 '+cost+' 에테르가 필요해요');return false}
+function merge(from,to){if(S.mode==='raid')return false;const a=S.slots[from],b=S.slots[to];const fuse=canFuse(a,b),myth=canMyth(a,b);if(!canMerge(a,b)&&!fuse&&!myth)return false;const cost=myth?MYTHCOST:fuse?Math.round(FUSECOST[a.s]*(1-.4*bf('fuse'))):MERGE[a.s];if(!(S.eth>=cost)){toast((myth?'궁극 강림':fuse?'융합':'진화')+'에 '+cost+' 에테르가 필요해요');return false}
  const fromE=b.e,fromS=b.s;S.eth-=cost;S.slots[from]=null;
  if(myth){const r=mythRec(a.e,b.e);b.e=r.a;b.f=r.b;unlock('myth')}else if(fuse){const r=recipe(a.e,b.e);unlock('fuse1');if(r.h)unlock('hfuse');const other=(r.p===a.e)?b.e:a.e;b.e=r.p;b.f=other;meta.fuse=meta.fuse||{};if(!meta.fuse[r.n]){meta.fuse[r.n]=1;saveMeta();if(r.h)setTimeout(()=>toast('✦ 숨겨진 융합 발견! '+r.n),3200)}}else if(a.f!=null&&b.f==null)b.f=a.f;
  b.s++;b.ue=0;b.born=1;reg(b);const p=SLOTP[to],el=ELS[b.e];
@@ -514,7 +515,7 @@ function merge(from,to){if(S.mode==='raid')return false;const a=S.slots[from],b=
  S.sel=to;if(!S.running)saveRun();ui();if(!window.__noFx&&SPR[b.e+'_'+Math.min(b.s,5)])showEvolution(b.e,b.s-1,b.s,myth?{myth:1,f:b.f,name:monName(b),from1:fromE,from2:a.e,fs:6}:fuse?{e2:(b.f===fromE?a.e:fromE),f:b.f,name:monName(b),from1:fromE,from2:a.e,fs:fromS}:null);return true}
 function partner(i){const a=S.slots[i];if(!a)return -1;let j=S.slots.findIndex((b,j)=>j!==i&&canMerge(a,b));if(j>=0)return j;j=S.slots.findIndex((b,j)=>j!==i&&canMyth(a,b));if(j>=0)return j;return S.slots.findIndex((b,j)=>j!==i&&canFuse(a,b))}
 function evolveSel(){const i=S.sel;if(i<0)return;const j=partner(i);if(j<0){toast('같은 몬스터 1마리, 또는 융합 짝 속성이 같은 단계로 있어야 해요');return}merge(j,i)}
-function sellValue(m){let v=m.f!=null?FUSECOST[m.s-1]:0;v+=SUMMON*Math.pow(2,m.s-1);for(let s=1;s<m.s;s++)v+=MERGE[s]*Math.pow(2,m.s-1-s);return Math.floor(v*.5)}
+function sellValue(m){let v=m.f!=null?(FUSECOST[Math.min(m.s-1,FUSECOST.length-1)]||0):0;v+=SUMMON*Math.pow(2,Math.min(m.s,6)-1);for(let s=1;s<Math.min(m.s,6);s++)v+=(MERGE[s]||0)*Math.pow(2,Math.min(m.s,6)-1-s);if(m.s>=7)v=v*2+MYTHCOST;v=Math.floor(v*.5);return Number.isFinite(v)?v:0}
 let evoOpen=false,evoT=null,timeScale=1,tsT=0;
 function showEvolution(e,from,to,fu){const ov=$('#evo');const el=ELS[e];ov.style.setProperty('--ec',to===7?'#ffd75a':el.c);ov.classList.toggle('fuse',!!fu);ov.classList.toggle('myth',to===7);if(to===7)ov.querySelector('.to2').src='sprites/m'+fu.f+'_5.webp';
  if(fu){ov.style.setProperty('--ec2',ELS[fu.f].c);ov.querySelector('.from').src='sprites/m'+fu.from1+'_'+Math.min(fu.fs,5)+'.webp';ov.querySelector('.from2').src='sprites/m'+fu.from2+'_'+Math.min(fu.fs,5)+'.webp'}else
@@ -532,11 +533,11 @@ function cutIn(m){const el=ELS[m.e],c=$('#cut');c.style.setProperty('--ec',el.c)
  timeScale=.18;tsT=.9;clearTimeout(c._t);c._t=setTimeout(()=>c.classList.remove('on'),1150)}
 function slotPrice(){return S.unlocked<SLOTS?SLOT_COST[S.unlocked-BASE_SLOTS]:0}
 let unlockAsk=0;
-function unlockSlot(i){if(i!==S.unlocked){toast('🔒 앞 칸부터 순서대로 열 수 있어요');return}const c=slotPrice();if(S.eth<c){toast('🔒 자리 추가에 '+c+' 에테르가 필요해요');return}
+function unlockSlot(i){if(i!==S.unlocked){toast('🔒 앞 칸부터 순서대로 열 수 있어요');return}const c=slotPrice();if(!(S.eth>=c)){toast('🔒 자리 추가에 '+c+' 에테르가 필요해요');return}
  if(Date.now()-unlockAsk>2500){unlockAsk=Date.now();toast('🔓 한 번 더 누르면 '+c+' 에테르로 자리 추가');return}
  unlockAsk=0;S.eth-=c;S.unlocked++;const p=SLOTP[i];burst(p[0],p[1],'#ffd75a',24,200,4);fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:8,r1:60,life:.45,w:5});snd(784,.12,'triangle',.06);setTimeout(()=>snd(1175,.2,'triangle',.06),100);banner('🔓 자리 추가!','이제 '+S.unlocked+'칸','#ffd75a');if(!S.running)saveRun();ui()}
 function upCost(e){return Math.round(120*Math.pow(1.6,S.up[e])*(1-.08*((meta.lab||{}).up||0)))}
-function upgrade(e){const c=upCost(e);if(S.eth<c){toast('강화에 '+c+' 에테르가 필요해요');return}S.eth-=c;S.up[e]++;const el=ELS[e];S.slots.forEach((m,i)=>{if(m&&m.e===e){const p=SLOTP[i];burst(p[0],p[1],el.c,14,160);fx({k:'ring',x:p[0],y:p[1],c:el.c2,r0:6,r1:50,life:.35})}});banner(el.n+' 강화 Lv.'+S.up[e],el.n+' 속성 몬스터 전체 공격력 +15%',el.c);snd(700,.12,'triangle',.06,1200);if(!S.running)saveRun();ui()}
+function upgrade(e){const c=upCost(e);if(!(S.eth>=c)){toast('강화에 '+c+' 에테르가 필요해요');return}S.eth-=c;S.up[e]++;const el=ELS[e];S.slots.forEach((m,i)=>{if(m&&m.e===e){const p=SLOTP[i];burst(p[0],p[1],el.c,14,160);fx({k:'ring',x:p[0],y:p[1],c:el.c2,r0:6,r1:50,life:.35})}});banner(el.n+' 강화 Lv.'+S.up[e],el.n+' 속성 몬스터 전체 공격력 +15%',el.c);snd(700,.12,'triangle',.06,1200);if(!S.running)saveRun();ui()}
 function sell(i){const m=S.slots[i];if(!m)return;const v=sellValue(m);S.eth+=v;S.slots[i]=null;S.sel=-1;toast('판매 +'+v+' 에테르');if(!S.running)saveRun();ui()}
 // ===================== INPUT =====================
 let drag=null;
