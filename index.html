@@ -250,7 +250,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261120231249';
+const BUILD='20261121065044';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -466,8 +466,9 @@ function drawGod(g,x,y,r,t,atk){g.save();g.translate(x,y);const R=r*1.25;
  g.save();g.rotate(t*.4);g.globalAlpha=.32;for(let k=0;k<14;k++){g.rotate(Math.PI*2/14);g.fillStyle=k%2?'#ffd75a':'#fff3c0';g.beginPath();g.moveTo(0,0);g.lineTo(-R*.18,-R*2.1);g.lineTo(R*.18,-R*2.1);g.closePath();g.fill()}g.restore();
  const hg=g.createRadialGradient(0,-r*.2,r*.2,0,-r*.2,R*1.7);hg.addColorStop(0,'rgba(255,240,180,.75)');hg.addColorStop(.5,'rgba(255,200,60,.25)');hg.addColorStop(1,'rgba(255,200,60,0)');g.fillStyle=hg;g.beginPath();g.arc(0,-r*.2,R*1.7,0,7);g.fill();
  g.strokeStyle='#ffd75a';g.lineWidth=2;g.globalAlpha=.7+.3*Math.sin(t*4);g.beginPath();g.arc(0,-r*.2,R*1.35,0,7);g.stroke();g.globalAlpha=1;
- MYTH.forEach((q,k)=>{const im=skinImg(q.a,5);if(!im)return;const a=t*.9+k*Math.PI*2/5,ox=Math.cos(a)*R*1.35,oy=Math.sin(a)*R*.55-r*.2;const sz=r*.95;g.globalAlpha=oy<-r*.2?.6:1;g.drawImage(im,ox-sz/2,oy-sz*.75,sz,sz)});g.globalAlpha=1;
- const im=godSprite();const bob=Math.sin(t*2.5)*r*.06;if(im){const sz=r*3*(atk?1.06:1);g.shadowColor='#ffd75a';g.shadowBlur=24;g.drawImage(im,-sz/2,-sz*.72+bob,sz,sz);g.shadowBlur=0}
+ if(!SPR.god)MYTH.forEach((q,k)=>{const im=skinImg(q.a,5);if(!im)return;const a=t*.9+k*Math.PI*2/5,ox=Math.cos(a)*R*1.35,oy=Math.sin(a)*R*.55-r*.2;const sz=r*.95;g.globalAlpha=oy<-r*.2?.6:1;g.drawImage(im,ox-sz/2,oy-sz*.75,sz,sz)});g.globalAlpha=1;
+ const im=godSprite();const bob=Math.sin(t*2.5)*r*.06;if(im){const sz=r*(SPR.god?3.6:3)*(atk?1.06:1);g.shadowColor='#ffd75a';g.shadowBlur=24;g.drawImage(im,-sz/2,-sz*(SPR.god?.62:.72)+bob,sz,sz);g.shadowBlur=0}
+ if(SPR.god){g.restore();return}
  g.translate(0,-r*1.95+bob);g.fillStyle='#ffd75a';g.strokeStyle='#7a4a00';g.lineWidth=1.5;g.beginPath();g.moveTo(-r*.5,r*.25);g.lineTo(-r*.55,-r*.2);g.lineTo(-r*.25,0);g.lineTo(0,-r*.35);g.lineTo(r*.25,0);g.lineTo(r*.55,-r*.2);g.lineTo(r*.5,r*.25);g.closePath();g.fill();g.stroke();
  [[-r*.3,'#ff4f7b'],[0,'#7fe3ff'],[r*.3,'#7dffb0']].forEach(([gx,c])=>{g.fillStyle=c;g.beginPath();g.arc(gx,r*.1,r*.07,0,7);g.fill()});g.restore()}
 function godAscend(i){if(!canGod())return;if(!(S.eth>=GOD.cost)){toast('갓준자 강림에 '+GOD.cost+' 에테르가 필요해요');return}S.eth-=GOD.cost;const used=new Set();let keep=i;
@@ -475,7 +476,7 @@ function godAscend(i){if(!canGod())return;if(!(S.eth>=GOD.cost)){toast('갓준�
  if(S.slots[keep])keep=S.slots.findIndex((x,k)=>!x&&k<S.unlocked);const g=mkMon(0,8);g.ue=50;g.ue2=50;S.slots[keep]=g;S.sel=keep;meta.god=(meta.god||0)+1;saveMeta();unlock('god');
  const p=SLOTP[keep];shake=34;flash=.9;flashC='#fff3c0';hitstop=.2;for(let k=0;k<4;k++)fx({k:'ring',x:p[0],y:p[1],c:k%2?'#ffd75a':'#ffffff',r0:10+k*10,r1:600+k*200,life:.8+k*.2,w:14});burst(p[0],p[1],'#ffd75a',90,420,6);
  snd(60,1.2,'sawtooth',.12,20);setTimeout(()=>snd(523,.6,'triangle',.09,1046),300);setTimeout(()=>snd(784,.8,'triangle',.09,1568),600);
- if(!fxLite&&!window.__noFx){const o=$('#godOv');o.classList.remove('on');void o.offsetWidth;o.querySelector('img').src=(godSprite()&&godSprite().toDataURL?godSprite().toDataURL():'sprites/m0_5.webp');o.classList.add('on');setTimeout(()=>o.classList.remove('on'),2600)}
+ if(!fxLite&&!window.__noFx){const o=$('#godOv');o.classList.remove('on');void o.offsetWidth;o.querySelector('img').src=SPR.god?'sprites/god.webp':(godSprite()&&godSprite().toDataURL?godSprite().toDataURL():'sprites/m0_5.webp');o.classList.add('on');setTimeout(()=>o.classList.remove('on'),2600)}
  banner('🔱 갓준자 강림','불사의 주인공이 전장에 내려왔다','#ffe7a0');saveRun();ui()}
 function mythSkill(m,i){const r=mythRec(m.e,m.f);if(!r)return ultimate(m,i);const id=MYTH.indexOf(r),live=S.enemies.filter(e=>e.hp>0);if(!live.length)return;m.ue=0;const D=mstat(m).dmg,p=SLOTP[i];
  if(!window.__noFx)cutIn(m);banner('👑 '+r.u,r.d,'#ffd75a');shake=fxLite?5:18;hitstop=fxLite?0:.1;flash=fxLite?.12:.5;flashC='#ffe7a0';snd(90,.7,'sawtooth',.1,30);setTimeout(()=>snd(55,.6,'square',.07,25),150);
@@ -598,7 +599,7 @@ function showEvolution(e,from,to,fu){const ov=$('#evo');const el=ELS[e];ov.style
  ov._close=setTimeout(closeEvolution,to>=7?4200:to>=4?3200:2600);if(to===7)setTimeout(()=>{snd(220,1.2,'sawtooth',.06,880);snd(440,1.2,'triangle',.05,1760)},1000)}
 function closeEvolution(){const ov=$('#evo');if(!ov.classList.contains('go'))return;ov.classList.remove('on','go');evoOpen=false;clearTimeout(ov._close)}
 $('#evo').addEventListener('click',()=>{const ov=$('#evo');if(ov.classList.contains('go'))closeEvolution()});
-function cutIn(m,skill){if(fxLite)return;if(m.s===8){const c=$('#cut');c.style.setProperty('--ec','#ffd75a');const gs=godSprite();c.querySelector('img').src=gs&&gs.toDataURL?gs.toDataURL():'sprites/m0_5.webp';c.querySelector('small').textContent='갓준자 · 불사의 주인공';c.querySelector('b').textContent=skill||GOD.s1;c.classList.remove('on');void c.offsetWidth;c.classList.add('on');timeScale=.18;tsT=1.1;clearTimeout(c._t);c._t=setTimeout(()=>c.classList.remove('on'),1300);return}const el=ELS[m.e],c=$('#cut');c.style.setProperty('--ec',el.c);c.querySelector('img').src='sprites/m'+m.e+'_5.webp';if(m.s===7){const r=mythRec(m.e,m.f);c.style.setProperty('--ec','#ffd75a');c.querySelector('small').textContent=r.n+' · MYTHIC';c.querySelector('b').textContent=r.u}else{c.querySelector('small').textContent=(m.s===6?'각성 ':'')+el.names[4]+' · ULTIMATE';c.querySelector('b').textContent=(m.s===6?'진·':'')+el.ult}
+function cutIn(m,skill){if(fxLite)return;if(m.s===8){const c=$('#cut');c.style.setProperty('--ec','#ffd75a');const gs=godSprite();c.querySelector('img').src=SPR.god?'sprites/god.webp':gs&&gs.toDataURL?gs.toDataURL():'sprites/m0_5.webp';c.querySelector('small').textContent='갓준자 · 불사의 주인공';c.querySelector('b').textContent=skill||GOD.s1;c.classList.remove('on');void c.offsetWidth;c.classList.add('on');timeScale=.18;tsT=1.1;clearTimeout(c._t);c._t=setTimeout(()=>c.classList.remove('on'),1300);return}const el=ELS[m.e],c=$('#cut');c.style.setProperty('--ec',el.c);c.querySelector('img').src='sprites/m'+m.e+'_5.webp';if(m.s===7){const r=mythRec(m.e,m.f);c.style.setProperty('--ec','#ffd75a');c.querySelector('small').textContent=r.n+' · MYTHIC';c.querySelector('b').textContent=r.u}else{c.querySelector('small').textContent=(m.s===6?'각성 ':'')+el.names[4]+' · ULTIMATE';c.querySelector('b').textContent=(m.s===6?'진·':'')+el.ult}
  c.classList.remove('on');void c.offsetWidth;c.classList.add('on');[...c.children].forEach(x=>{x.style.animation='none';void x.offsetWidth;x.style.animation=''});
  timeScale=.18;tsT=.9;clearTimeout(c._t);c._t=setTimeout(()=>c.classList.remove('on'),1150)}
 function slotPrice(){return S.unlocked<SLOTS?SLOT_COST[S.unlocked-BASE_SLOTS]:0}
