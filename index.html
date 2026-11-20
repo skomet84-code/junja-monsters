@@ -189,7 +189,7 @@ button:disabled{opacity:.4;cursor:default}
 <div id="cut"><div class="band"></div><img alt=""><div class="ct"><small></small><b></b></div></div>
 <div class="modal" id="mStart"><div class="card">
   <div class="title">준자몬스터즈</div><div class="sub">JUNJA MONSTERS DEFENSE</div>
-  <div class="how">🥚 아래 알을 눌러 몬스터를 소환하세요 (80 에테르)<br>🔁 <b>같은 몬스터 2마리</b>를 끌어서 겹치면 다음 단계로 진화해요<br>👑 10속성 × 5단계 = <b>몬스터 50종</b>. 5단계는 궁극기를 자동 발동해요<br>🌈 서로 다른 속성을 많이 배치하면 <b>속성 시너지</b>로 공격력이 올라가요<br>☄️ 적을 처치해 모은 기운으로 수호자 스킬을 쓰세요<br>🏁 <b>스테이지 = 10웨이브</b>. 클리어하면 다음 스테이지가 열리고 적이 더 강해져요. 랭킹은 <b>최고 스테이지</b>!</div>
+  <div class="how">🥚 아래 알을 눌러 몬스터를 소환하세요 (80 에테르)<br>🔁 <b>같은 몬스터 2마리</b>를 끌어서 겹치면 다음 단계로 진화해요<br>👑 10속성 × 5단계 = <b>몬스터 50종</b>. 5단계는 궁극기를 자동 발동해요<br>🌈 서로 다른 속성을 많이 배치하면 <b>속성 시너지</b>로 공격력이 올라가요<br>☄️ 적을 처치해 모은 기운으로 수호자 스킬을 쓰세요<br>🏁 <b>스테이지 = 6웨이브</b> (3·6웨이브 보스). 클리어하면 다음 스테이지가 열리고 적이 더 강해져요. 랭킹은 <b>최고 스테이지</b>!</div>
   <div id="acct" class="acct"></div>
   <div class="stsel"><button id="stPrev">◀</button><div><small id="stZone">새싹 평원</small><b id="stN">STAGE 1</b><small id="stInfo"></small></div><button id="stNext">▶</button></div>
   <div class="row"><button class="btn gold" id="bNew">▶ STAGE 1 시작</button><button class="btn" id="bCont">이어하기</button></div>
@@ -209,6 +209,7 @@ button:disabled{opacity:.4;cursor:default}
   <p>진행 상황은 웨이브가 끝날 때마다 자동 저장돼요. <span id="verTx" style="color:#5a6380"></span></p>
   <div class="row"><button class="btn gold" id="bLab">🏛 준자 연구소</button><button class="btn" id="bAch">🎖 업적</button></div>
   <div class="row"><button class="btn" id="bSnd">🔊 효과음 켜짐</button><button class="btn" id="bFx">🎬 스킬 연출 켜짐</button></div>
+  <div class="row"><button class="btn gold" id="bSaveQuit">💾 저장하고 나가기</button></div>
   <div class="row"><button class="btn red" id="bReset">처음부터 새 게임</button></div>
   <div class="row"><button class="btn gold" data-close>계속하기</button></div>
 </div></div>
@@ -250,7 +251,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261121065044';
+const BUILD='20261121081731';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -319,11 +320,12 @@ function saveMeta(){try{localStorage.setItem(SAVE+'_meta',JSON.stringify(meta))}
 function newState(){const L=meta.lab||{};return{unlocked:BASE_SLOTS+((meta.lab||{}).slot||0),buffs:{},wave:1,hp:20+2*(L.hp||0),eth:240+40*(L.eth||0),energy:20,up:Array(10).fill(0),slots:Array(SLOTS).fill(null),enemies:[],shots:[],fx:[],nums:[],running:false,spawnQ:[],spawnT:0,kills:0,sel:-1,uid:1,freezeT:0,over:false}}
 const ZONES=['새싹 평원','안개 숲','불꽃 협곡','심해 신전','천둥 고원','달빛 폐허','얼음 왕국','폭풍 절벽','별의 제단','심연의 문'];
 function zoneName(n){const z=ZONES[Math.floor((n-1)/2)%ZONES.length];const lap=Math.floor((n-1)/20);return z+(lap?' '+['','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ'][Math.min(lap,5)]:'')}
-const STAGE={waves:10,off:0,ef:1.3,h:1.5,boss:1.15,arm0:6,armK:.06};
+const STAGE={waves:6,span:10,cnt:2.1,sEth:2.2,bonus:1.6,enr:55,enrB:80,off:0,ef:1.3,h:1.55,boss:1.15,arm0:6,armK:.06};
+function effW(w){return S&&S.mode==='stage'?w*STAGE.span/STAGE.waves:w}
 function ethMul(){return S&&S.mode==='stage'?Math.pow(STAGE.ef,(S.stage||1)-1):1}
 function stageMul(){return S&&S.mode==='stage'?Math.pow(STAGE.h,(S.stage||1)-1)*((S.stage||1)===1?.8:1):1}
-function isBossW(w){return S&&S.mode==='stage'?(w-(S.base||0))%5===0:w%5===0}
-function newStage(n){const s=newState();s.mode='stage';s.stage=n;s.base=(n-1)*STAGE.off;s.wave=s.base+1;s.eth=Math.round((s.eth-240)+240*Math.pow(STAGE.ef,n-1));s.energy=Math.min(100,20+5*(n-1));return s}
+function isBossW(w){return S&&S.mode==='stage'?(w-(S.base||0))%(STAGE.waves/2)===0:w%5===0}
+function newStage(n){const s=newState();s.mode='stage';s.stage=n;s.base=(n-1)*STAGE.off;s.wave=s.base+1;s.eth=Math.round((s.eth-240)+240*STAGE.sEth*Math.pow(STAGE.ef,n-1));s.energy=Math.min(100,20+5*(n-1));return s}
 function summonMythTemp(){const i=S.slots.findIndex((x,k)=>!x&&k<S.unlocked);if(i<0)return false;const r=MYTH[Math.floor(Math.random()*MYTH.length)];const m=mkMon(r.a,7);m.f=r.b;m.temp=3;m.ue=60;S.slots[i]=m;const p=SLOTP[i];burst(p[0],p[1],'#ffd75a',40,260,5);fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:10,r1:120,life:.6,w:8});banner('📕 궁극 소환! '+r.n,'3웨이브 동안 함께 싸워요 · 고유 스킬 「'+r.u+'」','#ffd75a');shake=12;flash=.4;flashC='#fff3c0';return true}
 function lw(){return S.wave-(S.base||0)}
 function waveLabel(){return S.mode==='stage'?S.stage+'-'+Math.min(lw(),STAGE.waves):String(S.wave)}
@@ -366,13 +368,13 @@ function mstat(m){const gb=S&&S.godBuff>0?2:1;if(m.s===8)return{dmg:40*Math.pow(
 // ===================== ENEMIES =====================
 const ET={slime:{hp:1,sp:52,r:15,c:'#7ad36b',g:1},runner:{hp:.6,sp:88,r:12,c:'#ff8f5a',g:1},golem:{hp:2.6,sp:36,r:19,c:'#8a8fa8',g:2},bat:{hp:.8,sp:70,r:13,c:'#b583ff',g:1},elite:{hp:6,sp:44,r:22,c:'#ff4f7b',g:5},boss:{hp:20,sp:36,r:32,c:'#ff2d55',g:25},gold:{hp:4,sp:108,r:16,c:'#ffd75a',g:0}};
 const BAL={g:1.29,cap:24,boss:.02,enr:40,enrB:65,arm0:18,armK:.035,armMax:.75,mid:.6,cnt:1.1,gap:.4,spd:1.2};
-function waveCount(w){return Math.min(BAL.cap,6+Math.floor(w*BAL.cnt))}
+function waveCount(w){if(S&&S.mode==='stage')return Math.min(30,Math.round((6+Math.floor(effW(w)*BAL.cnt))*STAGE.cnt));return Math.min(BAL.cap,6+Math.floor(w*BAL.cnt))}
 function midBump(w){return 1+BAL.mid*(w<=20?Math.min(1,Math.max(0,(w-5)/10)):Math.max(0,1-(w-20)/8))}
 function waveHP(w){return (30*Math.pow(BAL.g,w-1)+w*8)*midBump(w)}
-function enemyHP(w){return waveHP(w)*Math.pow((8+w*1.6)/waveCount(w),.9)*stageMul()}
-function buildWave(w){const q=[];const n=waveCount(w);const gap=Math.max(BAL.gap*.75,BAL.gap-.003*w);const types=['slime'];if(w>=2)types.push('runner');if(w>=3)types.push('bat');if(w>=4)types.push('golem');
+function enemyHP(w){const e=effW(w);return waveHP(e)*Math.pow((8+e*1.6)/waveCount(w),.9)*stageMul()}
+function buildWave(w0){const w=Math.round(effW(w0));const q=[];const n=waveCount(w0);const gap=Math.max(BAL.gap*.75,BAL.gap-.003*w);const types=['slime'];if(w>=2)types.push('runner');if(w>=3)types.push('bat');if(w>=4)types.push('golem');
  for(let i=0;i<n;i++)q.push({t:types[(i*7+w)%types.length],d:gap});
- const bw=isBossW(w);if(!bw&&w>=3)q.push({t:'elite',d:1.2});
+ const bw=isBossW(w0);if(!bw&&w>=3)q.push({t:'elite',d:1.2});
  if(!bw&&w>=11)q.splice(Math.floor(q.length*.45),0,{t:'elite',d:1});
  if(bw){q.push({t:'boss',d:1.8})}
  if(w>=3&&Math.random()<.2)q.splice(Math.floor(q.length*.5),0,{t:'gold',d:.62});
@@ -418,7 +420,7 @@ function drawRaid(g,e){const{x,y,r}=e,t=e.ph,c=ELS[e.el];g.save();g.translate(x,
 function bossSummon(e){banner('👹 부하 소환!','마왕이 부하를 불렀어요','#ff8f5a');for(let k=0;k<4;k++){spawn('runner');const m=S.enemies[S.enemies.length-1];m.d=Math.max(0,e.d-25-k*14);const p=posAt(m.d);m.x=p[0];m.y=p[1];m.hp*=.7;m.mhp=m.hp;burst(m.x,m.y,'#ff8f5a',8,120)}}
 function kill(e){S.kills++;if(e.mark){S.eth+=4;num(e.x,e.y-e.r-30,4,'#b6ff8a')}if(S.comboT>0)S.combo=(S.combo||0)+1;else S.combo=1;S.comboT=1.6;if(S.combo>=30)unlock('combo30');if([10,25,50,100,200].includes(S.combo)){const cb=Math.round(S.wave*S.combo*.6*ethMul());S.eth+=cb;banner('🔥 COMBO x'+S.combo,'+'+cb+' 에테르','#ffb347');snd(660,.15,'square',.05,1320)}
  if(e.t==='gold'){const gb=Math.round((40+S.wave*12)*(1+.4*bf('eth'))*ethMul());S.eth+=gb;S.energy=Math.min(100,S.energy+25);unlock('gold1');banner('💰 황금 슬라임 처치!','+'+gb+' 에테르 · 기운 +25','#ffd75a');burst(e.x,e.y,'#ffd75a',40,260,4);snd(1046,.12,'triangle',.06);setTimeout(()=>snd(1568,.25,'triangle',.06),100)}
- if(e.t==='boss')unlock('boss1');const g=Math.round((4+S.wave*.3)*e.g*(1+.4*bf('eth'))*ethMul());S.eth+=g;S.energy=Math.min(100,S.energy+(e.t==='boss'?30:e.t==='elite'?8:2));burst(e.x,e.y,e.c,e.t==='boss'?40:12,e.t==='boss'?260:150,e.t==='boss'?6:3.5);fx({k:'ring',x:e.x,y:e.y,c:e.c,r0:e.r,r1:e.r*2.6,life:.3});num(e.x,e.y-e.r-14,g,'#f2c46d');S.nums[S.nums.length-1].g=1;
+ if(e.t==='boss')unlock('boss1');const g=Math.round((4+effW(S.wave)*.3)*e.g*(1+.4*bf('eth'))*ethMul());S.eth+=g;S.energy=Math.min(100,S.energy+(e.t==='boss'?30:e.t==='elite'?8:2));burst(e.x,e.y,e.c,e.t==='boss'?40:12,e.t==='boss'?260:150,e.t==='boss'?6:3.5);fx({k:'ring',x:e.x,y:e.y,c:e.c,r0:e.r,r1:e.r*2.6,life:.3});num(e.x,e.y-e.r-14,g,'#f2c46d');S.nums[S.nums.length-1].g=1;
  if(e.t==='boss'){shake=14;hitstop=.12;flash=.35;flashC='#ffdca0';banner('BOSS 격파!','+'+g+' 에테르','#ffcf5a');snd(90,.5,'sawtooth',.08,40)}else if(e.t==='elite'){shake=5;snd(140,.15,'square',.05,60)}else snd(320,.05,'triangle',.03,160)}
 function enemiesInRange(x,y,r){return S.enemies.filter(e=>e.hp>0&&Math.hypot(e.x-x,e.y-y)<=r+e.r)}
 function front(list){let b=null;for(const e of list)if(!b||e.d>b.d)b=e;return b}
@@ -517,7 +519,7 @@ function update(dt){if(S.hold)return;
  for(const m of S.slots)if(m){m.anim=Math.max(0,m.anim-dt);m.born=Math.max(0,m.born-dt*2.5)}
  if(S.running){
   if(!Number.isFinite(S.eth)){S.eth=0;S.up=S.up.map(u=>Math.min(u,12))}if(!Number.isFinite(S.energy))S.energy=0;
-  S.waveT=(S.waveT||0)+dt;if(S.mode!=='raid'&&S.waveT>(isBossW(S.wave)?BAL.enrB:BAL.enr)&&!S.enraged){S.enraged=1;banner('⏰ 시간 초과!','적이 광폭화했어요 · 밀쳐내기·둔화 무시','#ff5c7a');shake=8}
+  S.waveT=(S.waveT||0)+dt;if(S.mode!=='raid'&&S.waveT>(S.mode==='stage'?(isBossW(S.wave)?STAGE.enrB:STAGE.enr):(isBossW(S.wave)?BAL.enrB:BAL.enr))&&!S.enraged){S.enraged=1;banner('⏰ 시간 초과!','적이 광폭화했어요 · 밀쳐내기·둔화 무시','#ff5c7a');shake=8}
   S.spawnT-=dt;if(S.spawnQ.length&&S.spawnT<=0){const q=S.spawnQ.shift();spawn(q.t);S.spawnT=q.d}
   for(const e of S.enemies){if(e.hp<=0)continue;e.ph+=dt*6;e.hit=Math.max(0,e.hit-dt);if(e.shT>0)e.shT-=dt;
    if(e.burnT>0){e.burnT-=dt;e.bt=(e.bt||0)+dt;if(e.bt>=.5){e.bt=0;damage(e,e.burn*.5,null)}}
@@ -548,7 +550,7 @@ function update(dt){if(S.hold)return;
  for(const n of S.nums){n.t+=dt;n.y-=(n.g?30:45)*dt}S.nums=S.nums.filter(n=>n.t<.8);if(S.nums.length>90)S.nums.splice(0,S.nums.length-90);
  if(S.comboT>0){S.comboT-=dt;if(S.comboT<=0)S.combo=0}
  shake=Math.max(0,shake-dt*40);flash=Math.max(0,flash-dt*1.4)}
-function waveClear(){S.running=false;const bonus=Math.round((35+S.wave*4)*(1+.4*bf('eth'))*ethMul());S.eth+=bonus;S.energy=Math.min(100,S.energy+10);banner('WAVE '+S.wave+' 클리어','+'+bonus+' 에테르','#9fffd0');snd(523,.12,'triangle',.06);setTimeout(()=>snd(784,.18,'triangle',.06),110);
+function waveClear(){S.running=false;const bonus=Math.round((35+effW(S.wave)*4)*(1+.4*bf('eth'))*ethMul()*(S.mode==='stage'?STAGE.bonus:1));S.eth+=bonus;S.energy=Math.min(100,S.energy+10);banner('WAVE '+S.wave+' 클리어','+'+bonus+' 에테르','#9fffd0');snd(523,.12,'triangle',.06);setTimeout(()=>snd(784,.18,'triangle',.06),110);
  {const cw=S.wave;if(cw>=10)unlock('w10');if(cw>=20)unlock('w20');if(cw>=30)unlock('w30');if(cw>=40)unlock('w40')}
  S.slots.forEach((m,i)=>{if(m&&m.temp){m.temp--;if(m.temp<=0){const p=SLOTP[i];burst(p[0],p[1],'#ffd75a',30,220,4);fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:10,r1:70,life:.5});S.slots[i]=null;toast('⏳ 궁극 소환이 끝났어요')}}});
  S.wave++;if(S.mode==='stage'&&lw()>STAGE.waves){stageClear();return}if(S.mode!=='stage'&&S.wave-1>meta.best){meta.best=S.wave-1;saveMeta()}saveRun();ui();const pw=S.wave-1-(S.base||0);if(!window.__noFx&&(pw%5===0||pw===2)){offerCards();return}if(auto)setTimeout(()=>{if(!S.running&&!S.over&&auto&&!cardsOpen)startWave()},1400)}
@@ -876,6 +878,11 @@ document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.m
 var fxLite=false;try{fxLite=localStorage.getItem('jm_fxlite')==='1'}catch(e){}
 function fxTxt(){$('#bFx').textContent=fxLite?'⚡ 스킬 연출 꺼짐':'🎬 스킬 연출 켜짐'}fxTxt();
 $('#bFx').onclick=()=>{fxLite=!fxLite;try{localStorage.setItem('jm_fxlite',fxLite?'1':'0')}catch(e){}fxTxt();toast(fxLite?'스킬 컷인·멈춤 없이 빠르게 진행해요':'스킬 컷인 연출을 다시 보여줘요')};
+function contLabel(){const has=!!localStorage.getItem(SAVE+'_run');$('#bCont').style.display=has?'':'none';try{const r=JSON.parse(localStorage.getItem(SAVE+'_run')||'null');if(r)$('#bCont').textContent='▶ 이어하기'+(r.mode==='stage'?' · S'+r.stage+' '+Math.min(r.wave-(r.base||0),STAGE.waves)+'/'+STAGE.waves:' · W'+r.wave)}catch(e){}}
+function toTitle(){contLabel();document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));try{stageUI()}catch(e){}$('#mStart').classList.add('on')}
+$('#bSaveQuit').onclick=()=>{if(S.mode==='daily'||S.mode==='raid'){if(!confirm('오늘의 도전·레이드는 저장되지 않아요. 나갈까요?'))return;S.hold=1;S.over=true;toTitle();return}
+ if(S.running){if(!confirm('전투 중이에요. 이번 웨이브는 처음부터 다시 하게 돼요. 저장하고 나갈까요?'))return;S.hold=1;if(window.onSave)onSave();toTitle();toast('💾 웨이브 시작 전 상태로 저장했어요');return}
+ if(!S.over)saveRun();S.hold=1;toTitle();toast('💾 저장했어요 · 「이어하기」로 계속할 수 있어요')};
 $('#bSnd').onclick=()=>{sound=!sound;$('#bSnd').textContent=sound?'🔊 효과음 켜짐':'🔇 효과음 꺼짐'};
 const LAB=[
  {id:'eth',ic:'💰',t:'시작 에테르',d:'새 게임 시작 에테르 +40',max:10,c:l=>8+l*6},
@@ -902,7 +909,7 @@ const _sw=startWave;startWave=function(){_sw();if(S.running)S.totalQ=S.spawnQ.le
 addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();$('#bGo').click()}else if(e.key==='q')meteor();else if(e.key==='w')freeze();else if(/^[0-9]$/.test(e.key))summon((+e.key+9)%10)});
 // boot
 S=newState();buildSummon();resize();ui();loadSprites().then(()=>{sprReady=1;buildSummon();ui()});
-const hasRun=!!localStorage.getItem(SAVE+'_run');$('#bCont').style.display=hasRun?'':'none';$('#best').textContent=meta.stage?'🏆 최고 기록: STAGE '+meta.stage:'';stageUI();
+contLabel();$('#best').textContent=meta.stage?'🏆 최고 기록: STAGE '+meta.stage:'';stageUI();
 $('#mStart').classList.add('on');requestAnimationFrame(loop);
 window.__JM={get S(){return S},summon,merge,startWave,meteor,freeze,setSpeed:v=>speed=v,tick:(dt,n)=>{for(let i=0;i<n;i++)if(!S.over)update(dt)}};
 </script>

@@ -85,7 +85,7 @@
 
   function refreshTitle() {
     const has = !!localStorage.getItem(SAVE + '_run');
-    const bc = $('#bCont'); if (bc) bc.style.display = has ? '' : 'none';
+    const bc = $('#bCont'); if (bc) bc.style.display = has ? '' : 'none'; try { contLabel() } catch (e) { }
     const b = $('#best'); if (b) b.textContent = meta.stage ? '🏆 최고 기록: STAGE ' + meta.stage : ''; try { stageUI() } catch (e) { }
   }
 
@@ -231,7 +231,7 @@
   function openPrep(n, start) {
     prepSel = {};
     const it = (USER && USER.items) || {};
-    $('#ppT').textContent = 'STAGE ' + n; $('#ppZ').textContent = zoneName(n) + ' · 10웨이브';
+    $('#ppT').textContent = 'STAGE ' + n; $('#ppZ').textContent = zoneName(n) + ' · ' + STAGE.waves + '웨이브';
     const draw = () => {
       $('#ppL').innerHTML = PREP.map(([id, ic, nm, d]) => { const c = it[id] || 0; return `<button class="ppi${prepSel[id] ? ' on' : ''}" data-pp="${id}" ${c ? '' : 'disabled'}><span>${ic}</span><b>${nm}</b><small>${d}</small><i>${c}개</i></button>` }).join('');
       $('#ppR').innerHTML = (it.revive || 0) ? `🪶 부활의 깃털 ${it.revive}개 보유 · 수호석이 0이 되면 쓸지 물어봐요` : '🪶 부활의 깃털이 있으면 쓰러져도 한 번 부활할 수 있어요';
@@ -262,7 +262,7 @@
   window.tryRevive = () => {
     if (!USER || S.mode !== 'stage' || S.revived || !((USER.items || {}).revive > 0)) return false;
     S.hold = 1; S.revived = 1;
-    $('#rvT').innerHTML = `STAGE ${S.stage} · ${S.wave - (S.base || 0)}/10 웨이브<br>부활의 깃털 <b style="color:#ffd75a">${USER.items.revive}개</b> 보유`;
+    $('#rvT').innerHTML = `STAGE ${S.stage} · ${S.wave - (S.base || 0)}/' + STAGE.waves + ' 웨이브<br>부활의 깃털 <b style="color:#ffd75a">${USER.items.revive}개</b> 보유`;
     $('#mRev').classList.add('on');
     $('#rvYes').onclick = async () => {
       $('#rvYes').disabled = true;
