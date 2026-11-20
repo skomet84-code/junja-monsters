@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>준자몬스터즈 관리자</title>
+<link rel="icon" href="sprites/m0_2.webp">
+<style>
+:root{--bg:#0b0f1e;--panel:#141a2e;--edge:#ffffff1a;--ink:#f3f1fb;--mute:#9aa4c2;--gold:#f2c46d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px}
+.wrap{max-width:980px;margin:auto;padding:16px}
+h1{font-size:20px;margin:6px 0 14px;background:linear-gradient(90deg,#ffe3a1,#f2c46d,#d18cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:15px;margin:18px 0 8px;color:var(--gold)}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.st{background:#0d1222;border-radius:12px;padding:10px}.st b{display:block;font-size:22px;color:var(--gold)}.st small{color:var(--mute)}
+input{background:#0d1222;border:1px solid var(--edge);border-radius:9px;color:#fff;padding:9px 10px;font-size:14px}
+button{font:inherit;cursor:pointer;border:1px solid var(--edge);background:#1b2340;color:#fff;border-radius:9px;padding:8px 12px;font-weight:700}
+button.gold{background:linear-gradient(180deg,#ffe2a3,#d9a54e);color:#2a1a05;border-color:#ffe7b5}
+button.red{background:#5a1d2a}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;border-bottom:1px solid var(--edge);text-align:left}th{color:var(--mute);font-weight:600}
+tr.ban td{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+#detail{display:none}.muted{color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>JUNJA MONSTERS · 관리자</h1>
+  <div id="login" class="card">
+    <p class="muted">관리자 계정(게임 닉네임)으로 로그인하세요.</p>
+    <div class="row"><input id="n" placeholder="닉네임"><input id="p" type="password" placeholder="비밀번호"><button class="gold" id="go">로그인</button></div>
+    <p id="msg" class="muted"></p>
+  </div>
+  <div id="app" style="display:none">
+    <div class="row" style="justify-content:space-between"><span id="who" class="muted"></span><span><a href="/" style="color:var(--gold)">게임으로</a> · <button id="out">로그아웃</button></span></div>
+    <h2>📊 운영 현황</h2>
+    <div class="grid" id="stats"></div>
+    <div class="cols">
+      <div><h2>🏆 이번 주 TOP 10 <small class="muted" id="wk"></small></h2><div class="card"><table id="wtop"></table></div></div>
+      <div><h2>📅 오늘의 도전 TOP 10 <small class="muted" id="td"></small></h2><div class="card"><table id="dtop"></table></div></div>
+    </div>
+    <h2>🛍 아이템 판매</h2><div class="card"><table id="items"></table></div>
+    <h2>👥 회원 관리</h2>
+    <div class="card">
+      <div class="row"><input id="q" placeholder="닉네임 검색"><button id="search">검색</button></div>
+      <table id="users" style="margin-top:8px"></table>
+    </div>
+    <div id="detail" class="card"></div>
+  </div>
+</div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);const TK='jm_token';
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dt=s=>s?new Date(s).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';
+async function api(path,method,data){const t=localStorage.getItem(TK);const r=await fetch(path,{method:method||'GET',headers:Object.assign({'Content-Type':'application/json'},t?{Authorization:'Bearer '+t}:{}),body:data?JSON.stringify(data):undefined});let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.error||('오류 '+r.status));return j}
+async function boot(){
+  try{const me=await api('/api/auth');if(!me.user.admin){$('#msg').textContent='관리자 권한이 없는 계정이에요.';return}
+    $('#login').style.display='none';$('#app').style.display='';$('#who').textContent='👤 '+me.user.name+' (관리자)';await loadStats();await loadUsers()}
+  catch(e){$('#login').style.display='';$('#app').style.display='none'}
+}
+async function loadStats(){
+  const j=await api('/api/admin');const s=j.stats;
+  const box=(v,l)=>`<div class="st"><b>${v}</b><small>${l}</small></div>`;
+  $('#stats').innerHTML=box(s.users,'전체 회원')+box(s.new24,'24시간 신규')+box(s.active24,'24시간 접속')+box(s.plays24,'24시간 플레이')+box(s.plays,'누적 플레이')+box(Number(s.avgwave7).toFixed(1),'7일 평균 웨이브')+box(s.purchases,'아이템 구매')+box(s.gemsspent,'사용된 보석')+box(s.gemsheld,'보유 보석 합계');
+  $('#wk').textContent=j.week;$('#td').textContent=j.today;
+  const tb=a=>a.length?'<tr><th>#</th><th>닉네임</th><th>웨이브</th><th>처치</th></tr>'+a.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${r.wave}</td><td>${r.kills}</td></tr>`).join(''):'<tr><td class="muted">기록 없음</td></tr>';
+  $('#wtop').innerHTML=tb(j.weekTop);$('#dtop').innerHTML=tb(j.dailyTop);
+  $('#items').innerHTML=j.items.length?'<tr><th>아이템</th><th>판매 수</th></tr>'+j.items.map(r=>`<tr><td>${esc(r.item)}</td><td>${r.n}</td></tr>`).join(''):'<tr><td class="muted">아직 판매 없음</td></tr>';
+}
+async function loadUsers(){
+  const j=await api('/api/admin?view=users&q='+encodeURIComponent($('#q').value.trim()));
+  $('#users').innerHTML='<tr><th>닉네임</th><th>보석</th><th>최고</th><th>플레이</th><th>최근 접속</th><th>가입</th><th></th></tr>'+j.users.map(u=>`<tr class="${u.banned?'ban':''}"><td>${esc(u.name)}${u.banned?' 🚫':''}</td><td>${u.gems}</td><td>${u.best??'-'}</td><td>${u.plays}</td><td>${dt(u.last_login)}</td><td>${dt(u.created_at)}</td><td><button data-u="${u.id}">관리</button></td></tr>`).join('');
+  document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>openUser(+b.dataset.u));
+}
+async function openUser(id){
+  const j=await api('/api/admin?view=user&id='+id);const u=j.info;const D=$('#detail');D.style.display='block';
+  D.innerHTML=`<h2 style="margin-top:0">👤 ${esc(u.name)} ${u.banned?'🚫 정지됨':''}</h2>
+  <p class="muted">보석 ${u.gems} · 보유 ${esc((u.owned||[]).join(', ')||'없음')} · 가입 ${dt(u.created_at)}</p>
+  <div class="row"><input id="ga" type="number" placeholder="보석 수 (차감은 -)" style="width:150px"><input id="gr" placeholder="사유 (예: 이벤트 보상)"><button class="gold" id="gg">보석 지급</button></div>
+  <div class="row" style="margin-top:8px"><input id="np" placeholder="새 비밀번호 (4자 이상)"><button id="rp">비밀번호 초기화</button>
+  <button class="red" id="bn">${u.banned?'정지 해제':'이용 정지'}</button><button class="red" id="ds">랭킹 기록 삭제</button></div>
+  <h2>보석 내역</h2><table>${j.gems.map(g=>`<tr><td>${dt(g.created_at)}</td><td>${g.amount>0?'+':''}${g.amount}</td><td>${esc(g.reason)}</td></tr>`).join('')||'<tr><td class="muted">없음</td></tr>'}</table>
+  <h2>최근 플레이</h2><table>${j.plays.map(p=>`<tr><td>${dt(p.created_at)}</td><td>${p.mode==='daily'?'오늘의 도전':'일반'}</td><td>WAVE ${p.wave}</td><td>${p.kills}마리</td></tr>`).join('')||'<tr><td class="muted">없음</td></tr>'}</table>`;
+  const act=async(d,msg)=>{try{await api('/api/admin','POST',Object.assign({uid:id},d));alert(msg);openUser(id);loadUsers();loadStats()}catch(e){alert(e.message)}};
+  $('#gg').onclick=()=>act({action:'gems',amount:+$('#ga').value,reason:$('#gr').value},'보석을 지급했어요');
+  $('#rp').onclick=()=>act({action:'resetpw',pass:$('#np').value},'비밀번호를 초기화했어요');
+  $('#bn').onclick=()=>{if(confirm(u.banned?'정지를 해제할까요?':'이 회원을 이용 정지할까요?'))act({action:'ban',banned:!u.banned},'처리했어요')};
+  $('#ds').onclick=()=>{if(confirm('이 회원의 모든 랭킹 기록을 삭제할까요? 되돌릴 수 없어요.'))act({action:'delscore'},'랭킹 기록을 삭제했어요')};
+  D.scrollIntoView({behavior:'smooth'});
+}
+$('#go').onclick=async()=>{try{const j=await api('/api/auth','POST',{action:'login',name:$('#n').value.trim(),pass:$('#p').value});localStorage.setItem(TK,j.token);boot()}catch(e){$('#msg').textContent=e.message}};
+$('#p').onkeydown=e=>{if(e.key==='Enter')$('#go').click()};
+$('#out').onclick=()=>{localStorage.removeItem(TK);location.reload()};
+$('#search').onclick=loadUsers;$('#q').onkeydown=e=>{if(e.key==='Enter')loadUsers()};
+boot();
+</script>
+</body>
+</html>

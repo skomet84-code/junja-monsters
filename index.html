@@ -128,6 +128,18 @@ button:disabled{opacity:.4;cursor:default}
 .buffs{position:absolute;right:8px;top:30px;display:flex;flex-direction:column;gap:3px;pointer-events:none}
 .buffs i{font-style:normal;font-size:11px;background:#000a;border:1px solid #d08bff66;border-radius:8px;padding:2px 6px;color:#e7cfff}
 #mLab{z-index:12}#mCards{z-index:11}
+.acct{background:#0d1222;border:1px solid #f2c46d33;border-radius:12px;padding:10px;margin:8px 0;font-size:13px}
+.acct input{width:100%;background:#151c2e;border:1px solid var(--edge);border-radius:9px;color:#fff;padding:9px 10px;font-size:15px;margin:3px 0;user-select:text;-webkit-user-select:text}
+.acct .row{margin-top:6px}.acct .who{display:flex;align-items:center;gap:8px}.acct .who b{font-size:15px}.acct .who .sp{flex:1}
+.acct small{color:var(--mute)}
+.btn.daily{background:linear-gradient(180deg,#7a5cff,#4a2fb8);border-color:#b9a2ff;color:#fff}
+.row.r4 .btn{padding:10px 4px;font-size:12.5px}
+.tabs{display:flex;gap:6px;margin:6px 0}.tab{flex:1;padding:8px;border-radius:10px;background:#151c2e;border:1px solid var(--edge);font-weight:800;font-size:13px}.tab.on{background:linear-gradient(180deg,#ffe2a3,#d9a54e);color:#2a1a05}
+.rk{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;background:#0d1222;margin:4px 0;font-size:13px}
+.rk .n{width:28px;font-weight:900;color:var(--gold);text-align:center}.rk .nm{flex:1}.rk .nm small{display:block;color:#d08bff;font-size:10.5px}.rk .w{font-weight:900}
+.rk.me{border:1px solid var(--gold);background:#2a2140}
+.shi{display:flex;align-items:center;gap:10px;background:#0d1222;border:1px solid var(--edge);border-radius:12px;padding:9px 10px;margin:6px 0}
+.shi .pv{width:44px;height:44px;border-radius:10px;flex:none}.shi .tx{flex:1;font-size:12px;color:var(--mute)}.shi .tx b{color:var(--ink);font-size:13.5px}
 .how{font-size:13px;line-height:1.7;color:#cfd5ea;background:#0d1222;border-radius:12px;padding:10px 12px;margin:8px 0}
 </style>
 </head>
@@ -159,7 +171,10 @@ button:disabled{opacity:.4;cursor:default}
 <div class="modal" id="mStart"><div class="card">
   <div class="title">준자몬스터즈</div><div class="sub">JUNJA MONSTERS DEFENSE</div>
   <div class="how">🥚 아래 알을 눌러 몬스터를 소환하세요 (80 에테르)<br>🔁 <b>같은 몬스터 2마리</b>를 끌어서 겹치면 다음 단계로 진화해요<br>👑 10속성 × 5단계 = <b>몬스터 50종</b>. 5단계는 궁극기를 자동 발동해요<br>🌈 서로 다른 속성을 많이 배치하면 <b>속성 시너지</b>로 공격력이 올라가요<br>☄️ 적을 처치해 모은 기운으로 수호자 스킬을 쓰세요</div>
-  <div class="row"><button class="btn" id="bLab3">🏛 연구소</button><button class="btn" id="bNew">새 게임</button><button class="btn gold" id="bCont">이어하기</button></div>
+  <div id="acct" class="acct"></div>
+  <div class="row"><button class="btn" id="bNew">새 게임</button><button class="btn gold" id="bCont">이어하기</button></div>
+  <div class="row"><button class="btn daily" id="bDaily">📅 오늘의 도전</button></div>
+  <div class="row r4"><button class="btn" id="bRank">🏆 랭킹</button><button class="btn" id="bShop">🛍 상점</button><button class="btn" id="bLab3">🏛 연구소</button></div>
   <p id="best" style="text-align:center;margin-top:10px"></p>
 </div></div>
 <div class="modal" id="mDex"><div class="card">
@@ -186,6 +201,19 @@ button:disabled{opacity:.4;cursor:default}
   <h2>🏛 준자 연구소 <span style="color:#7fe3ff;font-size:15px">💠 <span id="labC">0</span></span></h2>
   <p>게임이 끝날 때마다 얻는 <b>준자 결정 💠</b>으로 영구 능력을 연구해요. 연구 효과는 모든 새 게임에 적용돼요.</p>
   <div id="labList"></div>
+  <div class="row"><button class="btn gold" data-close>닫기</button></div>
+</div></div>
+<div class="modal" id="mRank"><div class="card">
+  <h2>🏆 랭킹</h2>
+  <div class="tabs"><button class="tab on" data-rk="normal">이번 주</button><button class="tab" data-rk="daily">오늘의 도전</button></div>
+  <p id="rkInfo"></p><div id="rkList"></div>
+  <div class="row"><button class="btn gold" data-close>닫기</button></div>
+</div></div>
+<div class="modal" id="mShop"><div class="card">
+  <h2>🛍 상점 <span style="color:#7fe3ff;font-size:15px">💎 <span id="shGems">0</span></span></h2>
+  <p>꾸미기 아이템은 <b>승패에 영향이 없어요.</b> 보석은 가입·출석·오늘의 도전으로 모을 수 있어요.</p>
+  <div id="shList"></div>
+  <div class="row"><button class="btn" id="bCharge">💳 보석 충전 (준비 중)</button></div>
   <div class="row"><button class="btn gold" data-close>닫기</button></div>
 </div></div>
 <div class="modal" id="mOver"><div class="card" style="text-align:center">
@@ -244,9 +272,9 @@ let S,scale=1,offX=0,offY=0,dpr=1,last=0,shake=0,flash=0,flashC='#fff',hitstop=0
 const SAVE='junja_monsters_v1';
 let meta={best:0,dex:{}};
 try{meta=Object.assign(meta,JSON.parse(localStorage.getItem(SAVE+'_meta')||'{}'))}catch(e){}
-function saveMeta(){try{localStorage.setItem(SAVE+'_meta',JSON.stringify(meta))}catch(e){}}
+function saveMeta(){try{localStorage.setItem(SAVE+'_meta',JSON.stringify(meta))}catch(e){}if(window.onSave)onSave()}
 function newState(){const L=meta.lab||{};return{buffs:{},wave:1,hp:20+2*(L.hp||0),eth:240+40*(L.eth||0),energy:20,up:Array(10).fill(0),slots:Array(SLOTS).fill(null),enemies:[],shots:[],fx:[],nums:[],running:false,spawnQ:[],spawnT:0,kills:0,sel:-1,uid:1,freezeT:0,over:false}}
-function saveRun(){if(S.over)return;try{localStorage.setItem(SAVE+'_run',JSON.stringify({wave:S.wave,hp:S.hp,eth:S.eth,energy:S.energy,up:S.up,buffs:S.buffs,slots:S.slots.map(m=>m?[m.e,m.s,m.f]:null)}))}catch(e){}}
+function saveRun(){if(S.over||S.mode==='daily')return;try{localStorage.setItem(SAVE+'_run',JSON.stringify({wave:S.wave,hp:S.hp,eth:S.eth,energy:S.energy,up:S.up,buffs:S.buffs,slots:S.slots.map(m=>m?[m.e,m.s,m.f]:null)}))}catch(e){}if(window.onSave)onSave()}
 function loadRun(){try{const r=JSON.parse(localStorage.getItem(SAVE+'_run')||'null');if(!r)return null;const s=newState();s.wave=r.wave;s.hp=r.hp;s.eth=r.eth;s.energy=r.energy;if(r.up)s.up=r.up;if(r.buffs)s.buffs=r.buffs;s.slots=r.slots.map(a=>{if(!a)return null;const m=mkMon(a[0],a[1],s);if(a[2]!=null)m.f=a[2];return m});return s}catch(e){return null}}
 function mkMon(e,st,s){s=s||S;return{id:s.uid++,e,s:st,cd:Math.random()*.5,ue:0,anim:0,face:1,born:1}}
 // ===================== PATH =====================
@@ -289,7 +317,7 @@ function buildWave(w){const q=[];const n=8+Math.floor(w*1.6);const types=['slime
  if(w%5!==0&&w>=3)q.push({t:'elite',d:1.2});
  if(w%5===0){q.push({t:'boss',d:1.8})}
  return q}
-function waveEl(w){return [0,1,2,3,4,5,6,7,8,9][(w*7+3)%10]}
+function waveEl(w){if(S&&S.perm)return S.perm[(w-1)%10];return [0,1,2,3,4,5,6,7,8,9][(w*7+3)%10]}
 function spawn(t){const e=ET[t];const el=waveEl(S.wave);const hp=waveHP(S.wave)*e.hp*(t==='boss'?1+S.wave*.04:1);S.enemies.push({t,d:0,hp,mhp:hp,sp:e.sp*(1+Math.min(.5,S.wave*.012)),r:e.r,c:t==='golem'?e.c:ELS[el].c,el,g:e.g,slow:0,slowT:0,stun:0,burn:0,burnT:0,poison:0,poisonT:0,vuln:0,hit:0,ph:Math.random()*6,x:-30,y:90})}
 // ===================== FX =====================
 function fx(o){S.fx.push(Object.assign({t:0,life:.4},o))}
@@ -390,11 +418,11 @@ function waveClear(){S.running=false;const bonus=Math.round((35+S.wave*4)*(1+.4*
 let auto=false;
 function startWave(){if(S.running||S.over||cardsOpen)return;if(!S.slots.some(Boolean)){toast('먼저 몬스터를 소환하세요');return}S.running=true;S.spawnQ=buildWave(S.wave);S.spawnT=.3;
  {const we=waveEl(S.wave),wk=weakTo(we).map(a=>EMO[a]+ELS[a].n).join(' ');banner((S.wave%5===0?'⚠️ BOSS ':'WAVE '+S.wave+' · ')+EMO[we]+ELS[we].n+(S.wave%5===0?' 마왕':''),'약점: '+wk,S.wave%5===0?'#ff5c7a':ELS[we].c)}snd(392,.15,'triangle',.06);ui()}
-function gameOver(){S.over=true;S.running=false;try{localStorage.removeItem(SAVE+'_run')}catch(e){}const w=S.wave;const nb=w-1>meta.best;if(nb){meta.best=w-1}const cr=Math.floor((w-1)*1.5)+Math.floor((w-1)/5)*5+(nb?10:0);meta.crystal=(meta.crystal||0)+cr;saveMeta()
+function gameOver(){S.over=true;S.running=false;if(S.mode!=='daily'){try{localStorage.removeItem(SAVE+'_run')}catch(e){}}if(window.onGameOver)setTimeout(()=>onGameOver(S.wave-1,S.kills,S.mode||'normal'),50);const w=S.wave;const nb=w-1>meta.best;if(nb){meta.best=w-1}const cr=Math.floor((w-1)*1.5)+Math.floor((w-1)/5)*5+(nb?10:0);meta.crystal=(meta.crystal||0)+cr;saveMeta()
  $('#overTx').innerHTML='WAVE <b style="color:var(--gold)">'+w+'</b>에서 막혔어요.<br>최고 기록: WAVE '+meta.best+' 클리어<br>처치 '+S.kills+'마리<br><br><b style="color:#7fe3ff;font-size:17px">💠 준자 결정 +'+cr+(nb?' (신기록 보너스!)':'')+'</b><br>연구소에서 영구 능력을 올려 보세요';setTimeout(()=>$('#mOver').classList.add('on'),600)}
 // ===================== ACTIONS =====================
-function summonCost(){return SUMMON-3*((meta.lab||{}).cost||0)}
-function summon(ei){if(S.over)return;const SC=summonCost();if(S.eth<SC){toast('에테르가 부족해요');return}const i=S.slots.findIndex(x=>!x);if(i<0){toast('빈 칸이 없어요 · 같은 몬스터를 합쳐 보세요');return}
+function summonCost(){return (S&&S.mode==='daily')?SUMMON:SUMMON-3*((meta.lab||{}).cost||0)}
+function summon(ei){if(S.over)return;if(S.allowed&&!S.allowed.includes(ei)){toast('오늘의 도전에서는 사용할 수 없는 속성이에요');return}const SC=summonCost();if(S.eth<SC){toast('에테르가 부족해요');return}const i=S.slots.findIndex(x=>!x);if(i<0){toast('빈 칸이 없어요 · 같은 몬스터를 합쳐 보세요');return}
  S.eth-=SC;const m=mkMon(ei,Math.random()<.25*bf('lucky')?2:1);if(m.s===2)setTimeout(()=>toast('🥚 행운의 알! 바로 2단계로 부화'),200);S.slots[i]=m;reg(m);const p=SLOTP[i];burst(p[0],p[1],ELS[ei].c,14,130);fx({k:'ring',x:p[0],y:p[1],c:ELS[ei].c,r0:8,r1:44,life:.35});snd(660,.08,'triangle',.05,990);S.sel=i;if(!S.running)saveRun();ui();if(partner(i)>=0)toast('✨ 같은 몬스터 2마리! 진화 버튼을 눌러 보세요')}
 function reg(m){const key=m.e+'_'+m.s;if(!meta.dex[key]){meta.dex[key]=1;saveMeta();if(m.s>1)setTimeout(()=>toast('📖 도감 등록: '+ELS[m.e].names[m.s-1]),300)}}
 function canMerge(a,b){return a&&b&&a!==b&&a.e===b.e&&a.s===b.s&&a.s<5}
@@ -462,6 +490,7 @@ function makeBg(){const c=document.createElement('canvas');c.width=W*2;c.height=
  g.fillStyle='#ff2d5544';g.beginPath();g.arc(8,90,26,0,7);g.fill();
  // slots
  for(const[x,y]of SLOTP){g.fillStyle='#0b1d1a88';g.beginPath();g.ellipse(x,y+4,34,18,0,0,7);g.fill();g.strokeStyle='#ffffff30';g.lineWidth=2;g.beginPath();g.ellipse(x,y+2,30,15,0,0,7);g.stroke()}
+ const th=window.EQUIP&&EQUIP.theme;if(th){g.globalCompositeOperation=th==='theme_night'?'multiply':'soft-light';g.fillStyle=th==='theme_night'?'#5a78d0':th==='theme_sunset'?'#ff8a3d':'#ff9ad5';g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';if(th==='theme_sakura'){for(let i=0;i<70;i++){g.fillStyle='rgba(255,190,220,.7)';g.beginPath();g.ellipse(Math.random()*W,Math.random()*H,3,2,Math.random()*3,0,7);g.fill()}}}
  return c}
 function roundRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
 // ---- monster art ----
@@ -577,6 +606,7 @@ function render(t){const g=ctx;g.setTransform(1,0,0,1,0,0);{const og=g.createLin
   if(hint&&m!==hint&&canCombine(hint,m)){g.strokeStyle=canMerge(hint,m)?'#ffe15a':'#d08bff';g.lineWidth=3;g.globalAlpha=.6+Math.sin(t*8)*.4;g.beginPath();g.ellipse(x,y+2,32,16,0,0,7);g.stroke();g.globalAlpha=1}
   if(S.sel===i){g.strokeStyle='#fff';g.lineWidth=2.5;g.beginPath();g.ellipse(x,y+2,32,16,0,0,7);g.stroke()}
   g.fillStyle='#0006';g.beginPath();g.ellipse(x,y+18,20+m.s*2,6,0,0,7);g.fill();
+  if(window.EQUIP&&EQUIP.aura){const au=EQUIP.aura,rr=26+m.s*3;const ag=g.createRadialGradient(x,y-6,rr*.3,x,y-6,rr*1.3);const ac=au==='aura_gold'?'#ffd75a':au==='aura_abyss'?'#b04cff':`hsl(${(t*120+i*30)%360},100%,65%)`;ag.addColorStop(0,ac+(au==='aura_rainbow'?'':'00'));ag.addColorStop(.6,au==='aura_rainbow'?ac:ac+'55');ag.addColorStop(1,'rgba(0,0,0,0)');g.globalAlpha=au==='aura_rainbow'?.35:1;g.fillStyle=ag;g.beginPath();g.arc(x,y-6,rr*1.3,0,7);g.fill();g.globalAlpha=1}
   const r=SPR[m.e+'_'+m.s]?23+m.s*2.6:17+m.s*2.6,born=m.born;g.save();g.translate(x+(m.anim>0?(m.lx||0)*m.anim/.18*(6+m.s*2):0),y-4+(m.anim>0?(m.ly||0)*m.anim/.18*(6+m.s*2):0));if(born>0){const s=1+Math.sin(born*9)*born*.5;g.scale(s,s)}drawMon(g,m.e,m.s,0,-r*.25,r,t,m.face,m.anim>0?m.anim/.18*.12:0);g.restore();
   // stars + ult bar
   for(let s=0;s<m.s;s++){g.fillStyle='#ffd75a';starPath(g,x-(m.s-1)*5+s*10,y+26,5,2.2,5);g.fill()}
@@ -630,7 +660,7 @@ function loop(ts){const t=ts/1000;let dt=Math.min(.05,(ts-(last||ts))/1000);last
  render(t);uiTick();requestAnimationFrame(loop)}
 // ===================== UI =====================
 function iconCanvas(el,st,size){const c=document.createElement('canvas');c.width=c.height=size*2;const g=c.getContext('2d');g.scale(2,2);const r=SPR[el+'_'+st]?size*.4:size*(st===1?.4:.3);drawMon(g,el,st,size/2,SPR[el+'_'+st]?size*.6:size/2+(st===1?0:size*.05),r,0,1,0);return c}
-function buildSummon(){const box=$('#summon');box.innerHTML='';ELS.forEach((e,i)=>{const b=document.createElement('button');b.className='sm';b.appendChild(iconCanvas(i,1,40));b.insertAdjacentHTML('beforeend',`<span style="color:${e.c}">${e.n}</span><i>${summonCost()}</i>`);b.onclick=()=>summon(i);box.appendChild(b)})}
+function buildSummon(){const box=$('#summon');box.innerHTML='';ELS.forEach((e,i)=>{const b=document.createElement('button');b.className='sm';b.appendChild(iconCanvas(i,1,40));b.insertAdjacentHTML('beforeend',`<span style="color:${e.c}">${e.n}</span><i>${summonCost()}</i>`);b.onclick=()=>summon(i);if(S&&S.allowed&&!S.allowed.includes(i))b.style.opacity=.25;box.appendChild(b)})}
 function ui(){const info=$('#info');const m=S.sel>=0?S.slots[S.sel]:null;
  if(m){const el=ELS[m.e],st=mstat(m);const nxt=m.s<5?`다음: <b style="font-size:12px">${el.names[m.s]}</b> `:`궁극기 <b style="font-size:12px;color:${el.c}">${el.ult}</b> 자동 발동`;
   info.innerHTML='';info.appendChild(iconCanvas(m.e,m.s,42));const pj=partner(S.sel),isF=pj>=0&&canFuse(m,S.slots[pj]);info.insertAdjacentHTML('beforeend',`<div class="tx"><b>${monName(m)}</b> <span class="st">${'★'.repeat(m.s)}</span> · ${el.n}<br>공격 ${Math.round(st.dmg)} · 속도 ${st.rate.toFixed(1)}/초${m.f!=null?' · '+EMO[m.f]+'융합':''}<br>${isF?'<span style="color:#d08bff">🔀 '+(recipe(m.e,S.slots[pj].e).n)+' 융합 가능!</span>':nxt}</div><div class="acts3">${m.s<5?`<button class="btn evo${pj>=0?' on':''}" id="bEvo">${isF?'🔀 융합':'✨ 진화'}<small>${pj>=0?(isF?FUSECOST[m.s]:MERGE[m.s])+'✨':'짝 필요'}</small></button>`:''}<button class="btn gold" id="bUp">⬆ 강화 Lv${S.up[m.e]}<small>${upCost(m.e)}✨</small></button><button class="btn red" id="bSell">판매<small>+${sellValue(m)}</small></button></div>`);$('#bSell').onclick=()=>sell(S.sel);$('#bUp').onclick=()=>upgrade(m.e);const be=$('#bEvo');if(be)be.onclick=()=>evolveSel()}
@@ -677,5 +707,6 @@ const hasRun=!!localStorage.getItem(SAVE+'_run');$('#bCont').style.display=hasRu
 $('#mStart').classList.add('on');requestAnimationFrame(loop);
 window.__JM={get S(){return S},summon,merge,startWave,meteor,freeze,setSpeed:v=>speed=v,tick:(dt,n)=>{for(let i=0;i<n;i++)if(!S.over)update(dt)}};
 </script>
+<script src="online.js"></script>
 </body>
 </html>
