@@ -3,7 +3,7 @@ const L = require('./_lib');
 function period(mode) { return mode === 'daily' ? L.kstDate() : L.kstWeek(); }
 
 async function board(mode, per, uid) {
-  const top = await L.sql(`SELECT s.wave,s.kills,u.name,u.equip,u.id FROM scores s JOIN users u ON u.id=s.user_id
+  const top = await L.sql(`SELECT s.wave,s.kills,u.name,u.equip,u.rep,u.id FROM scores s JOIN users u ON u.id=s.user_id
     WHERE s.mode=$1 AND s.period=$2 AND NOT u.banned ORDER BY s.wave DESC,s.kills DESC,s.created_at ASC LIMIT 50`, [mode, per]);
   let me = null;
   if (uid) {
@@ -12,7 +12,7 @@ async function board(mode, per, uid) {
     me = r[0] || null;
   }
   const total = (await L.sql('SELECT count(*) AS n FROM scores WHERE mode=$1 AND period=$2', [mode, per]))[0].n;
-  return { mode, period: per, total, top: top.map((t, i) => ({ rank: i + 1, name: t.name, title: (t.equip || {}).title || null, wave: t.wave, kills: t.kills, me: t.id === uid })), me };
+  return { mode, period: per, total, top: top.map((t, i) => ({ rank: i + 1, name: t.name, title: (t.equip || {}).title || null, rep: t.rep || null, wave: t.wave, kills: t.kills, me: t.id === uid })), me };
 }
 
 module.exports = L.wrap(async (req, res) => {

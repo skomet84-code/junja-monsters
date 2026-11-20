@@ -58,7 +58,7 @@ async function auth(req) {
   const h = req.headers.authorization || '';
   const t = verify(h.replace(/^Bearer\s+/i, ''));
   if (!t) return null;
-  const r = await sql('SELECT id,name,gems,owned,equip,banned,last_daily_reward,created_at FROM users WHERE id=$1', [t.uid]);
+  const r = await sql('SELECT id,name,gems,owned,equip,banned,last_daily_reward,created_at,rep,bio FROM users WHERE id=$1', [t.uid]);
   if (!r[0] || r[0].banned) return null;
   return r[0];
 }
@@ -88,7 +88,7 @@ const ITEMS = [
   { id: 'title_heaven', slot: 'title', name: '하늘이내려준자', desc: '전설 칭호', price: 800 }
 ];
 
-function publicUser(u) { return { id: u.id, name: u.name, gems: u.gems, owned: u.owned || [], equip: u.equip || {}, admin: isAdmin(u) }; }
+function publicUser(u) { return { id: u.id, name: u.name, gems: u.gems, owned: u.owned || [], equip: u.equip || {}, rep: u.rep || null, bio: u.bio || '', admin: isAdmin(u) }; }
 
 async function addGems(uid, amount, reason) {
   const r = await tx([
