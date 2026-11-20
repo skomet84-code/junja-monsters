@@ -245,7 +245,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261120214346';
+const BUILD='20261120215419';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -289,7 +289,8 @@ const FUSE=[
  {a:2,b:4,p:4,n:'요정',d:'약화 + 맹독 + 회복',h:1},
  {a:8,b:9,p:9,n:'블랙홀',d:'체력 비례 + 약화 중첩',h:1}];
 // 궁극 등급(★7 MYTHIC): 서로 다른 각성★6 특정 조합
-const MYTH=[{a:0,b:1,n:'태극룡황',u:'태극천멸'},{a:3,b:5,n:'천둥거신',u:'뇌진천붕'},{a:4,b:8,n:'우주여제',u:'성월개벽'},{a:2,b:9,n:'생사의 군주',u:'윤회의 낙인'},{a:6,b:7,n:'빙풍신조',u:'절대폭풍'}];
+const MYTH=[{a:0,b:1,n:'태극룡황',u:'태극천멸',cd:20,d:'불과 물의 2연격으로 전체 피해 + 화상·둔화'},{a:3,b:5,n:'천둥거신',u:'뇌진천붕',cd:24,d:'대지진으로 전체 기절 + 낙뢰 5연타 · 받는 피해 증가'},{a:4,b:8,n:'우주여제',u:'성월개벽',cd:24,d:'8초간 아군 전체 공격 속도 +50% + 별똥별 폭격'},{a:2,b:9,n:'생사의 군주',u:'윤회의 낙인',cd:24,d:'전체 체력 비례 피해 + 낙인 처치 시 에테르 · 수호석 +1'},{a:6,b:7,n:'빙풍신조',u:'절대폭풍',cd:22,d:'전체 빙결 + 폭풍으로 밀쳐내기'}];
+const ULT={hit:2.5,time:3,d5:9,d6:11};
 function mythRec(e1,e2){return MYTH.find(r=>(r.a===e1&&r.b===e2)||(r.a===e2&&r.b===e1))}
 const MYTHCOST=1500;
 function recipe(e1,e2){return FUSE.find(r=>(r.a===e1&&r.b===e2)||(r.a===e2&&r.b===e1))}
@@ -342,7 +343,7 @@ function offerCards(){const pool=[];const owned=S.slots.filter(Boolean).map(m=>m
  cardsOpen=true;setTimeout(()=>{$('#mCards').classList.add('on');snd(660,.3,'sine',.05,1320)},900)}
 function showBuffs(){const B=$('#buffs');if(!B)return;B.innerHTML=Object.entries(S.buffs||{}).map(([k,v])=>{const c=k.startsWith('el')?null:CARDS.find(x=>x.id===k);return `<i>${c?c.ic:EMO[+k.slice(2)]} ${v>1?'x'+v:''}</i>`}).join('')}
 function synergy(){const set=new Set(S.slots.filter(Boolean).map(m=>m.e));const n=set.size;const v=n>=10?.6:n>=7?.35:n>=5?.2:n>=3?.1:0;return v*(bf('rain')?2:1)}
-function mstat(m){const b=ST[ELS[m.e].k];const mul=Math.pow(2.75,m.s-1)*(1+synergy())*(1+.15*S.up[m.e])*(m.f!=null?1.25+.2*bf('fuse'):1)*(1+.4*bf('el'+m.e));return{dmg:b[0]*mul,rate:b[1]*(1+.08*(m.s-1))*(1+.2*bf('speed')),range:b[2]+12*(m.s-1)}}
+function mstat(m){const b=ST[ELS[m.e].k];const mul=Math.pow(2.75,m.s-1)*(1+synergy())*(1+.15*S.up[m.e])*(m.f!=null?1.25+.2*bf('fuse'):1)*(1+.4*bf('el'+m.e));return{dmg:b[0]*mul,rate:b[1]*(1+.08*(m.s-1))*(1+.2*bf('speed'))*(S&&S.cosmoT>0?1.5:1),range:b[2]+12*(m.s-1)}}
 // ===================== ENEMIES =====================
 const ET={slime:{hp:1,sp:52,r:15,c:'#7ad36b',g:1},runner:{hp:.6,sp:88,r:12,c:'#ff8f5a',g:1},golem:{hp:2.6,sp:36,r:19,c:'#8a8fa8',g:2},bat:{hp:.8,sp:70,r:13,c:'#b583ff',g:1},elite:{hp:6,sp:44,r:22,c:'#ff4f7b',g:5},boss:{hp:26,sp:36,r:32,c:'#ff2d55',g:25},gold:{hp:4,sp:108,r:16,c:'#ffd75a',g:0}};
 const BAL={g:1.29,cap:24,boss:.02,enr:40,enrB:65,arm0:18,armK:.035,armMax:.75,mid:.6,cnt:1.1,gap:.4,spd:1.2};
@@ -396,7 +397,7 @@ function drawRaid(g,e){const{x,y,r}=e,t=e.ph,c=ELS[e.el];g.save();g.translate(x,
  if(e.stun>0){g.fillStyle='#fff36b';for(let i=0;i<3;i++){const q=t+i*2.1;starPath(g,Math.cos(q)*r*.8,-r*1.2+Math.sin(q)*r*.2,r*.12,r*.05,5);g.fill()}}
  g.restore();g.font='900 13px system-ui';g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000';const nm=EMO[e.el]+' '+e.name+' Lv.'+e.lvl;g.strokeText(nm,x,y-r-34);g.fillStyle='#ffe3a1';g.fillText(nm,x,y-r-34)}
 function bossSummon(e){banner('👹 부하 소환!','마왕이 부하를 불렀어요','#ff8f5a');for(let k=0;k<4;k++){spawn('runner');const m=S.enemies[S.enemies.length-1];m.d=Math.max(0,e.d-25-k*14);const p=posAt(m.d);m.x=p[0];m.y=p[1];m.hp*=.7;m.mhp=m.hp;burst(m.x,m.y,'#ff8f5a',8,120)}}
-function kill(e){S.kills++;if(S.comboT>0)S.combo=(S.combo||0)+1;else S.combo=1;S.comboT=1.6;if(S.combo>=30)unlock('combo30');if([10,25,50,100,200].includes(S.combo)){const cb=Math.round(S.wave*S.combo*.6);S.eth+=cb;banner('🔥 COMBO x'+S.combo,'+'+cb+' 에테르','#ffb347');snd(660,.15,'square',.05,1320)}
+function kill(e){S.kills++;if(e.mark){S.eth+=4;num(e.x,e.y-e.r-30,4,'#b6ff8a')}if(S.comboT>0)S.combo=(S.combo||0)+1;else S.combo=1;S.comboT=1.6;if(S.combo>=30)unlock('combo30');if([10,25,50,100,200].includes(S.combo)){const cb=Math.round(S.wave*S.combo*.6);S.eth+=cb;banner('🔥 COMBO x'+S.combo,'+'+cb+' 에테르','#ffb347');snd(660,.15,'square',.05,1320)}
  if(e.t==='gold'){const gb=Math.round((40+S.wave*12)*(1+.4*bf('eth')));S.eth+=gb;S.energy=Math.min(100,S.energy+25);unlock('gold1');banner('💰 황금 슬라임 처치!','+'+gb+' 에테르 · 기운 +25','#ffd75a');burst(e.x,e.y,'#ffd75a',40,260,4);snd(1046,.12,'triangle',.06);setTimeout(()=>snd(1568,.25,'triangle',.06),100)}
  if(e.t==='boss')unlock('boss1');const g=Math.round((4+S.wave*.3)*e.g*(1+.4*bf('eth')));S.eth+=g;S.energy=Math.min(100,S.energy+(e.t==='boss'?30:e.t==='elite'?8:2));burst(e.x,e.y,e.c,e.t==='boss'?40:12,e.t==='boss'?260:150,e.t==='boss'?6:3.5);fx({k:'ring',x:e.x,y:e.y,c:e.c,r0:e.r,r1:e.r*2.6,life:.3});num(e.x,e.y-e.r-14,g,'#f2c46d');S.nums[S.nums.length-1].g=1;
  if(e.t==='boss'){shake=14;hitstop=.12;flash=.35;flashC='#ffdca0';banner('BOSS 격파!','+'+g+' 에테르','#ffcf5a');snd(90,.5,'sawtooth',.08,40)}else if(e.t==='elite'){shake=5;snd(140,.15,'square',.05,60)}else snd(320,.05,'triangle',.03,160)}
@@ -405,7 +406,7 @@ function front(list){let b=null;for(const e of list)if(!b||e.d>b.d)b=e;return b}
 function attack(m,i){const p=SLOTP[i],st=mstat(m),k=ELS[m.e].k;const list=enemiesInRange(p[0],p[1],st.range);if(!list.length)return false;
  let tgt=k==='star'?list.reduce((a,b)=>a.hp>b.hp?a:b):front(list);m.face=tgt.x<p[0]?-1:1;m.anim=.18;{const dx=tgt.x-p[0],dy=tgt.y-p[1],dd=Math.hypot(dx,dy)||1;m.lx=dx/dd;m.ly=dy/dd}
  S.shots.push({x:p[0],y:p[1]-10,ox:p[0],oy:p[1]-10,tgt,m,k,sp:k==='star'?900:k==='wind'?720:k==='thunder'?1400:560,dmg:st.dmg,t:0,trail:[],sz:1+(m.s-1)*.3,rot:Math.random()*6});if(m.s>=3)fx({k:'ring',x:p[0],y:p[1]-10,c:ELS[m.e].c2,r0:8,r1:22+m.s*4,life:.2,w:3});
- m.ue=Math.min(100,m.ue+(m.s>=5?7*(m.s===6?1.4:1)*(1+.6*bf('ult')):0));return true}
+ m.ue=Math.min(100,m.ue+(m.s>=5&&m.s<7?ULT.hit*(m.s===6?1.4:1)*(1+.6*bf('ult')):0));return true}
 function impact(sh){const e=sh.tgt,m=sh.m,k=sh.k;let d=sh.dmg;const crit=Math.random()<(k==='moon'?.3:.1);if(crit)d*=k==='moon'?2.4:1.8;
  const x=e.x,y=e.y;hitSnd();
  if(k==='fire'){damage(e,d,m,crit);e.burn=Math.max(e.burn,d*.25);e.burnT=2.5;if(m.s>=3){for(const o of enemiesInRange(x,y,46+m.s*6))if(o!==e)damage(o,d*.4,m)}fx({k:'boom',x,y,c:'#ff7a2e',r1:30+m.s*6,life:.28});burst(x,y,'#ffb347',6,140)}
@@ -433,7 +434,19 @@ function secondary(m,e,d,x,y){const k=ELS[m.f].k,c=ELS[m.f];const q=d*.35;
  else if(k==='star'){damage(e,q,m,true);fx({k:'star',x,y,c:c.c2,life:.3})}
  else if(k==='dark'){damage(e,hpP(e,.02),m);e.vuln=Math.min(.4,e.vuln+.03)}
  burst(x,y,c.c,4,140,2.5)}
-function ultimate(m,i){const el=ELS[m.e],k=el.k,live=S.enemies.filter(e=>e.hp>0);if(!live.length)return;m.ue=0;if(m.s===7&&m.f!=null&&!m._sub){const m2={e:m.f,s:7,f:null,ue:0,_sub:1};setTimeout(()=>{if(!S.over)ultimate(m2,i)},500)}const st=mstat(m),D=st.dmg*(m.s>=7?7:m.s===6?8:6);
+function mythSkill(m,i){const r=mythRec(m.e,m.f);if(!r)return ultimate(m,i);const id=MYTH.indexOf(r),live=S.enemies.filter(e=>e.hp>0);if(!live.length)return;m.ue=0;const D=mstat(m).dmg,p=SLOTP[i];
+ if(!window.__noFx)cutIn(m);banner('👑 '+r.u,r.d,'#ffd75a');shake=18;hitstop=.1;flash=.5;flashC='#ffe7a0';snd(90,.7,'sawtooth',.1,30);setTimeout(()=>snd(55,.6,'square',.07,25),150);
+ fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:10,r1:760,life:.7,w:12});
+ if(id===0){for(const e of live){fx({k:'meteor',x:e.x,y:e.y,c:'#ff7a2e',life:.45});setTimeout(()=>{if(e.hp>0){damage(e,D*5,m,true);e.burn=Math.max(e.burn,D*.2);e.burnT=3;burst(e.x,e.y,'#ff9a3e',10,220,4)}},250)}
+  setTimeout(()=>{fx({k:'ring',x:p[0],y:p[1],c:'#5ad1ff',r0:20,r1:760,life:.6,w:14});flash=.35;flashC='#7fd8ff';for(const e of S.enemies.filter(x=>x.hp>0)){damage(e,D*4,m,true);kb(e,60);e.slow=Math.max(e.slow,.5);e.slowT=3;burst(e.x,e.y,'#7fd8ff',10,220,4)}},650)}
+ else if(id===1){shake=26;for(const e of live){stunE(e,e.t==='boss'?1:2.2);e.vuln=Math.max(e.vuln,.4)}
+  for(let j=0;j<5;j++)setTimeout(()=>{flash=.25;flashC='#fff36b';for(const e of S.enemies.filter(x=>x.hp>0)){fx({k:'bolt',x:e.x,y:-20,x2:e.x,y2:e.y,c:'#fff36b',life:.3,w:6});damage(e,D*1.8,m,true)}shake=10;snd(200,.15,'square',.05,60)},200+j*170)}
+ else if(id===2){S.cosmoT=8;for(const e of live)damage(e,D*2,m,true);const t=live.reduce((a,b)=>a.hp>b.hp?a:b);
+  for(let j=0;j<10;j++)setTimeout(()=>{if(t.hp>0){fx({k:'meteor',x:t.x,y:t.y,c:'#fff3b0',life:.4});damage(t,D*1.2,m,true);burst(t.x,t.y,'#fff8d0',12,240,4);shake=6}},j*90);toast('🌌 8초간 아군 전체 공격 속도 +50%')}
+ else if(id===3){for(const e of live){damage(e,D*4.5+hpP(e,.2),m,true);e.mark=1;e.vuln=Math.max(e.vuln,.3);burst(e.x,e.y,'#b6ff8a',10,200,4)}if(S.hp<20){S.hp++;toast('🌿 윤회의 낙인 · 수호석 +1')}}
+ else if(id===4){for(const e of live){stunE(e,e.t==='boss'?1.2:3);kb(e,140);damage(e,D*4,m,true);e.slow=Math.max(e.slow,.6);e.slowT=4;fx({k:'ring',x:e.x,y:e.y,c:'#bff4ff',r0:6,r1:40,life:.4});burst(e.x,e.y,'#e0fbff',10,220,4)}}
+}
+function ultimate(m,i){if(m.s===7&&!m._sub&&m.f!=null&&mythRec(m.e,m.f))return mythSkill(m,i);const el=ELS[m.e],k=el.k,live=S.enemies.filter(e=>e.hp>0);if(!live.length)return;m.ue=0;if(m.s===7&&m.f!=null&&!m._sub){const m2={e:m.f,s:7,f:null,ue:0,_sub:1};setTimeout(()=>{if(!S.over)ultimate(m2,i)},500)}const st=mstat(m),D=st.dmg*(m.s>=7?7:m.s===6?ULT.d6:ULT.d5);
  if(!window.__noFx&&!m._sub)cutIn(m);shake=16;hitstop=.08;flash=.45;flashC=el.c;snd(110,.6,'sawtooth',.09,40);setTimeout(()=>snd(70,.5,'square',.06,30),120);
  const p=SLOTP[i];fx({k:'ring',x:p[0],y:p[1],c:el.c,r0:10,r1:700,life:.6,w:10});
  for(const e of live){
@@ -477,7 +490,9 @@ function update(dt){
    if(e.d>=PLEN){e.hp=0;e.leak=1;const l=e.t==='boss'?5:e.t==='elite'?2:1;S.hp-=l;shake=10;flash=.3;flashC='#ff2d55';snd(70,.3,'sawtooth',.08,40);toast('💥 수호석 -'+l);if(S.hp<=0){gameOver();return}}}
   S.enemies=S.enemies.filter(e=>e.hp>0);
   S.slots.forEach((m,i)=>{if(!m)return;m.cd-=dt;if(m.cd<=0){if(attack(m,i))m.cd=1/mstat(m).rate;else m.cd=.1}
-   if(m.s>=5){m.ue=Math.min(100,m.ue+dt*4*(m.s===6?1.4:1)*(1+.6*bf('ult')));if(m.ue>=100&&tsT<=0)ultimate(m,i)}});
+   if(m.s===7){const r=mythRec(m.e,m.f);m.ue=Math.min(100,m.ue+dt*100/(r?r.cd:24)*(1+.3*bf('ult')));if(m.ue>=100&&tsT<=0&&S.enemies.some(e=>e.hp>0))mythSkill(m,i)}
+   else if(m.s>=5){m.ue=Math.min(100,m.ue+dt*ULT.time*(m.s===6?1.4:1)*(1+.6*bf('ult')));if(m.ue>=100&&tsT<=0)ultimate(m,i)}});
+  S.cosmoT=Math.max(0,(S.cosmoT||0)-dt);
   if(S.mode==='raid'){S.raidT-=dt;if(S.raidT<=0)endRaid()}
   else if(!S.spawnQ.length&&!S.enemies.length)waveClear()}
  for(const s of S.shots){s.t+=dt;if(s.tgt.hp<=0&&!s.dead){s.dead=1}const dx=s.tgt.x-s.x,dy=s.tgt.y-s.y,d=Math.hypot(dx,dy);s.trail.push([s.x,s.y]);if(s.trail.length>7)s.trail.shift();
@@ -705,7 +720,7 @@ function render(t){const g=ctx;g.setTransform(1,0,0,1,0,0);{const og=g.createLin
   for(let s=0;s<m.s;s++){g.fillStyle=m.s===7?`hsl(45,100%,${60+Math.sin(t*6+s)*20}%)`:m.s===6?`hsl(${(t*200+s*50)%360},100%,70%)`:'#ffd75a';starPath(g,x-(m.s-1)*5+s*10,y+26,5,2.2,5);g.fill()}
   if(m.f!=null){const c2=ELS[m.f];g.save();g.translate(x,y-8);g.rotate(-t*1.6);g.strokeStyle=c2.c;g.lineWidth=2.5;g.globalAlpha=.8;g.beginPath();g.arc(0,0,30+m.s*2,0,2.2);g.stroke();g.beginPath();g.arc(0,0,30+m.s*2,3.14,5.3);g.stroke();g.restore();g.font='14px system-ui';g.textAlign='center';g.fillText(EMO[m.f],x-27,y-20)}
   if(S.up[m.e]>0){g.font='900 11px system-ui';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#000';g.strokeText('+'+S.up[m.e],x+26,y-22);g.fillStyle='#7dffb0';g.fillText('+'+S.up[m.e],x+26,y-22)}
-  if(m.s>=5){g.fillStyle='#000a';g.fillRect(x-22,y+33,44,5);g.fillStyle=m.s===6?`hsl(${t*200%360},100%,65%)`:ELS[m.e].c;g.fillRect(x-22,y+33,44*m.ue/100,5)}});
+  if(m.s>=5){g.fillStyle='#000a';g.fillRect(x-22,y+33,44,5);g.fillStyle=m.s===7?(m.ue>=99?'#fff':'#ffd75a'):m.s===6?`hsl(${t*200%360},100%,65%)`:ELS[m.e].c;g.fillRect(x-22,y+33,44*m.ue/100,5)}});
  // enemies
  for(const e of S.enemies)drawEnemy(g,e);
  // shots
@@ -776,7 +791,7 @@ function pairCount(){let n=0;for(let i=0;i<SLOTS;i++){const a=S.slots[i];if(!a||
 function iconCanvas(el,st,size,f2){const c=document.createElement('canvas');c.width=c.height=size*2;const g=c.getContext('2d');g.scale(2,2);const r=SPR[el+'_'+Math.min(st,5)]?size*(st===7?.3:st===6?.36:.4):size*(st===1?.4:.3);drawMon(g,el,st,size/2,SPR[el+'_'+Math.min(st,5)]?size*.6:size/2+(st===1?0:size*.05),r,0,1,0,f2);return c}
 function buildSummon(){const box=$('#summon');box.innerHTML='';ELS.forEach((e,i)=>{const b=document.createElement('button');b.className='sm';b.appendChild(iconCanvas(i,1,40));b.insertAdjacentHTML('beforeend',`<span style="color:${e.c}">${e.n}</span><i>${summonCost()}</i>`);b.onclick=()=>summon(i);if(S&&S.allowed&&!S.allowed.includes(i))b.style.opacity=.25;box.appendChild(b)})}
 function ui(){const info=$('#info');const m=S.sel>=0?S.slots[S.sel]:null;
- if(m){const el=ELS[m.e],st=mstat(m);const nxt=m.s<5?`다음: <b style="font-size:12px">${el.names[m.s]}</b> `:m.s===5?`궁극기 자동 · <span style="color:#ff9ad5">❓ 같은 ★5 2마리면…?</span>`:m.s===6?`<span style="color:#ffd75a">❓ 다른 각성 몬스터와 합치면…?</span>`:`<span style="color:#ffd75a">👑 MYTHIC · ${mythRec(m.e,m.f).u}</span>`;
+ if(m){const el=ELS[m.e],st=mstat(m);const nxt=m.s<5?`다음: <b style="font-size:12px">${el.names[m.s]}</b> `:m.s===5?`궁극기 자동 · <span style="color:#ff9ad5">❓ 같은 ★5 2마리면…?</span>`:m.s===6?`<span style="color:#ffd75a">❓ 다른 각성 몬스터와 합치면…?</span>`:`<span style="color:#ffd75a">👑 고유 스킬 「${mythRec(m.e,m.f).u}」 · 쿨타임 ${mythRec(m.e,m.f).cd}초</span><br><span style="font-size:11px;color:#e8d9ff">${mythRec(m.e,m.f).d}</span>`;
   info.innerHTML='';info.appendChild(iconCanvas(m.e,m.s,42,m.f));const pj=partner(S.sel),isF=pj>=0&&canFuse(m,S.slots[pj]),isM=pj>=0&&canMyth(m,S.slots[pj]);info.insertAdjacentHTML('beforeend',`<div class="tx"><b>${monName(m)}</b> <span class="st">${m.s===7?'<span style="color:#ffd75a">👑★7 MYTHIC</span>':m.s===6?'<span style="color:#ff9ad5">★★★★★★</span>':'★'.repeat(m.s)}</span> · ${el.n}<br>공격 ${Math.round(st.dmg)} · 속도 ${st.rate.toFixed(1)}/초${m.f!=null?' · '+EMO[m.f]+'융합':''}<br>${isF?'<span style="color:#d08bff">🔀 '+(recipe(m.e,S.slots[pj].e).n)+' 융합 가능!</span>':nxt}</div><div class="acts3">${(m.s<6||isM)?`<button class="btn evo${pj>=0?' on':''}" id="bEvo">${isM?'👑 궁극':isF?'🔀 융합':m.s===5?'✦ 각성':'✨ 진화'}<small>${pj>=0?(isM?MYTHCOST:isF?FUSECOST[m.s]:MERGE[m.s])+'✨':'짝 필요'}</small></button>`:''}<button class="btn gold" id="bUp">⬆ 강화 Lv${S.up[m.e]}<small>${upCost(m.e)}✨</small></button><button class="btn red" id="bSell">판매<small>+${sellValue(m)}</small></button></div>`);$('#bSell').onclick=()=>sell(S.sel);$('#bUp').onclick=()=>upgrade(m.e);const be=$('#bEvo');if(be)be.onclick=()=>evolveSel()}
  else if(S.mode==='raid'){const rb=S.enemies.find(e=>e.t==='raid');info.innerHTML=rb?`<div class="tx" style="text-align:center"><b>🐲 월드 보스 레이드 · ${EMO[rb.el]} ${rb.name}</b><br>약점 <span class="st">${weakTo(rb.el).map(a=>EMO[a]+ELS[a].n).join(' ')}</span> · 내 도감 최강 군단 출전<br>☄️ 메테오·❄️ 빙결도 쓸 수 있어요!</div>`:''}
  else{const n=new Set(S.slots.filter(Boolean).map(m=>m.e)).size;const sy=synergy();const we=waveEl(S.wave);info.innerHTML=`<div class="tx" style="text-align:center"><b>${S.wave%5===0?'⚠️ 보스 ':'다음 적 '}${EMO[we]} ${ELS[we].n}</b> · 약점 <span class="st">${weakTo(we).map(a=>EMO[a]+ELS[a].n).join(' ')}</span><br>불리: ${ADV[we].map(a=>EMO[a]+ELS[a].n).join(' ')} (피해 감소)<br>🌈 시너지 ${n}/10 +${Math.round(sy*100)}% · 📖 융합 레시피</div>${pairCount()?`<div class="acts3"><button class="btn evo on" id="bEvoAll">✨ 전부 진화<small>${pairCount()}쌍</small></button></div>`:''}`;const ea=$('#bEvoAll');if(ea)ea.onclick=evolveAll}
