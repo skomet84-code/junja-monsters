@@ -249,6 +249,19 @@
     } catch (e) { }
   }
 
+  // ===== 새 버전 자동 적용 (웨이브 사이에만 새로고침 → 진행 상황은 저장된 상태) =====
+  let newVer = null;
+  async function checkVer() {
+    try { const r = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' }); const j = await r.json(); if (j.v && typeof BUILD !== 'undefined' && j.v !== BUILD) newVer = j.v } catch (e) { }
+  }
+  setInterval(checkVer, 120000); document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVer() }); setTimeout(checkVer, 5000);
+  setInterval(() => {
+    if (!newVer || !S) return;
+    const safe = !S.running && !S.over && !evoOpen && !cardsOpen && (S.mode !== 'daily' || S.wave <= 1 || S.over);
+    if (safe) { newVer = null; toast('✨ 새 버전으로 업데이트해요'); try { saveRun() } catch (e) { } setTimeout(() => location.reload(), 900) }
+  }, 1500);
+  const vt = $('#verTx'); if (vt && typeof BUILD !== 'undefined') vt.textContent = 'v' + BUILD.slice(2, 12);
+
   // 버튼 연결
   $('#bDaily').onclick = startDaily;
   $('#bRank').onclick = () => openRank('normal');
