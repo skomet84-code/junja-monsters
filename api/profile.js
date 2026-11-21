@@ -42,7 +42,7 @@ module.exports = L.wrap(async (req, res) => {
       rep = { e, s, f };
     }
     const bio = String(b.bio == null ? (u.bio || '') : b.bio).slice(0, 40);
-    const r = await L.sql('UPDATE users SET rep=$2, bio=$3 WHERE id=$1 RETURNING id,name,gems,owned,equip,rep,bio', [u.id, rep ? JSON.stringify(rep) : (b.rep === null ? null : (u.rep ? JSON.stringify(u.rep) : null)), bio]);
+    const r = await L.sql('UPDATE users SET rep=$2, bio=$3 WHERE id=$1 RETURNING id,name,gems,owned,equip,rep,bio,items,crystal_pending,att_day,last_daily_reward', [u.id, rep ? JSON.stringify(rep) : (b.rep === null ? null : (u.rep ? JSON.stringify(u.rep) : null)), bio]);
     return L.json(res, 200, { user: L.publicUser(r[0]) });
   }
   return L.json(res, 405, { error: 'method' });

@@ -58,7 +58,7 @@ async function auth(req) {
   const h = req.headers.authorization || '';
   const t = verify(h.replace(/^Bearer\s+/i, ''));
   if (!t) return null;
-  const r = await sql('SELECT id,name,gems,owned,equip,banned,last_daily_reward,created_at,rep,bio,items,crystal_pending FROM users WHERE id=$1', [t.uid]);
+  const r = await sql('SELECT id,name,gems,owned,equip,banned,last_daily_reward,att_day,created_at,rep,bio,items,crystal_pending FROM users WHERE id=$1', [t.uid]);
   if (!r[0] || r[0].banned) return null;
   return r[0];
 }
@@ -103,6 +103,7 @@ const ITEMS = [
   { id: 'bless', kind: 'item', name: '축복 두루마리', desc: '시작할 때 축복 카드 1장 선택', price: 30 },
   { id: 'myth_call', kind: 'item', name: '궁극 소환서', desc: '★7 궁극 몬스터 1마리를 3웨이브 동안 소환 (고유 스킬 사용, 합성·판매 불가) · [확률] 태극룡황·천둥거신·우주여제·생사의 군주·빙풍신조 각 20%', price: 120 },
   { id: 'revive', kind: 'item', name: '부활의 깃털', desc: '수호석이 0이 되면 수호석 10으로 부활 (스테이지당 1회)', price: 60 },
+  { id: 'card_pack', kind: 'item', name: '🃏 카드 팩', desc: '속성 카드 10장 (무작위 · 같은 속성이 나오면 성장이 빨라져요)', price: 60 },
   { id: 'cr_100', kind: 'crystal', amount: 100, name: '💠 연구 포인트 100', desc: '연구소 영구 강화에 쓰는 준자 결정', price: 80 },
   { id: 'cr_300', kind: 'crystal', amount: 300, name: '💠 연구 포인트 300', desc: '+10% 보너스 포함 묶음', price: 220 },
   { id: 'cr_800', kind: 'crystal', amount: 800, name: '💠 연구 포인트 800', desc: '+25% 보너스 포함 대용량 묶음', price: 520 }
@@ -116,7 +117,7 @@ const INF_REWARDS = [
   { w: 75, gems: 150, item: 'title_inf75' },
   { w: 100, gems: 300, item: 'title_inf100' }
 ];
-function publicUser(u) { return { id: u.id, name: u.name, gems: u.gems, owned: u.owned || [], equip: u.equip || {}, items: u.items || {}, crystalPending: u.crystal_pending || 0, rep: u.rep || null, bio: u.bio || '', admin: isAdmin(u) }; }
+function publicUser(u) { return { att: { day: u.att_day || 0, last: u.last_daily_reward || null, today: kstDate() }, id: u.id, name: u.name, gems: u.gems, owned: u.owned || [], equip: u.equip || {}, items: u.items || {}, crystalPending: u.crystal_pending || 0, rep: u.rep || null, bio: u.bio || '', admin: isAdmin(u) }; }
 
 async function addGems(uid, amount, reason) {
   const r = await tx([

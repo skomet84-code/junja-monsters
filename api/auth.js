@@ -4,13 +4,23 @@ const NAME_RE = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9_.\- ]{2,12}$/;
 function cleanName(v) { return String(v || '').normalize('NFC').replace(/\s+/g, ' ').trim(); }
 const SIGNUP_GEMS = 100, DAILY_GEMS = 30;
 
+// 7일 연속 출석: 하루라도 빠지면 1일차부터. 7일차는 보석 + 카드 팩
+const ATT = [30, 30, 40, 40, 50, 60, 150];
 async function dailyReward(u) {
   const today = L.kstDate();
   if (u.last_daily_reward === today) return 0;
-  const r = await L.sql('UPDATE users SET last_daily_reward=$2 WHERE id=$1 AND (last_daily_reward IS DISTINCT FROM $2) RETURNING id', [u.id, today]);
+  const y = new Date(Date.parse(today + 'T00:00:00Z') - 86400000).toISOString().slice(0, 10);
+  const day = u.last_daily_reward === y ? ((u.att_day || 0) % 7) + 1 : 1;
+  const r = await L.sql('UPDATE users SET last_daily_reward=$2, att_day=$3 WHERE id=$1 AND (last_daily_reward IS DISTINCT FROM $2) RETURNING id', [u.id, today, day]);
   if (!r[0]) return 0;
-  u.gems = await L.addGems(u.id, DAILY_GEMS, '출석 보상');
-  return DAILY_GEMS;
+  u.att_day = day; u.last_daily_reward = today;
+  const gems = ATT[day - 1];
+  u.gems = await L.addGems(u.id, gems, '출석 보상 ' + day + '일차');
+  if (day === 7) {
+    const it = await L.sql(`UPDATE users SET items=jsonb_set(items,'{card_pack}',to_jsonb(coalesce((items->>'card_pack')::int,0)+2)) WHERE id=$1 RETURNING items`, [u.id]);
+    if (it[0]) u.items = it[0].items;
+  }
+  return gems;
 }
 
 module.exports = L.wrap(async (req, res) => {
@@ -40,14 +50,14 @@ module.exports = L.wrap(async (req, res) => {
     const ex = await L.sql('SELECT id FROM users WHERE lower(name)=lower($1)', [name]);
     if (ex[0]) return L.json(res, 409, { error: '이미 사용 중인 닉네임이에요' });
     const salt = L.newSalt();
-    const r = await L.sql('INSERT INTO users(name,pass,salt,gems,last_login) VALUES($1,$2,$3,0,now()) RETURNING id,name,gems,owned,equip,banned,last_daily_reward', [name, L.hashPass(pass, salt), salt]);
+    const r = await L.sql('INSERT INTO users(name,pass,salt,gems,last_login) VALUES($1,$2,$3,0,now()) RETURNING id,name,gems,owned,equip,banned,last_daily_reward,att_day', [name, L.hashPass(pass, salt), salt]);
     const u = r[0];
     u.gems = await L.addGems(u.id, SIGNUP_GEMS, '가입 축하');
     const reward = await dailyReward(u);
     return L.json(res, 200, { token: L.makeToken(u), user: L.publicUser(u), reward: SIGNUP_GEMS + reward, isNew: true });
   }
   if (b.action === 'login') {
-    const r = await L.sql('SELECT id,name,pass,salt,gems,owned,equip,banned,last_daily_reward FROM users WHERE lower(name)=lower($1)', [name]);
+    const r = await L.sql('SELECT id,name,pass,salt,gems,owned,equip,banned,last_daily_reward,att_day,items,crystal_pending FROM users WHERE lower(name)=lower($1)', [name]);
     const u = r[0];
     if (!u || L.hashPass(pass, u.salt) !== u.pass) return L.json(res, 401, { error: '닉네임 또는 비밀번호가 맞지 않아요' });
     if (u.banned) return L.json(res, 403, { error: '이용이 제한된 계정이에요. 운영자에게 문의해 주세요' });

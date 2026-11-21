@@ -1,5 +1,5 @@
 const L = require('./_lib');
-const RET = 'id,name,gems,owned,equip,items,crystal_pending,rep,bio';
+const RET = 'id,name,gems,owned,equip,items,crystal_pending,rep,bio,att_day,last_daily_reward';
 
 module.exports = L.wrap(async (req, res) => {
   if (req.method === 'GET') {
@@ -62,7 +62,7 @@ module.exports = L.wrap(async (req, res) => {
   }
   if (b.action === 'claimCrystal') {
     const r = await L.sql(`UPDATE users u SET crystal_pending=0 FROM (SELECT id, crystal_pending AS p FROM users WHERE id=$1 FOR UPDATE) o
-      WHERE u.id=o.id AND o.p>0 RETURNING o.p AS amount, u.id,u.name,u.gems,u.owned,u.equip,u.items,u.crystal_pending,u.rep,u.bio`, [u.id]);
+      WHERE u.id=o.id AND o.p>0 RETURNING o.p AS amount, u.id,u.name,u.gems,u.owned,u.equip,u.items,u.crystal_pending,u.rep,u.bio,u.att_day,u.last_daily_reward`, [u.id]);
     if (!r[0]) return L.json(res, 200, { amount: 0, user: L.publicUser(u) });
     return L.json(res, 200, { amount: Number(r[0].amount), user: L.publicUser(r[0]) });
   }

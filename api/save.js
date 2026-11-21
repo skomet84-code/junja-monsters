@@ -27,6 +27,11 @@ module.exports = L.wrap(async (req, res) => {
       m.tri = Object.assign({}, c.tri || {}, meta.tri || {});
       m.myth = Object.assign({}, c.myth || {}, meta.myth || {});
       m.god = Math.max(c.god || 0, meta.god || 0);
+      // 카드·연구는 기기끼리 덮어쓰지 않게 더 높은 쪽 유지
+      const cc = c.card || {}, mc = meta.card || {}; m.card = {};
+      for (const k of new Set([...Object.keys(cc), ...Object.keys(mc)])) { const x = cc[k] || { lv: 1, n: 0 }, y = mc[k] || { lv: 1, n: 0 }; m.card[k] = (y.lv > x.lv || (y.lv === x.lv && y.n >= x.n)) ? y : x; }
+      const cl = c.lab || {}, ml = meta.lab || {}; m.lab = {};
+      for (const k of new Set([...Object.keys(cl), ...Object.keys(ml)])) m.lab[k] = Math.max(cl[k] || 0, ml[k] || 0);
     }
     if (run === undefined) await L.sql('INSERT INTO saves(user_id,meta,updated_at) VALUES($1,$2,now()) ON CONFLICT(user_id) DO UPDATE SET meta=$2,updated_at=now()', [u.id, JSON.stringify(m)]);
     else await L.sql('INSERT INTO saves(user_id,meta,run,updated_at) VALUES($1,$2,$3,now()) ON CONFLICT(user_id) DO UPDATE SET meta=$2,run=$3,updated_at=now()', [u.id, JSON.stringify(m), JSON.stringify(run)]);

@@ -58,7 +58,7 @@
       const j = await api('/api/auth', 'POST', { action, name, pass, agree });
       localStorage.setItem(TK, j.token); setUser(j.user);
       await pull(); duelNews();
-      toast(action === 'register' ? `🎉 가입 완료! 💎${j.reward} 선물` : (j.reward ? `👋 출석 보상 💎${j.reward}` : `👋 ${j.user.name}님 환영해요`));
+      toast(action === 'register' ? `🎉 가입 완료! 💎${j.reward} 선물` : (j.reward ? `📅 출석 ${(j.user.att||{}).day||1}일차 💎${j.reward}${((j.user.att||{}).day)===7?' + 🃏카드 팩 2':''}` : `👋 ${j.user.name}님 환영해요`));
     } catch (e) { msg('⚠️ ' + (e.message === 'Failed to fetch' ? '인터넷 연결을 확인하고 다시 눌러 주세요' : e.message)); toast('⚠️ ' + e.message) }
     finally { authBusy = false; if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = old } }
   }
@@ -73,7 +73,7 @@
       const j = await api('/api/save');
       if (j.save && j.save.meta) {
         const sm = j.save.meta, lm = meta || {};
-        meta = Object.assign({ best: 0, dex: {} }, sm, { best: Math.max(sm.best || 0, lm.best || 0), stage: Math.max(sm.stage || 0, lm.stage || 0), dex: Object.assign({}, lm.dex || {}, sm.dex || {}), fuse: Object.assign({}, lm.fuse || {}, sm.fuse || {}), ach: Object.assign({}, lm.ach || {}, sm.ach || {}), tri: Object.assign({}, lm.tri || {}, sm.tri || {}), myth: Object.assign({}, lm.myth || {}, sm.myth || {}) });
+        meta = Object.assign({ best: 0, dex: {} }, sm, { best: Math.max(sm.best || 0, lm.best || 0), stage: Math.max(sm.stage || 0, lm.stage || 0), dex: Object.assign({}, lm.dex || {}, sm.dex || {}), fuse: Object.assign({}, lm.fuse || {}, sm.fuse || {}), ach: Object.assign({}, lm.ach || {}, sm.ach || {}), tri: Object.assign({}, lm.tri || {}, sm.tri || {}), myth: Object.assign({}, lm.myth || {}, sm.myth || {}), card: (() => { const a = lm.card || {}, b = sm.card || {}, r = {}; for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) { const x = a[k] || { lv: 1, n: 0 }, y = b[k] || { lv: 1, n: 0 }; r[k] = (y.lv > x.lv || (y.lv === x.lv && y.n >= x.n)) ? y : x } return r })(), lab: (() => { const a = lm.lab || {}, b = sm.lab || {}, r = {}; for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) r[k] = Math.max(a[k] || 0, b[k] || 0); return r })() });
         try { localStorage.setItem(SAVE + '_meta', JSON.stringify(meta)) } catch (e) { }
         if (j.save.run) { try { localStorage.setItem(SAVE + '_run', JSON.stringify(j.save.run)) } catch (e) { } }
       }
@@ -468,8 +468,9 @@
   (async () => {
     try { const j = await api('/api/shop'); j.items.forEach(i => ITEM_NAME[i.id] = i.name) } catch (e) { }
     if (localStorage.getItem(TK)) {
-      try { const j = await api('/api/auth'); setUser(j.user); if (j.reward) toast('👋 출석 보상 💎' + j.reward); await pull(); duelNews() } catch (e) { }
+      try { const j = await api('/api/auth'); setUser(j.user); if (j.reward) toast('📅 출석 ' + ((j.user.att || {}).day || 1) + '일차 💎' + j.reward + (((j.user.att || {}).day) === 7 ? ' + 🃏카드 팩 2' : '')); await pull(); duelNews() } catch (e) { }
     }
   })();
+  window.__setUser = (u) => { if (u) setUser(u) };
   window.__JMO = { api, startDaily, openRank, openShop, openProfile, get USER() { return USER } };
 })();
