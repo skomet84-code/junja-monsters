@@ -472,5 +472,85 @@
     }
   })();
   window.__setUser = (u) => { if (u) setUser(u) };
+  // ===== 🤝 친구 협동 =====
+  let COOP = null, coopT = null, coopLast = null, enCd = 0, cdTimer = null;
+  const esc2 = s => String(s || '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+  function coopLobby(msg) {
+    const B = $('#coopBox');
+    if (!COOP) {
+      B.innerHTML = `<div class="row"><button class="btn gold" id="cpMake">🏠 방 만들기 <small>STAGE ${stageSel()}</small></button></div>
+        <p style="text-align:center;margin:10px 0 4px">또는 친구 방 코드 입력</p><input class="cin" id="cpCode" inputmode="numeric" maxlength="6" placeholder="000000">
+        <div class="row"><button class="btn" id="cpJoin">🚪 들어가기</button></div>${msg ? `<p style="color:#ff9aa8;text-align:center">${esc2(msg)}</p>` : ''}`;
+      $('#cpMake').onclick = async () => { try { const r = await api('/api/coop', 'POST', { action: 'create', stage: stageSel() }); COOP = { code: r.code, role: 'host', stage: r.stage }; coopLobby(); coopPoll() } catch (e) { coopLobby(e.message) } };
+      $('#cpJoin').onclick = async () => { const c = ($('#cpCode').value || '').replace(/\D/g, ''); if (c.length !== 6) { coopLobby('6자리 숫자 코드를 넣어 주세요'); return } try { const r = await api('/api/coop', 'POST', { action: 'join', code: c }); COOP = { code: c, role: r.role, stage: r.stage, partner: r.role === 'host' ? r.guest : r.host }; coopLobby(); coopPoll() } catch (e) { coopLobby(e.message) } };
+      return;
+    }
+    const host = COOP.role === 'host';
+    B.innerHTML = `<div class="ccode">${COOP.code}</div><p style="text-align:center">STAGE ${COOP.stage} · ${host ? (COOP.partner ? `🙌 <b>${esc2(COOP.partner)}</b>님이 들어왔어요!` : '친구에게 이 코드를 알려주세요 · 기다리는 중…') : `🙌 <b>${esc2(COOP.partner || '방장')}</b>님의 방 · 방장이 시작하길 기다리는 중…`}</p>
+      <div class="row">${host ? `<button class="btn gold" id="cpStart" ${COOP.partner ? '' : 'disabled'}>▶ 함께 시작</button>` : ''}<button class="btn red" id="cpLeave">나가기</button></div>`;
+    if (host) $('#cpStart').onclick = async () => { try { await api('/api/coop', 'POST', { action: 'start', code: COOP.code }); coopBegin() } catch (e) { toast('⚠️ ' + e.message) } };
+    $('#cpLeave').onclick = () => coopLeave();
+  }
+  function coopStop() { clearInterval(coopT); coopT = null }
+  async function coopLeave() { const c = COOP; coopStop(); COOP = null; $('#coopP').innerHTML = ''; if (c) try { await api('/api/coop', 'POST', { action: 'leave', code: c.code }) } catch (e) { } coopLobby() }
+  function coopPoll() {
+    coopStop();
+    coopT = setInterval(async () => {
+      if (!COOP) return coopStop();
+      const inGame = S && S.coop && S.coop.code === COOP.code;
+      const st = inGame ? { wave: (typeof lw === 'function' ? lw() : 0), hp: Math.max(0, S.hp), kills: S.kills, alive: !(S.over && !S.coopClear) && !S.coopDown, cleared: !!S.coopClear } : null;
+      try {
+        const r = await api('/api/coop', 'POST', { action: 'sync', code: COOP.code, st });
+        if (r.partnerName && COOP.partner !== r.partnerName) { COOP.partner = r.partnerName; if (!inGame) coopLobby() }
+        if (!inGame && r.status === 'play' && COOP.role === 'guest') return coopBegin();
+        coopLast = r.partner;
+        for (const m of r.inbox || []) coopMsg(m);
+        if (inGame) coopPanel();
+      } catch (e) { if (/찾을 수 없|참가자가 아니/.test(e.message)) { toast('🤝 협동 방이 닫혔어요'); coopStop(); COOP = null; $('#coopP').innerHTML = '' } }
+    }, 2000);
+  }
+  function coopBegin() {
+    $('#mCoop').classList.remove('on');
+    const s = newStage(COOP.stage); s.coop = { code: COOP.code, role: COOP.role }; begin(s);
+    banner('🤝 협동 시작!', esc2(COOP.partner || '친구') + '님과 STAGE ' + COOP.stage, '#7dffb0'); coopPanel(); coopPoll();
+  }
+  function coopMsg(m) {
+    if (!S || !S.coop) return;
+    if (m.type === 'energy') { S.energy = Math.min(100, (S.energy || 0) + 30); toast('⚡ ' + m.from + '님이 기운 +30을 보냈어요!'); }
+    else if (m.type === 'revive' && S.coopDown) {
+      clearInterval(cdTimer); $('#coopDown').classList.remove('on'); S.coopDown = false; S.coopRev = 1; S.hold = 0; S.hp = 10;
+      for (const e of S.enemies) e.d = Math.max(0, e.d - 500);
+      banner('🪶 ' + m.from + '님이 부활시켜 줬어요!', '수호석 10 · 다시 싸워요', '#ffd75a'); flash = .5; flashC = '#fff3c0'; ui();
+    }
+  }
+  function coopPanel() {
+    const P = $('#coopP'); if (!S || !S.coop) { P.innerHTML = ''; return }
+    const p = coopLast, nm = esc2(COOP && COOP.partner || '친구');
+    const stx = !p ? '연결 중…' : p.left ? '나갔어요' : p.cleared ? '🎉 클리어!' : p.out ? '💀 탈락' : !p.alive ? '💥 쓰러짐! 부활 필요' : `${p.wave}/6 웨이브 · 💎${p.hp}`;
+    const canRev = p && !p.alive && !p.cleared && !p.left && !p.out;
+    P.innerHTML = `🤝 <b>${nm}</b> ${stx}<div class="cb"><button id="cpEn" ${Date.now() < enCd || (S.energy || 0) < 25 || !p || p.left ? 'disabled' : ''}>⚡ 기운 보내기<br><small>내 기운 25</small></button>${canRev ? `<button id="cpRv">🪶 부활<br><small>내 에테르 30%</small></button>` : ''}</div>`;
+    const en = $('#cpEn'); if (en) en.onclick = async () => { if ((S.energy || 0) < 25) return; S.energy -= 25; enCd = Date.now() + 20000; coopPanel(); try { await api('/api/coop', 'POST', { action: 'send', code: S.coop.code, type: 'energy' }); toast('⚡ 기운을 보냈어요') } catch (e) { toast('⚠️ ' + e.message) } };
+    const rv = $('#cpRv'); if (rv) rv.onclick = async () => { const c = Math.floor((S.eth || 0) * .3); S.eth -= c; rv.disabled = true; try { await api('/api/coop', 'POST', { action: 'send', code: S.coop.code, type: 'revive' }); toast('🪶 부활을 보냈어요 (에테르 -' + c + ')') } catch (e) { S.eth += c; toast('⚠️ ' + e.message) } ui() };
+  }
+  window.coopDown = () => {
+    if (S.coopRev || !coopLast || coopLast.left || coopLast.cleared === undefined) return false;
+    S.coopDown = true; S.hold = 1; let t = 20; $('#cdT').textContent = t; $('#coopDown').classList.add('on');
+    const end = () => { clearInterval(cdTimer); $('#coopDown').classList.remove('on'); S.hold = 0; S.coopRev = 1; gameOver() };
+    $('#cdGive').onclick = end;
+    cdTimer = setInterval(() => { t--; $('#cdT').textContent = t; if (t <= 0) end() }, 1000);
+    return true;
+  };
+  window.coopFinish = async (cleared) => {
+    if (!S || !S.coop) return; const code = S.coop.code; if (cleared) S.coopClear = 1; S.coopDown = false;
+    try {
+      const r = await api('/api/coop', 'POST', { action: 'finish', code, cleared, st: { wave: lw(), hp: Math.max(0, S.hp), kills: S.kills } });
+      const T = $('#overTx'); const p = r.partner;
+      if (T) T.insertAdjacentHTML('beforeend', `<br><b style="color:#7dffb0">🤝 협동 · ${esc2(COOP && COOP.partner || '친구')} ${p.cleared ? '클리어!' : p.left ? '나감' : p.alive ? '아직 싸우는 중' : '쓰러짐'}</b>${r.gems ? ` <b style="color:#ffd75a">💎+${r.gems}</b>` : (cleared && !p.cleared ? '<br><small>친구도 클리어하면 💎20을 받아요 (결과 화면에서 기다리기)</small>' : '')}`);
+      if (r.gems) { toast('🤝 둘 다 클리어! 💎+' + r.gems); try { const j = await api('/api/auth'); setUser(j.user) } catch (e) { } }
+      else if (cleared && !p.cleared && !p.left) { const iv = setInterval(async () => { if (!COOP) return clearInterval(iv); try { const q = await api('/api/coop', 'POST', { action: 'finish', code, cleared: true }); if (q.gems) { clearInterval(iv); toast('🤝 친구도 클리어! 💎+' + q.gems); if (T) T.insertAdjacentHTML('beforeend', ` <b style="color:#ffd75a">💎+${q.gems}</b>`); try { const j = await api('/api/auth'); setUser(j.user) } catch (e) { } } else if (q.partner.left || q.partner.out) clearInterval(iv) } catch (e) { clearInterval(iv) } }, 4000); setTimeout(() => clearInterval(iv), 180000) }
+    } catch (e) { }
+  };
+  $('#bCoop').onclick = () => { if (!USER) { toast('🔐 로그인하면 친구와 협동할 수 있어요'); return } coopLobby(); $('#mCoop').classList.add('on') };
+  $('#coopClose').onclick = () => { $('#mCoop').classList.remove('on') };
   window.__JMO = { api, startDaily, openRank, openShop, openProfile, get USER() { return USER } };
 })();

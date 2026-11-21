@@ -91,6 +91,13 @@ button:disabled{opacity:.4;cursor:default}
 #story>div{flex:1;max-width:420px;background:#141b33f2;border:1px solid #ffd75a88;border-radius:16px;padding:12px 14px;margin-left:-10px}
 #story small{color:#ffd75a;font-weight:800}#story b{display:block;font-size:12px;color:var(--mute)}#story p{margin:6px 0;font-size:15px;line-height:1.5;color:#fff}#story em{font-size:11px;color:#7a84a6;font-style:normal}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.btn.coop{background:linear-gradient(180deg,#0f4a45,#0a302d);border-color:#7dffb088}
+#coopP{position:absolute;right:6px;bottom:6px;z-index:3;width:44%;background:#000c;border:1px solid #7dffb077;border-radius:12px;padding:5px 8px;font-size:10.5px;color:#fff;line-height:1.35}
+#coopP:empty{display:none}#coopP b{color:#7dffb0}#coopP .cb{display:flex;gap:4px;margin-top:4px}#coopP button{flex:1;font-size:10.5px;padding:4px 2px;border-radius:8px;background:#1b2a4a;color:#fff;border:1px solid #7fe3ff55}#coopP button:disabled{opacity:.4}
+#coopDown{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:26;display:none;flex-direction:column;align-items:center;gap:8px;background:#1b0d16f2;border:2px solid #ff5c7a;border-radius:16px;padding:16px 18px;color:#fff;text-align:center}
+#coopDown.on{display:flex}#coopDown b{font-size:22px;color:#ff7a8a}#coopDown i{font-style:normal;color:#ffd75a;font-weight:900}
+.ccode{font-size:40px;font-weight:900;letter-spacing:6px;color:#ffd75a;text-align:center;margin:6px 0}
+.cin{width:100%;font-size:22px;text-align:center;letter-spacing:4px;padding:8px;border-radius:12px;border:1px solid var(--edge);background:#0d1222;color:#fff}
 .go{flex:1.6;border-radius:12px;font-weight:900;font-size:15px;background:linear-gradient(180deg,#ffe2a3,#d9a54e);color:#2a1a05;box-shadow:0 4px 14px #d9a54e44}
 .go.run{background:var(--panel2);color:var(--ink);box-shadow:none;border:1px solid var(--edge)}
 .modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:9;padding:14px}
@@ -219,7 +226,7 @@ button:disabled{opacity:.4;cursor:default}
     <button class="ib" id="bDex" title="도감">📖</button>
     <button class="ib" id="bMenu" title="메뉴">⚙️</button>
   </div>
-  <div id="stage"><canvas id="cv"></canvas><div id="banner"></div><div id="toast"></div><div id="ach"></div><div id="combo"></div><div class="buffs" id="buffs"></div><div id="goal"></div></div>
+  <div id="stage"><canvas id="cv"></canvas><div id="banner"></div><div id="toast"></div><div id="ach"></div><div id="combo"></div><div class="buffs" id="buffs"></div><div id="goal"></div><div id="coopP"></div></div>
   <div class="dock">
     <div class="info" id="info"></div>
     <div class="grid" id="summon"></div>
@@ -233,6 +240,7 @@ button:disabled{opacity:.4;cursor:default}
   </div>
 </div>
 <div id="evo"><div class="rays"></div><div class="glow"></div><img class="from" alt=""><img class="from2" alt=""><img class="to2" alt=""><img class="to" alt=""><div class="flashw"></div><div class="txt"><div class="t1">진화!</div><div class="t2"></div><div class="t3"></div></div><div class="skip">화면을 누르면 계속</div></div>
+<div id="coopDown"><b>💥 쓰러졌어요!</b><span>친구가 🪶부활시켜 주길 기다리는 중… <i id="cdT">20</i>초</span><button class="btn" id="cdGive">포기하기</button></div>
 <div id="tut"><span></span><button id="tutSkip">건너뛰기</button></div>
 <div id="story"><img src="sprites/god.webp" alt=""><div><small>준자</small><b></b><p></p><em>화면을 누르면 계속</em></div></div>
 <div id="jack"><b>🎰 JACKPOT!</b><span></span></div>
@@ -245,11 +253,18 @@ button:disabled{opacity:.4;cursor:default}
   <div class="stsel"><button id="stPrev">◀</button><div><small id="stZone">새싹 평원</small><b id="stN">STAGE 1</b><small id="stInfo"></small></div><button id="stNext">▶</button></div>
   <div class="row"><button class="btn gold" id="bNew">▶ STAGE 1 시작</button><button class="btn" id="bCont">이어하기</button></div>
   <div class="row"><button class="btn daily" id="bDaily">📅 오늘의 도전</button><button class="btn raid" id="bRaid">🐲 월드 보스 <small>협동</small></button></div>
+  <div class="row"><button class="btn coop" id="bCoop">🤝 친구와 협동 <small>방 코드로 같은 스테이지를 함께 · 둘 다 클리어하면 💎20</small></button></div>
   <div class="row"><button class="btn endless" id="bEndless">♾️ 무한 대전 <small>끝없는 웨이브 · 20·30·50·75·100웨이브 돌파 보상</small></button></div>
   <div class="row r3"><button class="btn mis" id="bMis">📅 미션·출석</button><button class="btn mis" id="bCards">🃏 카드</button><button class="btn mis pass" id="bPass">⭐ 시즌 패스</button></div>
   <div class="row r4"><button class="btn" id="bRank">🏆 랭킹</button><button class="btn" id="bShop">🛍 상점</button><button class="btn" id="bLab3">🏛 연구소</button><button class="btn" id="bAch2">🎖 업적</button></div>
   <p id="best" style="text-align:center;margin-top:10px"></p>
   <p style="text-align:center;font-size:11.5px;color:#7a84a6;margin:6px 0 0"><a href="/terms" target="_blank" style="color:#9aa4c2">이용약관</a> · <a href="/privacy" target="_blank" style="color:#9aa4c2">개인정보처리방침</a> · <a href="/terms#refund" target="_blank" style="color:#9aa4c2">환불 정책</a></p>
+</div></div>
+<div class="modal" id="mCoop"><div class="card">
+  <h2>🤝 친구와 협동</h2>
+  <p>방을 만들고 <b>6자리 코드</b>를 친구에게 알려주세요. 둘이 같은 스테이지를 동시에 막아요. 서로 <b>⚡기운</b>을 보내고, 쓰러지면 <b>🪶부활</b>시켜 줄 수 있어요. 둘 다 클리어하면 각자 💎20!</p>
+  <div id="coopBox"></div>
+  <div class="row"><button class="btn" id="coopClose">닫기</button></div>
 </div></div>
 <div class="modal" id="mPass"><div class="card">
   <h2>⭐ 시즌 패스</h2><div class="sph" id="spHead"></div>
@@ -332,7 +347,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261122010604';
+const BUILD='20261122011036';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',namesB:['불꽃알','불꽃냥','화염사자','홍염사자왕','태양사자제'],n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -469,14 +484,14 @@ function newStage(n){const s=newState();s.mode='stage';s.stage=n;s.base=(n-1)*ST
 function summonMythTemp(){const i=S.slots.findIndex((x,k)=>!x&&k<S.unlocked);if(i<0)return false;const r=MYTH[Math.floor(Math.random()*5)];const m=mkMon(r.a,7);m.f=r.b;m.temp=3;m.ue=60;S.slots[i]=m;const p=SLOTP[i];burst(p[0],p[1],'#ffd75a',40,260,5);fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:10,r1:120,life:.6,w:8});banner('📕 궁극 소환! '+r.n,'3웨이브 동안 함께 싸워요 · 고유 스킬 「'+r.u+'」','#ffd75a');shake=12;flash=.4;flashC='#fff3c0';return true}
 function slotsArr(st){return st.slots.map(m=>m&&!m.temp?[m.e,m.s,m.f,0,m.tri!=null?m.tri:null,m.trait||null,m.v||0]:null)}
 function slotsFrom(arr,s){return arr.concat(Array(Math.max(0,SLOTS-arr.length)).fill(null)).slice(0,SLOTS).map(a=>{if(!a)return null;const m=mkMon(a[0],a[1],s);if(a[2]!=null)m.f=a[2];if(a[4]!=null&&TRI[a[4]]){m.tri=a[4];m.f3=TRI[a[4]].e[2]}if(a[5]&&TR[a[5]])m.trait=a[5];if(a[6])m.v=1;return m})}
-function saveCheckpoint(){if(S.mode!=='stage')return;try{localStorage.setItem(SAVE+'_cp',JSON.stringify({stage:S.stage,carry:!!S.carry,slots:slotsArr(S),up:S.up,buffs:S.buffs,eth:S.eth,unlocked:S.unlocked,energy:S.energy}))}catch(e){}}
+function saveCheckpoint(){if(S.mode!=='stage'||S.coop)return;try{localStorage.setItem(SAVE+'_cp',JSON.stringify({stage:S.stage,carry:!!S.carry,slots:slotsArr(S),up:S.up,buffs:S.buffs,eth:S.eth,unlocked:S.unlocked,energy:S.energy}))}catch(e){}}
 function stageFromCp(n){try{const c=JSON.parse(localStorage.getItem(SAVE+'_cp')||'null');if(!c||c.stage!==n)return null;const s=newStage(n);s.slots=slotsFrom(c.slots,s);s.up=c.up;s.buffs=c.buffs||{};s.eth=c.eth;s.unlocked=Math.max(s.unlocked,c.unlocked||0);s.energy=c.energy;s.carry=c.carry;s.cpLoaded=1;return s}catch(e){return null}}
 function carryStage(prev){const n=prev.stage+1;const s=newStage(n);s.slots=slotsFrom(slotsArr(prev),s);s.up=prev.up.slice();s.buffs=Object.assign({},prev.buffs);s.unlocked=Math.max(s.unlocked,prev.unlocked);s.eth=Math.round(prev.eth+STAGE.carryEth*Math.pow(STAGE.ef,n-1));s.energy=Math.max(prev.energy,s.energy);s.carry=true;return s}
 window.stageNextState=function(){if(S.mode==='stage'&&S.over&&S.hp>0&&lw()>STAGE.waves)return carryStage(S);const n=S.mode==='stage'?S.stage:stageSel();return stageFromCp(n)||newStage(n)};
 function lw(){return S.wave-(S.base||0)}
 function waveLabel(){return S.mode==='stage'?S.stage+'-'+Math.min(lw(),STAGE.waves):String(S.wave)}
 function stageSel(){const mx=(meta.stage||0)+1;let v=meta.sel||mx;if(v>mx||v<1)v=mx;return v}
-function saveRun(){if(S.over||S.mode==='daily'||S.mode==='raid')return;try{localStorage.setItem(SAVE+'_run',JSON.stringify({mode:S.mode||'normal',stage:S.stage,base:S.base,kills:S.kills,godRes:S.godRes,revived:S.revived,gp:S.gp||0,wave:S.wave,hp:S.hp,eth:S.eth,energy:S.energy,up:S.up,buffs:S.buffs,unlocked:S.unlocked,slots:S.slots.map(m=>m?[m.e,m.s,m.f,m.temp||0,m.tri!=null?m.tri:null,m.trait||null,m.v||0]:null)}))}catch(e){}if(window.onSave)onSave()}
+function saveRun(){if(S.over||S.mode==='daily'||S.mode==='raid'||S.coop)return;try{localStorage.setItem(SAVE+'_run',JSON.stringify({mode:S.mode||'normal',stage:S.stage,base:S.base,kills:S.kills,godRes:S.godRes,revived:S.revived,gp:S.gp||0,wave:S.wave,hp:S.hp,eth:S.eth,energy:S.energy,up:S.up,buffs:S.buffs,unlocked:S.unlocked,slots:S.slots.map(m=>m?[m.e,m.s,m.f,m.temp||0,m.tri!=null?m.tri:null,m.trait||null,m.v||0]:null)}))}catch(e){}if(window.onSave)onSave()}
 function loadRun(){try{const r=JSON.parse(localStorage.getItem(SAVE+'_run')||'null');if(!r)return null;const s=newState();if(r.mode==='stage'){s.mode='stage';s.stage=r.stage;s.base=r.base}else s.mode='normal';s.kills=r.kills||0;s.godRes=r.godRes||0;s.gp=r.gp||0;s.revived=r.revived||0;s.wave=r.wave;s.hp=r.hp;s.eth=r.eth;s.energy=r.energy;if(r.up)s.up=r.up;if(!Number.isFinite(s.eth)){s.eth=0;s.up=s.up.map(u=>Math.min(u||0,12))}if(!Number.isFinite(s.energy))s.energy=0;if(r.unlocked)s.unlocked=Math.max(s.unlocked,r.unlocked);if(r.buffs)s.buffs=r.buffs;s.slots=r.slots.concat(Array(Math.max(0,SLOTS-r.slots.length)).fill(null)).map(a=>{if(!a)return null;const m=mkMon(a[0],a[1],s);if(a[2]!=null)m.f=a[2];if(a[3])m.temp=a[3];if(a[4]!=null&&TRI[a[4]]){m.tri=a[4];m.f3=TRI[a[4]].e[2]}if(a[5]&&TR[a[5]])m.trait=a[5];if(a[6])m.v=1;return m});return s}catch(e){return null}}
 function mkMon(e,st,s){s=s||S;return{id:s.uid++,e,s:st,cd:Math.random()*.5,ue:0,anim:0,face:1,born:1}}
 // ===================== PATH =====================
@@ -724,13 +739,13 @@ function waveClear(){S.running=false;const bonus=Math.round((35+effW(S.wave)*4)*
 let auto=false;
 function startWave(){if(S.running||S.over||cardsOpen)return;if(new Set(S.slots.filter(Boolean).map(m=>m.e)).size>=10)unlock('syn10');if(Object.keys(meta.dex||{}).length>=30)unlock('dex30');if(!S.slots.some(Boolean)){toast('먼저 몬스터를 소환하세요');return}S.running=true;S.waveT=0;S.enraged=0;S.spawnQ=buildWave(S.wave);S.spawnT=.3;
  {const we=waveEl(S.wave),wk=weakTo(we).map(a=>EMO[a]+ELS[a].n).join(' ');const ar=Math.round(armorA()*100);if(S.mode==='stage'?(S.stage===STAGE.arm0&&lw()===1):S.wave===BAL.arm0+1)setTimeout(()=>toast('🛡 이제부터 적이 철갑을 둘러요 · ★6 각성은 철갑 무시, ★7 궁극은 추가 피해!'),1500);banner((S.mode==='stage'?(lw()===STAGE.waves?'👑 STAGE '+S.stage+' 보스 · ':isBossW(S.wave)?'⚠️ BOSS ':'STAGE '+S.stage+' · '+lw()+'/'+STAGE.waves+' · '):(S.wave%5===0?'⚠️ BOSS ':'WAVE '+S.wave+' · '))+EMO[we]+ELS[we].n+(isBossW(S.wave)?' 마왕':''),'약점: '+wk+(ar?' · 🛡 철갑 '+ar+'%':''),isBossW(S.wave)?'#ff5c7a':ELS[we].c)}snd(392,.15,'triangle',.06);ui()}
-function stageClear(){S.over=true;S.running=false;mis('stage');spXP(20+S.stage*5);const cardGot=addCards(Math.min(15,3+Math.floor(S.stage/2)),[...new Set(S.slots.filter(Boolean).filter(m=>m.s<8).map(m=>m.e))]);try{localStorage.removeItem(SAVE+'_run')}catch(e){}const first=S.stage>(meta.stage||0);meta.stage=Math.max(meta.stage||0,S.stage);meta.sel=meta.stage+1;const cr=12+S.stage*4+(first?15:0);meta.crystal=(meta.crystal||0)+cr;saveMeta();
+function stageClear(){S.over=true;S.running=false;if(S.coop&&window.coopFinish)setTimeout(()=>coopFinish(true),60);mis('stage');spXP(20+S.stage*5);const cardGot=addCards(Math.min(15,3+Math.floor(S.stage/2)),[...new Set(S.slots.filter(Boolean).filter(m=>m.s<8).map(m=>m.e))]);try{localStorage.removeItem(SAVE+'_run')}catch(e){}const first=S.stage>(meta.stage||0);meta.stage=Math.max(meta.stage||0,S.stage);meta.sel=meta.stage+1;const cr=12+S.stage*4+(first?15:0);meta.crystal=(meta.crystal||0)+cr;saveMeta();
  $('#overH').innerHTML='🎉 STAGE '+S.stage+' CLEAR!<small style="display:block;font-size:13px;color:#b9a8d8;font-weight:700">'+zoneName(S.stage)+' 정복</small>';$('#bRetry').textContent='▶ STAGE '+(S.stage+1)+' (군단 유지)';
  $('#overTx').innerHTML='남은 수호석 <b style="color:var(--gold)">'+Math.max(0,S.hp)+'</b> · 처치 '+S.kills+'마리<br>최고 기록: <b style="color:var(--gold)">STAGE '+meta.stage+'</b><br><br><b style="color:#7fe3ff;font-size:17px">💠 준자 결정 +'+cr+(first?' (첫 클리어 보너스!)':'')+'</b><br><b style="color:#ffd75a">🃏 카드 '+cardTxt(cardGot)+'</b><br>🛡 지금 군단·강화·축복 그대로 다음 스테이지로 이어져요';
  banner('🎉 STAGE '+S.stage+' CLEAR!',zoneName(S.stage)+' 정복','#ffd75a');shake=10;flash=.4;flashC='#ffe7a0';snd(523,.2,'triangle',.07);setTimeout(()=>snd(784,.2,'triangle',.07),150);setTimeout(()=>snd(1046,.4,'triangle',.07),300);
  if(window.onStageClear)setTimeout(()=>onStageClear(S.stage,Math.max(0,S.hp),S.kills),50);setTimeout(()=>$('#mOver').classList.add('on'),700)}
 function gameOver(){if(!S.over&&S.mode!=='raid'&&(S.godRes||0)<GOD.lives&&S.slots.some(m=>m&&m.s===8)){S.godRes=(S.godRes||0)+1;S.hp=8;for(const e of S.enemies)e.d=Math.max(0,e.d-700);banner('🔱 불사','갓준자는 쓰러지지 않는다 · 수호석 8','#ffe7a0');shake=24;flash=.8;flashC='#fff3c0';const gi=S.slots.findIndex(m=>m&&m.s===8);if(gi>=0){const p=SLOTP[gi];for(let k=0;k<3;k++)fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:10,r1:700+k*150,life:.8+k*.15,w:12})}snd(523,.6,'triangle',.09,1046);return}
-if(S.mode==='stage'){if(!S.over&&window.tryRevive&&tryRevive())return;S.over=true;S.running=false;try{localStorage.removeItem(SAVE+'_run')}catch(e){}const cr=Math.floor(lw()*1.2)+(S.stage-1)*2;meta.crystal=(meta.crystal||0)+cr;const cg=addCards(Math.min(8,1+Math.floor(S.stage/3)));saveMeta();
+if(S.mode==='stage'){if(!S.over&&window.tryRevive&&tryRevive())return;if(!S.over&&S.coop&&window.coopDown&&coopDown())return;S.over=true;if(S.coop&&window.coopFinish)setTimeout(()=>coopFinish(false),60);S.running=false;try{localStorage.removeItem(SAVE+'_run')}catch(e){}const cr=Math.floor(lw()*1.2)+(S.stage-1)*2;meta.crystal=(meta.crystal||0)+cr;const cg=addCards(Math.min(8,1+Math.floor(S.stage/3)));saveMeta();
  $('#overH').innerHTML='💥 수호석 파괴';$('#bRetry').textContent=(()=>{try{const c=JSON.parse(localStorage.getItem(SAVE+'_cp')||'null');return c&&c.stage===S.stage?'↺ STAGE '+S.stage+' 시작 상태로 재도전':'다시 도전'}catch(e){return '다시 도전'}})();
  $('#overTx').innerHTML='<b style="color:var(--gold)">STAGE '+S.stage+'</b> · '+lw()+'/'+STAGE.waves+' 웨이브에서 막혔어요.<br>최고 기록: STAGE '+(meta.stage||0)+' · 처치 '+S.kills+'마리<br><br><b style="color:#7fe3ff;font-size:17px">💠 준자 결정 +'+cr+'</b><br><b style="color:#ffd75a">🃏 카드 '+cardTxt(cg)+'</b><br>연구소·🃏카드로 강해져서 다시 도전해 보세요';
  if(window.onGameOver)setTimeout(()=>onGameOver(S.stage-1,S.kills,'stage'),50);setTimeout(()=>$('#mOver').classList.add('on'),600);return}
@@ -775,7 +790,7 @@ function buildCards(){const B=$('#cardList');if(!B)return;$('#cardCr').textConte
  B.innerHTML=ELS.map((el,e)=>{const c=cardOf(e),mx=c.lv>=CARD_MAX,need=CARD_NEED[c.lv]||0,ok=!mx&&c.n>=need&&(meta.crystal||0)>=cardCost(c.lv);return `<div class="cd${ok?' ok':''}"><img src="sprites/m${e}_5.webp" alt=""><b style="color:${el.c}">${el.n}</b><span>Lv${c.lv}${mx?' MAX':''} · 공격 +${Math.round((cardMul(e)-1)*100)}%</span><i><u style="width:${mx?100:Math.min(100,c.n/need*100)}%"></u></i><small>${mx?'최대 레벨':c.n+'/'+need+'장'}</small><button class="btn${ok?' gold':''}" data-cu="${e}" ${mx?'disabled':''}>${mx?'완료':'강화 💠'+cardCost(c.lv)}</button></div>`}).join('');
  B.querySelectorAll('[data-cu]').forEach(b=>b.onclick=()=>cardUp(+b.dataset.cu))}
 async function openPack(){const J=window.__JMO;if(!J||!J.USER){toast('로그인하면 카드 팩을 열 수 있어요');return}if(!((J.USER.items||{}).card_pack>0)){toast('카드 팩이 없어요 · 상점·출석·미션에서 얻어요');return}
- try{const r=await J.api('/api/shop',{action:'use',items:['card_pack']});if(window.__setUser)__setUser(r.user);if(!r.used.includes('card_pack')){toast('카드 팩이 없어요');return}const got=addCards(10);banner('🃏 카드 팩 개봉!',cardTxt(got),'#ffd75a');snd(784,.3,'triangle',.07);buildCards()}catch(e){toast('⚠️ '+e.message)}}
+ try{const r=await J.api('/api/shop','POST',{action:'use',items:['card_pack']});if(window.__setUser)__setUser(r.user);if(!r.used.includes('card_pack')){toast('카드 팩이 없어요');return}const got=addCards(10);banner('🃏 카드 팩 개봉!',cardTxt(got),'#ffd75a');snd(784,.3,'triangle',.07);buildCards()}catch(e){toast('⚠️ '+e.message)}}
 // ===== 📅 일일 미션 =====
 const MIS={merge:['몬스터 합치기',15],summon:['몬스터 소환',40],kill:['적 처치',400],stage:['스테이지 클리어',2],gamble:['🎰 도박 소환',5],boss:['보스 처치',3],awaken:['★6 각성 만들기',1],skill:['메테오·빙결 사용',5]};
 function kday(){return new Date(Date.now()+9*3600e3).toISOString().slice(0,10)}
@@ -802,10 +817,10 @@ function spPrem(t){return {c:5,cr:30,pack:t%3===0,title:t===30}}
 function spRwTxt(r){return [r.cr?'💠'+r.cr:'',r.c?'🃏'+r.c+'장':'',r.pack?'🃏팩':'',r.title?'👑칭호':''].filter(Boolean).join(' ')}
 async function spClaim(kind,t){const d=spData();if(t>spTier())return;if(kind==='f'){if(d.f>=t)return;if(t!==d.f+1){toast('앞 단계부터 받아요');return}const r=spFree(t);if(r.cr)meta.crystal=(meta.crystal||0)+r.cr;let g={};if(r.c)g=addCards(r.c);d.f=t;toast('🎁 '+spRwTxt(r)+(r.c?' · '+cardTxt(g):''))}
  else{if(!spOwned()){toast('시즌 패스가 필요해요');return}if(d.p>=t)return;if(t!==d.p+1){toast('앞 단계부터 받아요');return}const r=spPrem(t);
-  if(r.pack){try{const j=await __JMO.api('/api/shop',{action:'passClaim',tier:t});if(window.__setUser)__setUser(j.user)}catch(e){if(!/이미/.test(e.message)){toast('⚠️ '+e.message);return}}}
+  if(r.pack){try{const j=await __JMO.api('/api/shop','POST',{action:'passClaim',tier:t});if(window.__setUser)__setUser(j.user)}catch(e){if(!/이미/.test(e.message)){toast('⚠️ '+e.message);return}}}
   meta.crystal=(meta.crystal||0)+r.cr;const g=addCards(r.c);d.p=t;toast('⭐ '+spRwTxt(r)+' · '+cardTxt(g))}
  saveMeta();buildPass();markBadge()}
-async function spBuy(){const J=window.__JMO;if(!J||!J.USER){toast('로그인하면 시즌 패스를 살 수 있어요');return}if(!confirm('💎500으로 이번 달 시즌 패스를 살까요?'))return;try{const r=await J.api('/api/shop',{action:'buy',item:'pass'});if(window.__setUser)__setUser(r.user);toast('⭐ 시즌 패스 활성화!');buildPass()}catch(e){toast('⚠️ '+e.message)}}
+async function spBuy(){const J=window.__JMO;if(!J||!J.USER){toast('로그인하면 시즌 패스를 살 수 있어요');return}if(!confirm('💎500으로 이번 달 시즌 패스를 살까요?'))return;try{const r=await J.api('/api/shop','POST',{action:'buy',item:'pass'});if(window.__setUser)__setUser(r.user);toast('⭐ 시즌 패스 활성화!');buildPass()}catch(e){toast('⚠️ '+e.message)}}
 function buildPass(){const d=spData(),t=spTier(),own=spOwned();const nx=t>=SP_TIERS?1:(d.xp-t*SP_XP)/SP_XP;
  $('#spHead').innerHTML=`<b>${d.s.replace('-','년 ')}월 시즌</b> · ${t}/${SP_TIERS}단계 <small>(XP ${d.xp})</small><i><u style="width:${nx*100}%"></u></i><small>스테이지 클리어·미션 완료로 XP를 모아요 · 매달 1일 새 시즌</small>`;
  $('#spBuy').style.display=own?'none':'';
