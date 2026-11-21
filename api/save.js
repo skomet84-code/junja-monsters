@@ -25,6 +25,7 @@ module.exports = L.wrap(async (req, res) => {
       m.fuse = Object.assign({}, c.fuse || {}, meta.fuse || {});
       m.ach = Object.assign({}, c.ach || {}, meta.ach || {});
       m.tri = Object.assign({}, c.tri || {}, meta.tri || {});
+      m.myth = Object.assign({}, c.myth || {}, meta.myth || {});
       m.god = Math.max(c.god || 0, meta.god || 0);
     }
     if (run === undefined) await L.sql('INSERT INTO saves(user_id,meta,updated_at) VALUES($1,$2,now()) ON CONFLICT(user_id) DO UPDATE SET meta=$2,updated_at=now()', [u.id, JSON.stringify(m)]);
