@@ -1,6 +1,7 @@
 const L = require('./_lib');
 
-const NAME_RE = /^[가-힣a-zA-Z0-9_]{2,12}$/;
+const NAME_RE = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9_.\- ]{2,12}$/;
+function cleanName(v) { return String(v || '').normalize('NFC').replace(/\s+/g, ' ').trim(); }
 const SIGNUP_GEMS = 100, DAILY_GEMS = 30;
 
 async function dailyReward(u) {
@@ -21,8 +22,8 @@ module.exports = L.wrap(async (req, res) => {
   }
   if (req.method !== 'POST') return L.json(res, 405, { error: 'method' });
   const b = L.body(req);
-  const name = String(b.name || '').trim(), pass = String(b.pass || '');
-  if (!NAME_RE.test(name)) return L.json(res, 400, { error: '닉네임은 2~12자 한글/영문/숫자로 입력해 주세요' });
+  const name = cleanName(b.name), pass = String(b.pass || '');
+  if (!NAME_RE.test(name)) return L.json(res, 400, { error: '닉네임은 2~12자로, 한글·영문·숫자와 _ . - 만 쓸 수 있어요 (이모지·특수문자 불가)' });
   if (pass.length < 4 || pass.length > 40) return L.json(res, 400, { error: '비밀번호는 4자 이상으로 입력해 주세요' });
 
   if (b.action === 'register') {

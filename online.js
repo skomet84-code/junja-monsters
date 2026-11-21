@@ -31,23 +31,33 @@
       $('#bOut').onclick = () => logout(); $('#bMyPf').onclick = () => openProfile(USER.name);
     } else {
       A.innerHTML = `<b>🔐 로그인하면</b> <small>기록이 서버에 저장되고 랭킹·상점을 쓸 수 있어요 (가입 선물 💎100)</small>
-        <input id="inName" placeholder="닉네임 (2~12자)" maxlength="12" autocomplete="username">
+        <input id="inName" placeholder="닉네임 (2~12자 · 한글/영문/숫자)" maxlength="12" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false">
         <input id="inPass" type="password" placeholder="비밀번호 (4자 이상)" maxlength="40" autocomplete="current-password">
         <div class="row" style="margin-top:4px"><button class="btn" id="bReg">회원가입</button><button class="btn gold" id="bLogin">로그인</button></div>
-        <small>로그인 없이도 게스트로 플레이할 수 있어요</small>`;
+        <div id="authMsg" style="min-height:18px;font-size:12.5px;font-weight:800;color:#ff8a9a;margin:4px 0 2px"></div><small>로그인 없이도 게스트로 플레이할 수 있어요 · 비밀번호는 잊어버리면 운영자에게 문의</small>`;
       $('#bLogin').onclick = () => doAuth('login');
       $('#bReg').onclick = () => doAuth('register');
       $('#inPass').onkeydown = e => { if (e.key === 'Enter') doAuth('login') };
     }
   }
+  let authBusy = false;
   async function doAuth(action) {
-    const name = $('#inName').value.trim(), pass = $('#inPass').value;
+    if (authBusy) return;
+    const msg = t => { const m = $('#authMsg'); if (m) { m.style.color = '#ff8a9a'; m.textContent = t } };
+    const name = $('#inName').value.normalize('NFC').replace(/\s+/g, ' ').trim(), pass = $('#inPass').value;
+    if (name.length < 2 || name.length > 12) return msg('⚠️ 닉네임은 2~12자로 입력해 주세요');
+    if (!/^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9_.\- ]+$/.test(name)) return msg('⚠️ 닉네임에는 한글·영문·숫자와 _ . - 만 쓸 수 있어요 (이모지·특수문자 불가)');
+    if (pass.length < 4) return msg('⚠️ 비밀번호는 4자 이상으로 입력해 주세요');
+    authBusy = true; const btn = $(action === 'register' ? '#bReg' : '#bLogin'), old = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = action === 'register' ? '가입 중…' : '로그인 중…' }
+    { const m = $('#authMsg'); if (m) { m.style.color = '#9aa4c2'; m.textContent = '서버에 연결 중…' } }
     try {
       const j = await api('/api/auth', 'POST', { action, name, pass });
       localStorage.setItem(TK, j.token); setUser(j.user);
       await pull(); duelNews();
       toast(action === 'register' ? `🎉 가입 완료! 💎${j.reward} 선물` : (j.reward ? `👋 출석 보상 💎${j.reward}` : `👋 ${j.user.name}님 환영해요`));
-    } catch (e) { toast('⚠️ ' + e.message) }
+    } catch (e) { msg('⚠️ ' + (e.message === 'Failed to fetch' ? '인터넷 연결을 확인하고 다시 눌러 주세요' : e.message)); toast('⚠️ ' + e.message) }
+    finally { authBusy = false; if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = old } }
   }
   function logout(silent) {
     localStorage.removeItem(TK); setUser(null);

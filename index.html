@@ -24,7 +24,7 @@ button:disabled{opacity:.4;cursor:default}
 #banner{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;font-weight:900;font-size:30px;text-align:center;white-space:nowrap;text-shadow:0 0 18px currentColor,0 3px 0 #0009;transition:transform .25s cubic-bezier(.2,1.6,.4,1),opacity .25s}
 #banner.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 #banner small{display:block;font-size:14px;color:#fff;opacity:.9;margin-top:2px}
-#toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:#000b;border:1px solid var(--edge);padding:6px 12px;border-radius:999px;font-size:12.5px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+#toast{position:fixed;z-index:40;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));max-width:92vw;white-space:normal!important;text-align:center;transform:translateX(-50%);background:#000b;border:1px solid var(--edge);padding:6px 12px;border-radius:999px;font-size:12.5px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 #toast.on{opacity:1}
 .dock{padding:6px 8px calc(8px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px}
 .info{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:6px 8px;min-height:54px}
@@ -254,7 +254,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261121110755';
+const BUILD='20261121111259';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
