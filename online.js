@@ -100,7 +100,7 @@
       const j = await api('/api/score', 'POST', { mode, wave, kills });
       USER.gems = j.gems; renderAcct();
       const el = $('#rkRes');
-      if (el) el.innerHTML = `<b style="color:#ffd75a">${mode === 'daily' ? '📅 오늘의 도전' : '🏆 주간'} 랭킹 ${j.me ? j.me.rank + '위' : '-'}</b> / ${j.total}명` + (j.newBest ? ' · 신기록!' : '') + (j.reward ? `<br>💎 도전 보상 +${j.reward}` : '');
+      if (el) el.innerHTML = `<b style="color:#ffd75a">${mode === 'daily' ? '📅 오늘의 도전' : '♾️ 무한 대전 주간'} 랭킹 ${j.me ? j.me.rank + '위' : '-'}</b> / ${j.total}명` + (j.newBest ? ' · 신기록!' : '') + (j.reward ? `<br>💎 도전 보상 +${j.reward}` : '');
     } catch (e) { const el = $('#rkRes'); if (el) el.textContent = '랭킹 등록 실패: ' + e.message }
   };
 
@@ -144,7 +144,7 @@
     $('#mRank').classList.add('on'); $('#rkList').innerHTML = '<p>불러오는 중…</p>'; $('#rkInfo').textContent = '';
     try {
       const j = await api('/api/score?mode=' + rkMode);
-      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 스테이지 랭킹 · 최고 스테이지 (같으면 남은 수호석)' : '🗓 ' + j.period + ' 주간 랭킹 (월요일 초기화)')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? 'STAGE ' + j.me.wave : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
+      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 스테이지 랭킹 · 최고 스테이지 (같으면 남은 수호석)' : '♾️ ' + j.period + ' 무한 대전 주간 랭킹 · 최고 웨이브 (월요일 초기화)')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? 'STAGE ' + j.me.wave : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
       $('#rkList').innerHTML = j.top.length ? j.top.map((t, ix) => `<div class="rk${t.me ? ' me' : ''}" data-pf="${esc(t.name)}" data-ix="${ix}"><div class="n">${t.rank <= 3 ? ['🥇', '🥈', '🥉'][t.rank - 1] : t.rank}</div><div class="nm">${t.title ? `<small>「${esc(titleName(t.title))}」</small>` : ''}${esc(t.name)}</div><div class="w">${rkMode === 'stage' ? 'STAGE ' + t.wave : 'WAVE ' + t.wave}</div><small style="color:#9aa4c2;width:56px;text-align:right">${rkMode === 'stage' ? '💎' + t.kills : t.kills + '마리'}</small></div>`).join('') : '<p>아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!</p>';
       j.top.forEach((t, ix) => { const row = document.querySelector(`.rk[data-ix="${ix}"]`); if (!row) return; const slot = document.createElement('div'); slot.className = 'rkic'; if (t.rep) slot.appendChild(iconCanvas(t.rep.e, t.rep.s, 34, t.rep.f)); row.insertBefore(slot, row.children[1]); row.onclick = () => openProfile(t.name) });
     } catch (e) { $('#rkList').innerHTML = '<p>랭킹을 불러오지 못했어요: ' + esc(e.message) + '</p>' }

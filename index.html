@@ -158,6 +158,7 @@ button:disabled{opacity:.4;cursor:default}
 #combo.on{opacity:1}#combo small{display:block;font-size:11px;color:#fff;letter-spacing:2px}
 .lab.no{opacity:.55}
 .how{font-size:13px;line-height:1.7;color:#cfd5ea;background:#0d1222;border-radius:12px;padding:10px 12px;margin:8px 0}
+.btn.endless{background:linear-gradient(135deg,#2a1d5a,#4a2a8a);border-color:#b9a2ff66;color:#e8dcff;width:100%}.btn.endless small{display:block;font-size:11px;color:#b9a2ff;font-weight:700}
 .stsel{display:flex;align-items:center;justify-content:center;gap:14px;margin:10px 0 2px}.stsel button{width:42px;height:42px;border-radius:50%;border:1px solid #ffd75a66;background:#1a1430;color:#ffd75a;font-size:18px;font-weight:900}.stsel button:disabled{opacity:.3}.stsel div{text-align:center;min-width:120px}.stsel b{display:block;font-size:28px;color:#ffd75a;line-height:1.1}.stsel small{display:block;font-size:11px;color:#b9a8d8}
 </style>
 </head>
@@ -194,6 +195,7 @@ button:disabled{opacity:.4;cursor:default}
   <div class="stsel"><button id="stPrev">◀</button><div><small id="stZone">새싹 평원</small><b id="stN">STAGE 1</b><small id="stInfo"></small></div><button id="stNext">▶</button></div>
   <div class="row"><button class="btn gold" id="bNew">▶ STAGE 1 시작</button><button class="btn" id="bCont">이어하기</button></div>
   <div class="row"><button class="btn daily" id="bDaily">📅 오늘의 도전</button><button class="btn raid" id="bRaid">🐲 월드 보스 <small>협동</small></button></div>
+  <div class="row"><button class="btn endless" id="bEndless">♾️ 무한 대전 <small>끝없는 웨이브 · 주간 랭킹</small></button></div>
   <div class="row r4"><button class="btn" id="bRank">🏆 랭킹</button><button class="btn" id="bShop">🛍 상점</button><button class="btn" id="bLab3">🏛 연구소</button><button class="btn" id="bAch2">🎖 업적</button></div>
   <p id="best" style="text-align:center;margin-top:10px"></p>
 </div></div>
@@ -226,7 +228,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <div class="modal" id="mRank"><div class="card">
   <h2>🏆 랭킹</h2>
-  <div class="tabs"><button class="tab on" data-rk="stage">주간 스테이지</button><button class="tab" data-rk="daily">오늘의 도전</button><button class="tab" data-rk="normal">무한 모드(이전)</button></div>
+  <div class="tabs"><button class="tab on" data-rk="stage">주간 스테이지</button><button class="tab" data-rk="daily">오늘의 도전</button><button class="tab" data-rk="normal">♾️ 무한 대전</button></div>
   <p id="rkInfo"></p><div id="rkList"></div>
   <div class="row"><button class="btn gold" data-close>닫기</button></div>
 </div></div>
@@ -251,7 +253,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261121081731';
+const BUILD='20261121092912';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -896,13 +898,14 @@ function buildLab(){const L=meta.lab=meta.lab||{};$('#labC').textContent=meta.cr
 function openLab(){buildLab();$('#mLab').classList.add('on')}
 function begin(s){S=s;S.totalQ=1;$('#mStart').classList.remove('on');$('#mOver').classList.remove('on');$('#mMenu').classList.remove('on');lastE=lastEn=lastW=lastH=-1;resize();buildSummon();ui();showBuffs()}
 function stageUI(){const v=stageSel(),mx=(meta.stage||0)+1;$('#stN').textContent='STAGE '+v;$('#stZone').textContent=zoneName(v);$('#stInfo').textContent=v<=(meta.stage||0)?'클리어함 ✓':'첫 도전 · 💠 보너스';$('#bNew').textContent='▶ STAGE '+v+' 시작';$('#stPrev').disabled=v<=1;$('#stNext').disabled=v>=mx}
+$('#bEndless').onclick=()=>{const s=newState();s.mode='normal';begin(s);saveRun();banner('♾️ 무한 대전','끝없는 웨이브 · 어디까지 버틸 수 있을까?','#b9a2ff');if((meta.lab||{}).card)offerCards()};
 $('#stPrev').onclick=()=>{meta.sel=Math.max(1,stageSel()-1);stageUI()};$('#stNext').onclick=()=>{meta.sel=Math.min((meta.stage||0)+1,stageSel()+1);stageUI()};
 $('#bNew').onclick=()=>{begin(newStage(stageSel()));saveRun();if((meta.lab||{}).card)offerCards()};
 $('#bLab').onclick=openLab;$('#bAch').onclick=$('#bAch2').onclick=()=>{buildAch();$('#mAch').classList.add('on')};$('#bLab2').onclick=openLab;$('#bLab3').onclick=openLab;
 $('#bCont').onclick=()=>{const r=loadRun();begin(r||newState())};
 $('#bReset').onclick=()=>{if(confirmReset()){try{localStorage.removeItem(SAVE+'_run')}catch(e){}begin(newState())}};
 function confirmReset(){const b=$('#bReset');if(b.dataset.c){b.dataset.c='';b.textContent='처음부터 새 게임';return true}b.dataset.c=1;b.textContent='한 번 더 누르면 새 게임 시작';setTimeout(()=>{b.dataset.c='';b.textContent='처음부터 새 게임'},2500);return false}
-$('#bRetry').onclick=()=>{let s;if(S.mode==='stage'){const n=S.hp>0&&S.wave-(S.base||0)>STAGE.waves?S.stage+1:S.stage;meta.sel=n;s=newStage(n)}else if(S.mode==='daily'&&window.startDailyAgain){return startDailyAgain()}else s=newStage(stageSel());begin(s);saveRun();if((meta.lab||{}).card)offerCards()};
+$('#bRetry').onclick=()=>{let s;if(S.mode==='stage'){const n=S.hp>0&&S.wave-(S.base||0)>STAGE.waves?S.stage+1:S.stage;meta.sel=n;s=newStage(n)}else if(S.mode==='daily'&&window.startDailyAgain){return startDailyAgain()}else if(S.mode==='normal'){s=newState();s.mode='normal'}else s=newStage(stageSel());begin(s);saveRun();if((meta.lab||{}).card)offerCards()};
 // track total spawn for progress
 const _sw=startWave;startWave=function(){_sw();if(S.running)S.totalQ=S.spawnQ.length};
 // keyboard
