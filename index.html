@@ -137,7 +137,7 @@ button:disabled{opacity:.4;cursor:default}
 .lab button{min-width:74px}
 .buffs{position:absolute;right:8px;top:30px;display:flex;flex-direction:column;gap:3px;pointer-events:none}
 .buffs i{font-style:normal;font-size:11px;background:#000a;border:1px solid #d08bff66;border-radius:8px;padding:2px 6px;color:#e7cfff}
-#mLab{z-index:12}#mCards{z-index:11}
+#mLab{z-index:12}#mCards{z-index:11}#mRank,#mProf,#mShop,#mDex,#mAch,#mRaid,#mPrep{z-index:13}#mRev{z-index:14}
 .acct{background:#0d1222;border:1px solid #f2c46d33;border-radius:12px;padding:10px;margin:8px 0;font-size:13px}
 .acct input{width:100%;background:#151c2e;border:1px solid var(--edge);border-radius:9px;color:#fff;padding:9px 10px;font-size:15px;margin:3px 0;user-select:text;-webkit-user-select:text}
 .acct .row{margin-top:6px}.acct .who{display:flex;align-items:center;gap:8px}.acct .who b{font-size:15px}.acct .who .sp{flex:1}
@@ -251,10 +251,11 @@ button:disabled{opacity:.4;cursor:default}
   <h2 style="font-size:26px" id="overH">💥 수호석 파괴</h2>
   <p id="overTx"></p>
   <div class="row"><button class="btn" id="bLab2">🏛 연구소</button><button class="btn gold" id="bRetry">다시 도전</button></div>
+  <div class="row"><button class="btn" id="bHome">🏠 처음 화면으로</button></div>
 </div></div>
 <script>
 'use strict';
-const BUILD='20261121125513';
+const BUILD='20261121192046';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -360,8 +361,8 @@ function summonMythTemp(){const i=S.slots.findIndex((x,k)=>!x&&k<S.unlocked);if(
 function lw(){return S.wave-(S.base||0)}
 function waveLabel(){return S.mode==='stage'?S.stage+'-'+Math.min(lw(),STAGE.waves):String(S.wave)}
 function stageSel(){const mx=(meta.stage||0)+1;let v=meta.sel||mx;if(v>mx||v<1)v=mx;return v}
-function saveRun(){if(S.over||S.mode==='daily'||S.mode==='raid')return;try{localStorage.setItem(SAVE+'_run',JSON.stringify({mode:S.mode||'normal',stage:S.stage,base:S.base,wave:S.wave,hp:S.hp,eth:S.eth,energy:S.energy,up:S.up,buffs:S.buffs,unlocked:S.unlocked,slots:S.slots.map(m=>m?(m.tri!=null?[m.e,m.s,m.f,0,m.tri]:m.temp?[m.e,m.s,m.f,m.temp]:[m.e,m.s,m.f]):null)}))}catch(e){}if(window.onSave)onSave()}
-function loadRun(){try{const r=JSON.parse(localStorage.getItem(SAVE+'_run')||'null');if(!r)return null;const s=newState();if(r.mode==='stage'){s.mode='stage';s.stage=r.stage;s.base=r.base}s.wave=r.wave;s.hp=r.hp;s.eth=r.eth;s.energy=r.energy;if(r.up)s.up=r.up;if(!Number.isFinite(s.eth)){s.eth=0;s.up=s.up.map(u=>Math.min(u||0,12))}if(!Number.isFinite(s.energy))s.energy=0;if(r.unlocked)s.unlocked=Math.max(s.unlocked,r.unlocked);if(r.buffs)s.buffs=r.buffs;s.slots=r.slots.concat(Array(Math.max(0,SLOTS-r.slots.length)).fill(null)).map(a=>{if(!a)return null;const m=mkMon(a[0],a[1],s);if(a[2]!=null)m.f=a[2];if(a[3])m.temp=a[3];if(a[4]!=null&&TRI[a[4]]){m.tri=a[4];m.f3=TRI[a[4]].e[2]}return m});return s}catch(e){return null}}
+function saveRun(){if(S.over||S.mode==='daily'||S.mode==='raid')return;try{localStorage.setItem(SAVE+'_run',JSON.stringify({mode:S.mode||'normal',stage:S.stage,base:S.base,kills:S.kills,godRes:S.godRes,revived:S.revived,wave:S.wave,hp:S.hp,eth:S.eth,energy:S.energy,up:S.up,buffs:S.buffs,unlocked:S.unlocked,slots:S.slots.map(m=>m?(m.tri!=null?[m.e,m.s,m.f,0,m.tri]:m.temp?[m.e,m.s,m.f,m.temp]:[m.e,m.s,m.f]):null)}))}catch(e){}if(window.onSave)onSave()}
+function loadRun(){try{const r=JSON.parse(localStorage.getItem(SAVE+'_run')||'null');if(!r)return null;const s=newState();if(r.mode==='stage'){s.mode='stage';s.stage=r.stage;s.base=r.base}else s.mode='normal';s.kills=r.kills||0;s.godRes=r.godRes||0;s.revived=r.revived||0;s.wave=r.wave;s.hp=r.hp;s.eth=r.eth;s.energy=r.energy;if(r.up)s.up=r.up;if(!Number.isFinite(s.eth)){s.eth=0;s.up=s.up.map(u=>Math.min(u||0,12))}if(!Number.isFinite(s.energy))s.energy=0;if(r.unlocked)s.unlocked=Math.max(s.unlocked,r.unlocked);if(r.buffs)s.buffs=r.buffs;s.slots=r.slots.concat(Array(Math.max(0,SLOTS-r.slots.length)).fill(null)).map(a=>{if(!a)return null;const m=mkMon(a[0],a[1],s);if(a[2]!=null)m.f=a[2];if(a[3])m.temp=a[3];if(a[4]!=null&&TRI[a[4]]){m.tri=a[4];m.f3=TRI[a[4]].e[2]}return m});return s}catch(e){return null}}
 function mkMon(e,st,s){s=s||S;return{id:s.uid++,e,s:st,cd:Math.random()*.5,ue:0,anim:0,face:1,born:1}}
 // ===================== PATH =====================
 const SEG=[];let PLEN=0;
@@ -585,7 +586,7 @@ function waveClear(){S.running=false;const bonus=Math.round((35+effW(S.wave)*4)*
  {const cw=S.wave;if(cw>=10)unlock('w10');if(cw>=20)unlock('w20');if(cw>=30)unlock('w30');if(cw>=40)unlock('w40')}
  S.slots.forEach((m,i)=>{if(m&&m.temp){m.temp--;if(m.temp<=0){const p=SLOTP[i];burst(p[0],p[1],'#ffd75a',30,220,4);fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:10,r1:70,life:.5});S.slots[i]=null;toast('⏳ 궁극 소환이 끝났어요')}}});
  S.wave++;if(S.mode==='stage'&&lw()>STAGE.waves){stageClear();return}
- if(S.mode==='normal'){const ms=INF.find(r=>r.w===S.wave-1);if(ms){setTimeout(()=>banner('♾️ '+ms.w+'웨이브 돌파!',ms.t,'#b9a2ff'),900);shake=10;flash=.35;flashC='#b9a2ff';if(window.onEndlessMilestone)onEndlessMilestone(ms.w,S.kills);else toast('🔐 로그인하면 돌파 보상 '+ms.t+'을 받아요')}}if(S.mode!=='stage'&&S.wave-1>meta.best){meta.best=S.wave-1;saveMeta()}saveRun();ui();const pw=S.wave-1-(S.base||0);if(!window.__noFx&&(pw%5===0||pw===2)){offerCards();return}if(auto)setTimeout(()=>{if(!S.running&&!S.over&&auto&&!cardsOpen)startWave()},1400)}
+ if(S.mode==='normal'){const c=S.wave-1;const ms=INF.filter(r=>r.w<=c&&r.w>(S.infDone||0));if(ms.length){S.infDone=ms[ms.length-1].w;const ex=ms.find(r=>r.w===c);if(ex){setTimeout(()=>banner('♾️ '+ex.w+'웨이브 돌파!',ex.t,'#b9a2ff'),900);shake=10;flash=.35;flashC='#b9a2ff'}if(window.onEndlessMilestone)onEndlessMilestone(c,S.kills);else if(ex)toast('🔐 로그인하면 돌파 보상 '+ex.t+'을 받아요')}}if(S.mode!=='stage'&&S.wave-1>meta.best){meta.best=S.wave-1;saveMeta()}saveRun();ui();const pw=S.wave-1-(S.base||0);if(!window.__noFx&&(pw%5===0||pw===2)){offerCards();return}if(auto)setTimeout(()=>{if(!S.running&&!S.over&&auto&&!cardsOpen)startWave()},1400)}
 let auto=false;
 function startWave(){if(S.running||S.over||cardsOpen)return;if(new Set(S.slots.filter(Boolean).map(m=>m.e)).size>=10)unlock('syn10');if(Object.keys(meta.dex||{}).length>=30)unlock('dex30');if(!S.slots.some(Boolean)){toast('먼저 몬스터를 소환하세요');return}S.running=true;S.waveT=0;S.enraged=0;S.spawnQ=buildWave(S.wave);S.spawnT=.3;
  {const we=waveEl(S.wave),wk=weakTo(we).map(a=>EMO[a]+ELS[a].n).join(' ');const ar=Math.round(armorA()*100);if(S.mode==='stage'?(S.stage===STAGE.arm0&&lw()===1):S.wave===BAL.arm0+1)setTimeout(()=>toast('🛡 이제부터 적이 철갑을 둘러요 · ★6 각성은 철갑 무시, ★7 궁극은 추가 피해!'),1500);banner((S.mode==='stage'?(lw()===STAGE.waves?'👑 STAGE '+S.stage+' 보스 · ':isBossW(S.wave)?'⚠️ BOSS ':'STAGE '+S.stage+' · '+lw()+'/'+STAGE.waves+' · '):(S.wave%5===0?'⚠️ BOSS ':'WAVE '+S.wave+' · '))+EMO[we]+ELS[we].n+(isBossW(S.wave)?' 마왕':''),'약점: '+wk+(ar?' · 🛡 철갑 '+ar+'%':''),isBossW(S.wave)?'#ff5c7a':ELS[we].c)}snd(392,.15,'triangle',.06);ui()}
@@ -913,6 +914,7 @@ function fxTxt(){$('#bFx').textContent=fxLite?'⚡ 스킬 연출 꺼짐':'🎬 �
 $('#bFx').onclick=()=>{fxLite=!fxLite;try{localStorage.setItem('jm_fxlite',fxLite?'1':'0')}catch(e){}fxTxt();toast(fxLite?'스킬 컷인·멈춤 없이 빠르게 진행해요':'스킬 컷인 연출을 다시 보여줘요')};
 function contLabel(){const has=!!localStorage.getItem(SAVE+'_run');$('#bCont').style.display=has?'':'none';try{const r=JSON.parse(localStorage.getItem(SAVE+'_run')||'null');if(r)$('#bCont').textContent='▶ 이어하기'+(r.mode==='stage'?' · S'+r.stage+' '+Math.min(r.wave-(r.base||0),STAGE.waves)+'/'+STAGE.waves:' · W'+r.wave)}catch(e){}}
 function toTitle(){contLabel();document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));try{stageUI()}catch(e){}$('#mStart').classList.add('on')}
+$('#bHome').onclick=()=>{S.hold=1;toTitle()};
 $('#bSaveQuit').onclick=()=>{if(S.mode==='daily'||S.mode==='raid'){if(!confirm('오늘의 도전·레이드는 저장되지 않아요. 나갈까요?'))return;S.hold=1;S.over=true;toTitle();return}
  if(S.running){if(!confirm('전투 중이에요. 이번 웨이브는 처음부터 다시 하게 돼요. 저장하고 나갈까요?'))return;S.hold=1;if(window.onSave)onSave();toTitle();toast('💾 웨이브 시작 전 상태로 저장했어요');return}
  if(!S.over)saveRun();S.hold=1;toTitle();toast('💾 저장했어요 · 「이어하기」로 계속할 수 있어요')};

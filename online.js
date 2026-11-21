@@ -410,6 +410,7 @@
   // ===== 협동 레이드: 월드 보스 =====
   document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mRaid"><div class="card" style="text-align:center;background:linear-gradient(180deg,#3a1414,#120a14)"><div id="rdBody"></div><div class="row"><button class="btn gold" id="rdClose">닫기</button></div></div></div>`);
   document.head.insertAdjacentHTML('beforeend', `<style>.rdbar{height:16px;border-radius:8px;background:#000a;border:1px solid #ff7a4a88;overflow:hidden;margin:6px 0}.rdbar i{display:block;height:100%;background:linear-gradient(90deg,#ff2d55,#ff9a3e)}
+  #rdBody .row{flex-wrap:wrap}#rdBody .row .btn{flex:1 1 40%;min-width:0}
   .rdrw{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px;background:linear-gradient(135deg,#2a1d0a,#1a1230);border:1px solid #ffd75a55;border-radius:12px;padding:8px;margin:8px 0;font-size:12px}.rdrw b{width:100%;color:#ffd75a}.rdrw span{background:#0d1222;border-radius:8px;padding:2px 7px;font-weight:800}.rdrw small{width:100%;color:#b9a8d8;font-size:11px}
   .rdtop{display:flex;align-items:center;gap:6px;background:#0d1222;border-radius:9px;padding:5px 8px;margin:3px 0;font-size:12.5px;text-align:left}.rdtop canvas{width:28px;height:28px}.rdtop b{flex:1}</style>`);
   $('#rdClose').onclick = () => $('#mRaid').classList.remove('on');
