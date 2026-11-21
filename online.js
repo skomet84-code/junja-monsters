@@ -212,7 +212,7 @@
         if (!USER) btn = `<button class="btn" disabled>로그인 필요</button>`;
         else if (it.kind === 'item') btn = `<div class="qb"><button class="btn gold" data-buy="${it.id}" data-q="1" ${USER.gems < it.price ? 'disabled' : ''}>💎${it.price}</button><button class="btn" data-buy="${it.id}" data-q="5" ${USER.gems < it.price * 5 ? 'disabled' : ''}>×5 💎${it.price * 5}</button></div>`;
         else if (it.kind === 'crystal') btn = `<button class="btn gold" data-buy="${it.id}" ${USER.gems < it.price ? 'disabled' : ''}>💎 ${it.price}</button>`;
-        else if (it.exclusive && !own) btn = `<button class="btn" disabled>🔒 ♾️ ${it.exclusive}웨이브</button>`;
+        else if (it.exclusive && !own) btn = `<button class="btn" disabled>🔒 ${it.exclusive === 'pass' ? '⭐ 시즌 패스' : '♾️ ' + it.exclusive + '웨이브'}</button>`;
         else btn = own ? `<button class="btn ${on ? '' : 'gold'}" data-eq="${it.id}" data-slot="${it.slot}">${on ? '해제' : '장착'}</button>` : `<button class="btn gold" data-buy="${it.id}" ${USER.gems < it.price ? 'disabled' : ''}>💎 ${it.price}</button>`;
         const cnt = it.kind === 'item' && USER ? `<span class="cnt">보유 ${(USER.items || {})[it.id] || 0}</span>` : '';
         const pv = IT_IC[it.id] ? `<div class="pv ic">${IT_IC[it.id]}</div>` : `<div class="pv" style="background:${PV[it.id] || '#333'}"></div>`;

@@ -17,7 +17,14 @@ module.exports = L.wrap(async (req, res) => {
   if (b.action === 'buy') {
     const it = L.ITEMS.find(x => x.id === b.item);
     if (!it) return L.json(res, 400, { error: '없는 상품이에요' });
-    if (it.exclusive) return L.json(res, 400, { error: '무한 대전 ' + it.exclusive + '웨이브를 돌파하면 받는 보상이에요' });
+    if (it.exclusive) return L.json(res, 400, { error: it.exclusive === 'pass' ? '시즌 패스 30단계 보상이에요' : '무한 대전 ' + it.exclusive + '웨이브를 돌파하면 받는 보상이에요' });
+    if (it.kind === 'pass') {
+      const pid = 'pass_' + L.kstSeason();
+      const r = await L.sql(`UPDATE users SET gems=gems-$2::int, owned=owned||jsonb_build_array($3::text) WHERE id=$1 AND gems>=$2::int AND NOT (owned ? $3::text) RETURNING ${RET}`, [u.id, it.price, pid]);
+      if (!r[0]) return L.json(res, 400, { error: (u.owned || []).includes(pid) ? '이번 시즌 패스를 이미 가지고 있어요' : '보석이 부족해요' });
+      await log(it, it.price);
+      return L.json(res, 200, { user: L.publicUser(r[0]), bought: it, qty: 1 });
+    }
     const qty = it.kind === 'item' ? Math.max(1, Math.min(10, Math.floor(Number(b.qty) || 1))) : 1;
     const price = it.price * qty;
     let r;
@@ -59,6 +66,17 @@ module.exports = L.wrap(async (req, res) => {
     }
     const fresh = last || (await L.sql(`SELECT ${RET} FROM users WHERE id=$1`, [u.id]))[0];
     return L.json(res, 200, { used, user: L.publicUser(fresh) });
+  }
+  if (b.action === 'passClaim') {
+    // 시즌 패스 프리미엄 서버 보상: 3단계마다 카드 팩 1개, 30단계는 칭호 추가 (순서대로 한 번씩)
+    const season = L.kstSeason(), pid = 'pass_' + season, key = 'pc_' + season;
+    if (!(u.owned || []).includes(pid)) return L.json(res, 400, { error: '시즌 패스가 필요해요' });
+    const tier = Math.floor(Number(b.tier) || 0);
+    if (tier < 3 || tier > 30 || tier % 3) return L.json(res, 400, { error: 'tier' });
+    const r = await L.sql(`UPDATE users SET items=jsonb_set(jsonb_set(items,ARRAY[$3::text],to_jsonb($2::int)),'{card_pack}',to_jsonb(coalesce((items->>'card_pack')::int,0)+1)) ${tier === 30 ? ",owned=CASE WHEN owned ? 'title_season' THEN owned ELSE owned||jsonb_build_array('title_season') END" : ''}
+      WHERE id=$1 AND coalesce((items->>$3::text)::int,0) < $2::int RETURNING ${RET}`, [u.id, tier, key]);
+    if (!r[0]) return L.json(res, 400, { error: '이미 받은 보상이에요' });
+    return L.json(res, 200, { user: L.publicUser(r[0]), tier });
   }
   if (b.action === 'claimCrystal') {
     const r = await L.sql(`UPDATE users u SET crystal_pending=0 FROM (SELECT id, crystal_pending AS p FROM users WHERE id=$1 FOR UPDATE) o

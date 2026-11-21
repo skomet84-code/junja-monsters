@@ -66,6 +66,7 @@ function isAdmin(u) { return !!u && ADMINS.includes(u.name); }
 
 // 한국 시간 기준 날짜/주차
 function kst() { return new Date(Date.now() + 9 * 3600 * 1000); }
+function kstSeason() { return kst().toISOString().slice(0, 7); }
 function kstDate() { return kst().toISOString().slice(0, 10); }
 function kstWeek(offsetWeeks) {
   const d = new Date(kst().getTime() + (offsetWeeks || 0) * 7 * 86400000); const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
@@ -103,6 +104,8 @@ const ITEMS = [
   { id: 'bless', kind: 'item', name: '축복 두루마리', desc: '시작할 때 축복 카드 1장 선택', price: 30 },
   { id: 'myth_call', kind: 'item', name: '궁극 소환서', desc: '★7 궁극 몬스터 1마리를 3웨이브 동안 소환 (고유 스킬 사용, 합성·판매 불가) · [확률] 태극룡황·천둥거신·우주여제·생사의 군주·빙풍신조 각 20%', price: 120 },
   { id: 'revive', kind: 'item', name: '부활의 깃털', desc: '수호석이 0이 되면 수호석 10으로 부활 (스테이지당 1회)', price: 60 },
+  { id: 'pass', kind: 'pass', name: '⭐ 시즌 패스', desc: '이번 달 시즌 패스 프리미엄 보상 줄 열기 (카드 팩 10개 · 💠·🃏 추가 보상 · 30단계 칭호)', price: 500 },
+  { id: 'title_season', kind: 'cosmetic', slot: 'title', name: '시즌 정복자', desc: '⭐ 시즌 패스 30단계 보상', price: 0, exclusive: 'pass' },
   { id: 'card_pack', kind: 'item', name: '🃏 카드 팩', desc: '속성 카드 10장 (무작위 · 같은 속성이 나오면 성장이 빨라져요)', price: 60 },
   { id: 'cr_100', kind: 'crystal', amount: 100, name: '💠 연구 포인트 100', desc: '연구소 영구 강화에 쓰는 준자 결정', price: 80 },
   { id: 'cr_300', kind: 'crystal', amount: 300, name: '💠 연구 포인트 300', desc: '+10% 보너스 포함 묶음', price: 220 },
@@ -134,4 +137,4 @@ function wrap(fn) {
   };
 }
 
-module.exports = { INF_REWARDS, sql, tx, json, body, hashPass, newSalt, makeToken, auth, isAdmin, kstDate, kstWeek, ITEMS, publicUser, addGems, wrap };
+module.exports = { kstSeason, INF_REWARDS, sql, tx, json, body, hashPass, newSalt, makeToken, auth, isAdmin, kstDate, kstWeek, ITEMS, publicUser, addGems, wrap };
