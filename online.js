@@ -34,6 +34,7 @@
         <input id="inName" placeholder="닉네임 (2~12자 · 한글/영문/숫자)" maxlength="12" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false">
         <input id="inPass" type="password" placeholder="비밀번호 (4자 이상)" maxlength="40" autocomplete="current-password">
         <div class="row" style="margin-top:4px"><button class="btn" id="bReg">회원가입</button><button class="btn gold" id="bLogin">로그인</button></div>
+        <label class="agree"><input type="checkbox" id="inAgree"> <a href="/terms" target="_blank">이용약관</a>·<a href="/privacy" target="_blank">개인정보처리방침</a>에 동의하며 만 14세 이상이에요 <small>(가입 시 필수)</small></label>
         <div id="authMsg" style="min-height:18px;font-size:12.5px;font-weight:800;color:#ff8a9a;margin:4px 0 2px"></div><small>로그인 없이도 게스트로 플레이할 수 있어요 · 비밀번호는 잊어버리면 운영자에게 문의</small>`;
       $('#bLogin').onclick = () => doAuth('login');
       $('#bReg').onclick = () => doAuth('register');
@@ -48,11 +49,13 @@
     if (name.length < 2 || name.length > 12) return msg('⚠️ 닉네임은 2~12자로 입력해 주세요');
     if (!/^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9_.\- ]+$/.test(name)) return msg('⚠️ 닉네임에는 한글·영문·숫자와 _ . - 만 쓸 수 있어요 (이모지·특수문자 불가)');
     if (pass.length < 4) return msg('⚠️ 비밀번호는 4자 이상으로 입력해 주세요');
+    const agree = !!($('#inAgree') && $('#inAgree').checked);
+    if (action === 'register' && !agree) return msg('⚠️ 가입하려면 이용약관·개인정보처리방침 동의에 체크해 주세요');
     authBusy = true; const btn = $(action === 'register' ? '#bReg' : '#bLogin'), old = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = action === 'register' ? '가입 중…' : '로그인 중…' }
     { const m = $('#authMsg'); if (m) { m.style.color = '#9aa4c2'; m.textContent = '서버에 연결 중…' } }
     try {
-      const j = await api('/api/auth', 'POST', { action, name, pass });
+      const j = await api('/api/auth', 'POST', { action, name, pass, agree });
       localStorage.setItem(TK, j.token); setUser(j.user);
       await pull(); duelNews();
       toast(action === 'register' ? `🎉 가입 완료! 💎${j.reward} 선물` : (j.reward ? `👋 출석 보상 💎${j.reward}` : `👋 ${j.user.name}님 환영해요`));
@@ -300,6 +303,7 @@
   try { DUEL = JSON.parse(localStorage.getItem('jm_duel') || 'null') } catch (e) { }
   document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mProf"><div class="card" style="text-align:center"><div id="pfBody"></div><div class="row"><button class="btn gold" data-close>닫기</button></div></div></div>`);
   document.head.insertAdjacentHTML('beforeend', `<style>
+  .agree{display:block;font-size:12px;color:#c9cfe6;margin:6px 0 0;line-height:1.5}.agree input{width:16px;height:16px;vertical-align:-3px;margin:0 4px 0 0}.agree a{color:#7fe3ff}
   .shtabs{display:flex;gap:4px;flex-wrap:wrap}.shtabs .tab{flex:1;font-size:12px;padding:7px 2px}
   .shi .pv.ic{display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,#2a1d4a,#120c24)}.shi .cnt{font-size:11px;color:#7fe3ff;font-weight:800}
   .qb{display:flex;flex-direction:column;gap:4px}.qb .btn{padding:6px 8px;font-size:12px;min-width:74px}
@@ -340,7 +344,9 @@
       if (me) {
         A.innerHTML = `<div class="row"><button class="btn gold" id="pfPick">🐉 대표 몬스터 바꾸기</button></div>
           <div class="row"><input id="pfBio" maxlength="40" placeholder="한마디 (40자)" value="${esc(p.bio)}" style="flex:1;background:#151c2e;border:1px solid #ffffff1a;border-radius:9px;color:#fff;padding:9px;font-size:14px;user-select:text;-webkit-user-select:text"><button class="btn" id="pfSave">저장</button></div>
-          <div id="pfPickBox"></div><h2 style="font-size:15px;margin-top:12px">⚔️ 내 대결 기록</h2><div id="pfDuels"><p>불러오는 중…</p></div>`;
+          <div id="pfPickBox"></div><h2 style="font-size:15px;margin-top:12px">⚔️ 내 대결 기록</h2><div id="pfDuels"><p>불러오는 중…</p></div>
+          <div style="margin-top:14px;font-size:12px;color:#9aa4c2"><a href="/terms" target="_blank">이용약관</a> · <a href="/privacy" target="_blank">개인정보처리방침</a> · <a href="#" id="pfOut" style="color:#ff8a9a">회원 탈퇴</a></div>`;
+        $('#pfOut').onclick = async ev => { ev.preventDefault(); const pw = prompt('회원 탈퇴하면 게임 기록·보석·아이템이 모두 삭제되고 되돌릴 수 없어요.\n남은 유료 보석이 있다면 먼저 환불을 요청하세요.\n\n탈퇴하려면 비밀번호를 입력하세요'); if (!pw) return; if (!confirm('정말 탈퇴할까요? 되돌릴 수 없어요.')) return; try { await api('/api/auth', 'POST', { action: 'withdraw', name: USER.name, pass: pw }); localStorage.removeItem(TK); try { ['_meta', '_run', '_cp'].forEach(k => localStorage.removeItem(SAVE + k)) } catch (e) { } alert('탈퇴가 완료됐어요. 그동안 함께해 주셔서 고마워요.'); location.reload() } catch (e) { toast('⚠️ ' + e.message) } };
         $('#pfSave').onclick = async () => { try { const r = await api('/api/profile', 'POST', { bio: $('#pfBio').value }); setUser(r.user); toast('저장했어요') } catch (e) { toast('⚠️ ' + e.message) } };
         $('#pfPick').onclick = () => repPicker();
         loadDuels();

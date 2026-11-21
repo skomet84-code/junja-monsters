@@ -22,11 +22,21 @@ module.exports = L.wrap(async (req, res) => {
   }
   if (req.method !== 'POST') return L.json(res, 405, { error: 'method' });
   const b = L.body(req);
+  if (b.action === 'withdraw') {
+    // 회원 탈퇴: 비밀번호 확인 후 계정과 모든 기록 삭제 (연결된 기록은 DB에서 함께 삭제됨)
+    const u = await L.auth(req);
+    if (!u) return L.json(res, 401, { error: '로그인이 필요해요' });
+    const r = (await L.sql('SELECT pass,salt FROM users WHERE id=$1', [u.id]))[0];
+    if (!r || L.hashPass(String(b.pass || ''), r.salt) !== r.pass) return L.json(res, 401, { error: '비밀번호가 맞지 않아요' });
+    await L.sql('DELETE FROM users WHERE id=$1', [u.id]);
+    return L.json(res, 200, { ok: true });
+  }
   const name = cleanName(b.name), pass = String(b.pass || '');
   if (!NAME_RE.test(name)) return L.json(res, 400, { error: '닉네임은 2~12자로, 한글·영문·숫자와 _ . - 만 쓸 수 있어요 (이모지·특수문자 불가)' });
   if (pass.length < 4 || pass.length > 40) return L.json(res, 400, { error: '비밀번호는 4자 이상으로 입력해 주세요' });
 
   if (b.action === 'register') {
+    if (!b.agree) return L.json(res, 400, { error: '이용약관·개인정보처리방침에 동의해 주세요' });
     const ex = await L.sql('SELECT id FROM users WHERE lower(name)=lower($1)', [name]);
     if (ex[0]) return L.json(res, 409, { error: '이미 사용 중인 닉네임이에요' });
     const salt = L.newSalt();
