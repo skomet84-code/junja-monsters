@@ -267,7 +267,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261121233426';
+const BUILD='20261121233921';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',namesB:['불꽃알','불꽃냥','화염사자','홍염사자왕','태양사자제'],n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -482,7 +482,7 @@ function damage(e,v,src,crit){if(e.hp<=0)return;if(src)e.lh=src;const af=affinit
  if(af>1&&Math.random()<.15){S.nums.push({x:e.x,y:e.y-e.r-18,v:0,txt:'약점!',c:'#ff7a2e',t:0})}
  if(e.hp<=0)kill(e)}
 function fmtN(n){n=Math.floor(n);return n>=1e8?(n/1e8).toFixed(n>=1e9?0:1)+'억':n>=1e4?(n/1e4).toFixed(n>=1e5?0:1)+'만':String(n)}
-function raidSquad(){const keys=Object.keys(meta.dex||{}).map(k=>k.split('_').map(Number)).sort((a,b)=>b[1]-a[1]||a[0]-b[0]).slice(0,12);return keys.map(([e,st])=>{const m=mkMon(e,st);if(st===7){const r=MYTH.find(x=>x.a===e);if(r)m.f=r.b}return m})}
+function raidSquad(){const dx=meta.dex||{},mm=meta.myth||{};const keys=Object.keys(dx).map(k=>/^(\d+)_([1-6])(b?)$/.exec(k)).filter(Boolean).map(x=>[+x[1],+x[2],null,x[3]?1:0]);MYTH.forEach((r,k)=>{if(mm[k]||(k<5&&dx[r.a+'_7']))keys.push([r.a,7,r.b,0])});keys.sort((a,b)=>b[1]-a[1]||a[3]-b[3]||a[0]-b[0]);return keys.slice(0,12).map(([e,st,f,v])=>{const m=mkMon(e,st);if(f!=null)m.f=f;if(v)m.v=1;return m})}
 function startRaid(R){const s=newState();s.mode='raid';s.wave=30;s.eth=0;s.energy=100;s.unlocked=16;s.up=Array(10).fill(0);s.buffs={};begin(s);
  const sq=raidSquad();sq.forEach((m,i)=>S.slots[i]=m);if(!sq.length){toast('도감에 몬스터가 없어요');return}
  const d=1450,p=posAt(d);S.enemies.push({t:'raid',d,hp:1e18,mhp:1e18,sp:0,r:36,c:ELS[R.element].c,el:R.element,g:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,poison:0,poisonT:0,vuln:0,hit:0,ph:0,x:p[0],y:p[1],name:R.name,lvl:R.level});
@@ -671,16 +671,16 @@ function canFuse(a,b){return a&&b&&a!==b&&!a.temp&&!b.temp&&a.e!==b.e&&a.s===b.s
 function canMyth(a,b){return a&&b&&a!==b&&a.tri==null&&b.tri==null&&!a.temp&&!b.temp&&a.s===6&&b.s===6&&a.e!==b.e&&!!mythRec(a.e,b.e)}
 function canAwaken(a,b){return a&&b&&a!==b&&!a.temp&&!b.temp&&a.tri==null&&b.tri==null&&a.e===b.e&&((a.s===5&&b.s>=3&&b.s<5)||(b.s===5&&a.s>=3&&a.s<5))}
 function canCombine(a,b){return canMerge(a,b)||canAwaken(a,b)||canFuse(a,b)||canMyth(a,b)}
-function merge(from,to){if(S.mode==='raid')return false;let a=S.slots[from],b=S.slots[to];const fuse=canFuse(a,b),myth=canMyth(a,b),awk=!canMerge(a,b)&&canAwaken(a,b);if(!canMerge(a,b)&&!awk&&!fuse&&!myth)return false;if(awk&&b.s!==5){const t=a;a=b;b=t}const cost=myth?mythCost():fuse?Math.round(FUSECOST[a.s]*(1-.4*bf('fuse'))):awk||(a.s===5&&b.s===5)?awkCost():MERGE[a.s];if(!(S.eth>=cost)){toast((myth?'궁극 강림':fuse?'융합':awk?'각성':'진화')+'에 '+cost+' 에테르가 필요해요');return false}
+function merge(from,to,pri){if(S.mode==='raid')return false;let a=S.slots[from],b=S.slots[to];const pv=((pri==='to'?b:a)||{}).v;const fuse=canFuse(a,b),myth=canMyth(a,b),awk=!canMerge(a,b)&&canAwaken(a,b);if(!canMerge(a,b)&&!awk&&!fuse&&!myth)return false;if(awk&&b.s!==5){const t=a;a=b;b=t}const cost=myth?mythCost():fuse?Math.round(FUSECOST[a.s]*(1-.4*bf('fuse'))):awk||(a.s===5&&b.s===5)?awkCost():MERGE[a.s];if(!(S.eth>=cost)){toast((myth?'궁극 강림':fuse?'융합':awk?'각성':'진화')+'에 '+cost+' 에테르가 필요해요');return false}
  const fromE=b.e,fromS=b.s,aV=a.v,bV=b.v;S.eth-=cost;S.slots[from]=null;S.slots[to]=b;
  b.trait=pickTrait(a.trait,b.trait);if(myth){const r=mythRec(a.e,b.e);b.e=r.a;b.f=r.b;unlock('myth');const mk=MYTH.indexOf(r);meta.myth=Object.assign({},meta.myth||{},{[mk]:1});saveMeta();if(Object.keys(meta.myth).length>=MYTH.length)unlock('mythall')}else if(fuse){const r=recipe(a.e,b.e);unlock('fuse1');if(r.h)unlock('hfuse');const other=(r.p===a.e)?b.e:a.e;b.e=r.p;b.f=other;meta.fuse=meta.fuse||{};if(!meta.fuse[r.n]){meta.fuse[r.n]=1;saveMeta();{const nf=Object.keys(meta.fuse).length;if(nf>=15)unlock('fuse15');if(nf>=FUSE.length)unlock('fuseall')}if(r.h)setTimeout(()=>toast('✦ 숨겨진 융합 발견! '+r.n),3200)}}else if(a.f!=null&&b.f==null)b.f=a.f;
- b.s++;b.ue=0;b.born=1;reg(b);const p=SLOTP[to],el=ELS[b.e];
+ if(!myth&&!fuse){if(pv&&hasB(b.e,b.s+1))b.v=1;else delete b.v}b.s++;b.ue=0;b.born=1;reg(b);const p=SLOTP[to],el=ELS[b.e];
  burst(p[0],p[1],el.c,30+b.s*8,220,4);burst(p[0],p[1],'#ffffff',12,160,2.5);fx({k:'ring',x:p[0],y:p[1],c:el.c2,r0:10,r1:90+b.s*10,life:.5,w:6});fx({k:'pillar',x:p[0],y:p[1],c:el.c,life:.6});
  shake=4+b.s*2;flash=.18+b.s*.05;flashC=el.c;hitstop=.05;banner((myth?'👑 궁극 강림! ':fuse?'융합! ':'진화! ')+monName(b),'★'.repeat(b.s)+(b.s===5?' · 궁극기 '+el.ult+' 해금':b.s===6?' · 히든 각성! 진·'+el.ult:b.s===7?' · MYTHIC '+mythRec(b.e,b.f).u:''),b.s===7?'#ffd75a':el.c);
  snd(520,.1,'triangle',.06,1040);setTimeout(()=>snd(780,.2,'triangle',.06,1560),90);if(b.s>=4)setTimeout(()=>snd(1040,.35,'sine',.05,2080),180);
  S.sel=to;if(!S.running)saveRun();ui();if(!window.__noFx&&SPR[b.e+'_'+Math.min(b.s,5)])showEvolution(b.e,b.s-1,b.s,myth?{myth:1,f:b.f,name:monName(b),from1:fromE,from2:a.e,fs:6,v1:bV,v2:aV}:fuse?{e2:(b.f===fromE?a.e:fromE),f:b.f,name:monName(b),from1:fromE,from2:a.e,fs:fromS,v1:bV,v2:aV}:null,b.v);return true}
 function partner(i){const a=S.slots[i];if(!a)return -1;let j=-1;if(a.s===5){let bs=9;S.slots.forEach((b,k)=>{if(k!==i&&canAwaken(a,b)&&b.s<bs){bs=b.s;j=k}});if(j>=0)return j}j=S.slots.findIndex((b,j)=>j!==i&&canMerge(a,b));if(j>=0)return j;if(a.s>=3&&a.s<5){j=S.slots.findIndex((b,k)=>k!==i&&canAwaken(a,b));if(j>=0)return j}j=S.slots.findIndex((b,j)=>j!==i&&canMyth(a,b));if(j>=0)return j;return S.slots.findIndex((b,j)=>j!==i&&canFuse(a,b))}
-function evolveSel(){const i=S.sel;if(i<0)return;const j=partner(i);if(j<0){toast('같은 몬스터 1마리, 또는 융합 짝 속성이 같은 단계로 있어야 해요');return}merge(j,i)}
+function evolveSel(){const i=S.sel;if(i<0)return;const j=partner(i);if(j<0){toast('같은 몬스터 1마리, 또는 융합 짝 속성이 같은 단계로 있어야 해요');return}merge(j,i,'to')}
 function sellValue(m){if(m.temp||m.s===8)return 0;if(m.tri!=null)return 4000;let v=m.f!=null?(FUSECOST[Math.min(m.s-1,FUSECOST.length-1)]||0):0;v+=SUMMON*Math.pow(2,Math.min(m.s,6)-1);for(let s=1;s<Math.min(m.s,6);s++)v+=(MERGE[s]||0)*Math.pow(2,Math.min(m.s,6)-1-s);if(m.s>=7)v=v*2+MYTHCOST;v=Math.floor(v*.5);return Number.isFinite(v)?v:0}
 let evoOpen=false,evoT=null,timeScale=1,tsT=0;
 function monSrc(e,st,v){try{const im=skinImg(e,st,v);if(im)return im.tagName==='CANVAS'?im.toDataURL():im.src}catch(x){}return 'sprites/m'+e+'_'+Math.min(st,5)+'.webp'}
@@ -913,7 +913,7 @@ function render(t){const g=ctx;g.setTransform(1,0,0,1,0,0);{const og=g.createLin
   else if(f.k==='pillar'){const gr=g.createLinearGradient(f.x,f.y-260,f.x,f.y);gr.addColorStop(0,f.c+'00');gr.addColorStop(1,f.c+'cc');g.fillStyle=gr;const w=40*(1-p*.6);g.fillRect(f.x-w/2,f.y-260,w,260)}}
  g.globalAlpha=1;
  // dragged monster
- if(drag&&drag.moved){const m=S.slots[drag.i];if(m){g.globalAlpha=.85;drawMon(g,m.e,m.s,drag.x,drag.y-10,20+Math.min(m.s,5)*2.6,t,1,0,m.f);g.globalAlpha=1}}
+ if(drag&&drag.moved){const m=S.slots[drag.i];if(m){g.globalAlpha=.85;drawMon(g,m.e,m.s,drag.x,drag.y-10,20+Math.min(m.s,5)*2.6,t,1,0,m.f,m.f3,m.v);g.globalAlpha=1}}
  // numbers
  g.textAlign='center';for(const n of S.nums){const p=n.t/.8;g.globalAlpha=p<.7?1:1-(p-.7)/.3;const sz=n.g?13:n.big?22:14;g.font=`900 ${sz*(p<.1?1+(.1-p)*6:1)}px system-ui`;g.lineWidth=4;g.strokeStyle='#000c';const txt=n.txt||(n.g?'+'+n.v:n.v);g.strokeText(txt,n.x,n.y);g.fillStyle=n.c;g.fillText(txt,n.x,n.y)}g.globalAlpha=1;
  // wave progress

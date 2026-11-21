@@ -270,7 +270,7 @@
       if (used.includes('boost_eth')) S.eth = Math.round(S.eth * 1.5);
       if (used.includes('shield')) S.hp += 5;
       if (used.includes('myth_call')) summonMythTemp();
-      if (used.includes('egg')) { const i = S.slots.findIndex((x, k) => !x && k < S.unlocked); if (i >= 0) { const e = Math.floor(Math.random() * 10); S.slots[i] = mkMon(e, 3); S.slots[i].trait = rollTrait(true); reg(S.slots[i]) } }
+      if (used.includes('egg')) { const i = S.slots.findIndex((x, k) => !x && k < S.unlocked); if (i >= 0) { const e = Math.floor(Math.random() * 10); S.slots[i] = mkMon(e, 3); if (hasB(e, 3) && Math.random() < .5) S.slots[i].v = 1; S.slots[i].trait = rollTrait(true); reg(S.slots[i]) } }
       if (used.length) { banner('🎒 아이템 사용', used.map(u => IT_IC[u]).join(' '), '#ffd75a'); saveRun(); ui() }
       if (used.includes('bless')) { const tb = () => { if (cardsOpen) return setTimeout(tb, 500); offerCards() }; setTimeout(tb, 500) }
     };
@@ -358,7 +358,7 @@
   }
   async function repPicker() {
     await push(true);
-    const keys = Object.keys(meta.dex || {}).map(k => k.split('_').map(Number)).sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+    const keys = Object.keys(meta.dex || {}).filter(k => /^\d+_\d+$/.test(k)).map(k => k.split('_').map(Number)).sort((a, b) => b[1] - a[1] || a[0] - b[0]);
     const box = $('#pfPickBox'); box.innerHTML = '<p>도감에 등록된 몬스터 중에서 골라요</p><div class="pick" id="pk"></div>';
     keys.forEach(([e, st]) => { const f = st === 7 ? (MYTH.find(r => r.a === e) || {}).b : null; const b = document.createElement('button'); b.appendChild(iconCanvas(e, st, 56, f)); b.onclick = async () => { try { const r = await api('/api/profile', 'POST', { rep: { e, s: st, f } }); setUser(r.user); toast('대표 몬스터를 바꿨어요'); openProfile(USER.name) } catch (er) { toast('⚠️ ' + er.message) } }; $('#pk').appendChild(b) });
   }
