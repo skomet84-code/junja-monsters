@@ -267,14 +267,14 @@
       if (used.includes('boost_eth')) S.eth = Math.round(S.eth * 1.5);
       if (used.includes('shield')) S.hp += 5;
       if (used.includes('myth_call')) summonMythTemp();
-      if (used.includes('egg')) { const i = S.slots.findIndex((x, k) => !x && k < S.unlocked); if (i >= 0) { const e = Math.floor(Math.random() * 10); S.slots[i] = mkMon(e, 3); reg(S.slots[i]) } }
+      if (used.includes('egg')) { const i = S.slots.findIndex((x, k) => !x && k < S.unlocked); if (i >= 0) { const e = Math.floor(Math.random() * 10); S.slots[i] = mkMon(e, 3); S.slots[i].trait = rollTrait(true); reg(S.slots[i]) } }
       if (used.length) { banner('🎒 아이템 사용', used.map(u => IT_IC[u]).join(' '), '#ffd75a'); saveRun(); ui() }
       if (used.includes('bless')) { const tb = () => { if (cardsOpen) return setTimeout(tb, 500); offerCards() }; setTimeout(tb, 500) }
     };
     $('#mPrep').classList.add('on');
   }
   { const b = $('#bNew'); const orig = b.onclick; b.onclick = () => { const it = (USER && USER.items) || {}; if (USER && PREP.some(([id]) => it[id] > 0)) openPrep(stageSel(), orig); else orig() } }
-  { const b = $('#bRetry'); const orig = b.onclick; b.onclick = () => { const it = (USER && USER.items) || {}; if (USER && S.mode === 'stage' && PREP.some(([id]) => it[id] > 0)) { const n = S.hp > 0 && S.wave - (S.base || 0) > STAGE.waves ? S.stage + 1 : S.stage; meta.sel = n; $('#mOver').classList.remove('on'); openPrep(n, () => { begin(newStage(n)); saveRun(); if ((meta.lab || {}).card) offerCards() }) } else orig() } }
+  { const b = $('#bRetry'); const orig = b.onclick; b.onclick = () => { const it = (USER && USER.items) || {}; if (USER && S.mode === 'stage' && PREP.some(([id]) => it[id] > 0)) { const ns = stageNextState(); meta.sel = ns.stage; $('#mOver').classList.remove('on'); openPrep(ns.stage, () => { begin(ns); saveRun(); if (!ns.carry && !ns.cpLoaded && (meta.lab || {}).card) offerCards() }) } else orig() } }
 
   // ===== 부활의 깃털 =====
   document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mRev"><div class="card" style="text-align:center"><div style="font-size:54px">🪶</div><h2>부활할까요?</h2><p id="rvT"></p><div class="row"><button class="btn" id="rvNo">포기하기</button><button class="btn gold" id="rvYes">부활! (수호석 10)</button></div></div></div>`);
