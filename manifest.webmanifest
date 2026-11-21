@@ -1,0 +1,18 @@
+{
+  "name": "준자몬스터즈 · JUNJA MONSTERS",
+  "short_name": "준자몬스터즈",
+  "description": "몬스터를 소환·진화·융합해 수호석을 지키는 진화형 디펜스 게임",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f1c",
+  "theme_color": "#1a1230",
+  "lang": "ko",
+  "categories": ["games"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

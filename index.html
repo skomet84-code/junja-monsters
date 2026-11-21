@@ -6,6 +6,14 @@
 <meta name="theme-color" content="#0b0f1e">
 <link rel="icon" href="sprites/m0_2.webp">
 <title>JUNJA MONSTERS · 준자몬스터즈</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1a1230">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="준자몬스터즈">
 <style>
 :root{--bg:#0b0f1e;--panel:#141a2e;--panel2:#1b2340;--edge:#ffffff1a;--ink:#f3f1fb;--mute:#9aa4c2;--gold:#f2c46d;--gold2:#c9953f}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
@@ -258,7 +266,7 @@ button:disabled{opacity:.4;cursor:default}
 </div></div>
 <script>
 'use strict';
-const BUILD='20261121222243';
+const BUILD='20261121222317';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',namesB:['불꽃알','불꽃냥','화염사자','홍염사자왕','태양사자제'],n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -993,5 +1001,6 @@ $('#mStart').classList.add('on');requestAnimationFrame(loop);
 window.__JM={get S(){return S},summon,merge,startWave,meteor,freeze,setSpeed:v=>speed=v,tick:(dt,n)=>{for(let i=0;i<n;i++)if(!S.over)update(dt)}};
 </script>
 <script src="online.js"></script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}))</script>
 </body>
 </html>
