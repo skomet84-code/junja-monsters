@@ -33,11 +33,28 @@ module.exports = L.wrap(async (req, res) => {
     await L.sql('INSERT INTO plays(user_id,mode,wave,kills) VALUES($1,$2,$3,$4)', [u.id, mode, wave, kills]);
     if (!prev || wave > prev.wave || (wave === prev.wave && kills > prev.kills))
       await L.sql('INSERT INTO scores(user_id,mode,period,wave,kills) VALUES($1,$2,$3,$4,$5) ON CONFLICT(user_id,mode,period) DO UPDATE SET wave=$4,kills=$5,created_at=now()', [u.id, mode, per, wave, kills]);
-    let reward = 0;
+    let reward = 0, milestones = [];
+    if (mode === 'normal') {
+      // 무한 대전 돌파 보상: 아직 받지 않은 단계만 지급
+      const cur = (await L.sql("SELECT coalesce((items->>'inf_m')::int,0) AS m FROM users WHERE id=$1", [u.id]))[0].m;
+      const todo = L.INF_REWARDS.filter(r => r.w <= wave && r.w > cur);
+      if (todo.length) {
+        const top = todo[todo.length - 1].w;
+        const r = await L.sql("UPDATE users SET items=jsonb_set(items,'{inf_m}',to_jsonb($2::int)) WHERE id=$1 AND coalesce((items->>'inf_m')::int,0) < $2::int RETURNING id", [u.id, top]);
+        if (r[0]) {
+          for (const t of todo) {
+            if (t.item) await L.sql("UPDATE users SET owned=owned||jsonb_build_array($2::text) WHERE id=$1 AND NOT (owned ? $2)", [u.id, t.item]);
+            await L.addGems(u.id, t.gems, '무한 대전 ' + t.w + '웨이브 돌파');
+            const it = t.item ? L.ITEMS.find(x => x.id === t.item) : null;
+            milestones.push({ w: t.w, gems: t.gems, item: t.item || null, name: it ? it.name : null });
+          }
+        }
+      }
+    }
     if (mode === 'daily' && !prev) { reward = Math.min(60, 10 + wave * 2); await L.addGems(u.id, reward, '오늘의 도전 보상'); }
     const bd = await board(mode, per, u.id);
     const gems = (await L.sql('SELECT gems FROM users WHERE id=$1', [u.id]))[0].gems;
-    return L.json(res, 200, Object.assign(bd, { newBest: !prev || wave > prev.wave, reward, gems }));
+    return L.json(res, 200, Object.assign(bd, { newBest: !prev || wave > prev.wave, reward, gems, milestones }));
   }
   return L.json(res, 405, { error: 'method' });
 });

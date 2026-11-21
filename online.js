@@ -100,10 +100,18 @@
       const j = await api('/api/score', 'POST', { mode, wave, kills });
       USER.gems = j.gems; renderAcct();
       const el = $('#rkRes');
-      if (el) el.innerHTML = `<b style="color:#ffd75a">${mode === 'daily' ? '📅 오늘의 도전' : '♾️ 무한 대전 주간'} 랭킹 ${j.me ? j.me.rank + '위' : '-'}</b> / ${j.total}명` + (j.newBest ? ' · 신기록!' : '') + (j.reward ? `<br>💎 도전 보상 +${j.reward}` : '');
+      if (el) el.innerHTML = `<b style="color:#ffd75a">${mode === 'daily' ? '📅 오늘의 도전' : '♾️ 무한 대전 주간'} 랭킹 ${j.me ? j.me.rank + '위' : '-'}</b> / ${j.total}명` + (j.newBest ? ' · 신기록!' : '') + (j.reward ? `<br>💎 도전 보상 +${j.reward}` : '') + ((j.milestones || []).length ? '<br>🎁 돌파 보상: ' + j.milestones.map(m => m.w + '웨이브 ' + (m.name ? '「' + m.name + '」 ' : '') + '💎' + m.gems).join(', ') : '');
     } catch (e) { const el = $('#rkRes'); if (el) el.textContent = '랭킹 등록 실패: ' + e.message }
   };
 
+  // 무한 대전 돌파 보상 (도달 즉시 지급)
+  function showMilestones(ms) {
+    (ms || []).forEach((m, k) => setTimeout(() => { toast('🎁 ' + m.w + '웨이브 돌파 보상 ' + (m.name ? '「' + m.name + '」 + ' : '') + '💎' + m.gems); if (m.item && USER && !USER.owned.includes(m.item)) USER.owned.push(m.item) }, 1800 + k * 1800));
+  }
+  window.onEndlessMilestone = async (w, kills) => {
+    if (!USER) { toast('🔐 로그인하면 ' + w + '웨이브 돌파 보상을 받아요'); return }
+    try { const j = await api('/api/score', 'POST', { mode: 'normal', wave: w, kills }); USER.gems = j.gems; renderAcct(); showMilestones(j.milestones) } catch (e) { }
+  };
   // 판 클리어 → 주간 판 랭킹 등록
   window.onStageClear = async (stage, hp, kills) => {
     const T = $('#overTx');
@@ -144,14 +152,14 @@
     $('#mRank').classList.add('on'); $('#rkList').innerHTML = '<p>불러오는 중…</p>'; $('#rkInfo').textContent = '';
     try {
       const j = await api('/api/score?mode=' + rkMode);
-      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 스테이지 랭킹 · 최고 스테이지 (같으면 남은 수호석)' : '♾️ ' + j.period + ' 무한 대전 주간 랭킹 · 최고 웨이브 (월요일 초기화)')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? 'STAGE ' + j.me.wave : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
+      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 스테이지 랭킹 · 최고 스테이지 (같으면 남은 수호석)' : '♾️ ' + j.period + ' 무한 대전 주간 랭킹 · 최고 웨이브 (월요일 초기화)<br><small style="color:#b9a2ff">🎁 돌파 보상: 20웨이브 💎50 · 30 「무한의 도전자」 · 50 「무한의 고리」 오라 · 75 「불멸의 수호자」 · 100 「무한의 지배자」</small>')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? 'STAGE ' + j.me.wave : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
       $('#rkList').innerHTML = j.top.length ? j.top.map((t, ix) => `<div class="rk${t.me ? ' me' : ''}" data-pf="${esc(t.name)}" data-ix="${ix}"><div class="n">${t.rank <= 3 ? ['🥇', '🥈', '🥉'][t.rank - 1] : t.rank}</div><div class="nm">${t.title ? `<small>「${esc(titleName(t.title))}」</small>` : ''}${esc(t.name)}</div><div class="w">${rkMode === 'stage' ? 'STAGE ' + t.wave : 'WAVE ' + t.wave}</div><small style="color:#9aa4c2;width:56px;text-align:right">${rkMode === 'stage' ? '💎' + t.kills : t.kills + '마리'}</small></div>`).join('') : '<p>아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!</p>';
       j.top.forEach((t, ix) => { const row = document.querySelector(`.rk[data-ix="${ix}"]`); if (!row) return; const slot = document.createElement('div'); slot.className = 'rkic'; if (t.rep) slot.appendChild(iconCanvas(t.rep.e, t.rep.s, 34, t.rep.f)); row.insertBefore(slot, row.children[1]); row.onclick = () => openProfile(t.name) });
     } catch (e) { $('#rkList').innerHTML = '<p>랭킹을 불러오지 못했어요: ' + esc(e.message) + '</p>' }
   }
 
   // 상점
-  const PV = { aura_gold: 'radial-gradient(circle,#ffd75a,#7a5a05)', aura_rainbow: 'conic-gradient(#f55,#fd5,#5f5,#5df,#a5f,#f55)', aura_abyss: 'radial-gradient(circle,#d68bff,#2a0d45)', theme_night: 'linear-gradient(#1a2a5a,#0b1430)', theme_sunset: 'linear-gradient(#ff9a3e,#7a2a4a)', theme_sakura: 'linear-gradient(#ffc6e0,#c46a9a)', theme_cosmos: 'radial-gradient(circle at 30% 30%,#b79bff,#1a0d45)', aura_frost: 'radial-gradient(circle,#8fe9ff,#0d3a5a)', title_myth: 'linear-gradient(#ffd75a,#7a3ab0)', title_tamer: 'linear-gradient(#3a2a66,#1a1233)', title_fusion: 'linear-gradient(#5a2a96,#1a1233)', title_heaven: 'linear-gradient(#fff3c0,#d9a54e)' };
+  const PV = { aura_gold: 'radial-gradient(circle,#ffd75a,#7a5a05)', aura_rainbow: 'conic-gradient(#f55,#fd5,#5f5,#5df,#a5f,#f55)', aura_abyss: 'radial-gradient(circle,#d68bff,#2a0d45)', theme_night: 'linear-gradient(#1a2a5a,#0b1430)', theme_sunset: 'linear-gradient(#ff9a3e,#7a2a4a)', theme_sakura: 'linear-gradient(#ffc6e0,#c46a9a)', theme_cosmos: 'radial-gradient(circle at 30% 30%,#b79bff,#1a0d45)', aura_frost: 'radial-gradient(circle,#8fe9ff,#0d3a5a)', aura_inf: 'conic-gradient(#5ad1ff,#b04cff,#5ad1ff)', title_inf30: 'linear-gradient(#b9a2ff,#2a1d5a)', title_inf75: 'linear-gradient(#7fe3ff,#2a1d5a)', title_inf100: 'linear-gradient(#ffd75a,#b04cff,#2a1d5a)', title_myth: 'linear-gradient(#ffd75a,#7a3ab0)', title_tamer: 'linear-gradient(#3a2a66,#1a1233)', title_fusion: 'linear-gradient(#5a2a96,#1a1233)', title_heaven: 'linear-gradient(#fff3c0,#d9a54e)' };
   // ===== 상점 (탭: 전투 아이템 · 연구 포인트 · 스킨 · 꾸미기) =====
   let SHOP = null, shTab = 'item';
   const IT_IC = { myth_call: '📕', boost_eth: '💰', shield: '🛡', egg: '🥚', bless: '📜', revive: '🪶', cr_100: '💠', cr_300: '💠', cr_800: '💠' };
@@ -191,6 +199,7 @@
         if (!USER) btn = `<button class="btn" disabled>로그인 필요</button>`;
         else if (it.kind === 'item') btn = `<div class="qb"><button class="btn gold" data-buy="${it.id}" data-q="1" ${USER.gems < it.price ? 'disabled' : ''}>💎${it.price}</button><button class="btn" data-buy="${it.id}" data-q="5" ${USER.gems < it.price * 5 ? 'disabled' : ''}>×5 💎${it.price * 5}</button></div>`;
         else if (it.kind === 'crystal') btn = `<button class="btn gold" data-buy="${it.id}" ${USER.gems < it.price ? 'disabled' : ''}>💎 ${it.price}</button>`;
+        else if (it.exclusive && !own) btn = `<button class="btn" disabled>🔒 ♾️ ${it.exclusive}웨이브</button>`;
         else btn = own ? `<button class="btn ${on ? '' : 'gold'}" data-eq="${it.id}" data-slot="${it.slot}">${on ? '해제' : '장착'}</button>` : `<button class="btn gold" data-buy="${it.id}" ${USER.gems < it.price ? 'disabled' : ''}>💎 ${it.price}</button>`;
         const cnt = it.kind === 'item' && USER ? `<span class="cnt">보유 ${(USER.items || {})[it.id] || 0}</span>` : '';
         const pv = IT_IC[it.id] ? `<div class="pv ic">${IT_IC[it.id]}</div>` : `<div class="pv" style="background:${PV[it.id] || '#333'}"></div>`;

@@ -17,6 +17,7 @@ module.exports = L.wrap(async (req, res) => {
   if (b.action === 'buy') {
     const it = L.ITEMS.find(x => x.id === b.item);
     if (!it) return L.json(res, 400, { error: '없는 상품이에요' });
+    if (it.exclusive) return L.json(res, 400, { error: '무한 대전 ' + it.exclusive + '웨이브를 돌파하면 받는 보상이에요' });
     const qty = it.kind === 'item' ? Math.max(1, Math.min(10, Math.floor(Number(b.qty) || 1))) : 1;
     const price = it.price * qty;
     let r;

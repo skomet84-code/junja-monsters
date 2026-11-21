@@ -91,6 +91,10 @@ const ITEMS = [
   { id: 'title_tamer', kind: 'cosmetic', slot: 'title', name: '몬스터 조련사', desc: '랭킹에 표시되는 칭호', price: 100 },
   { id: 'title_fusion', kind: 'cosmetic', slot: 'title', name: '융합의 대가', desc: '랭킹에 표시되는 칭호', price: 250 },
   { id: 'title_myth', kind: 'cosmetic', slot: 'title', name: '궁극의 지배자', desc: '랭킹에 표시되는 희귀 칭호', price: 500 },
+  { id: 'title_inf30', kind: 'cosmetic', slot: 'title', name: '무한의 도전자', desc: '♾️ 무한 대전 30웨이브 돌파 보상', price: 0, exclusive: 30 },
+  { id: 'aura_inf', kind: 'cosmetic', slot: 'aura', name: '무한의 고리', desc: '♾️ 무한 대전 50웨이브 돌파 보상 · 푸른 보랏빛 소용돌이 오라', price: 0, exclusive: 50 },
+  { id: 'title_inf75', kind: 'cosmetic', slot: 'title', name: '불멸의 수호자', desc: '♾️ 무한 대전 75웨이브 돌파 보상', price: 0, exclusive: 75 },
+  { id: 'title_inf100', kind: 'cosmetic', slot: 'title', name: '무한의 지배자', desc: '♾️ 무한 대전 100웨이브 돌파 보상 · 최고 칭호', price: 0, exclusive: 100 },
   { id: 'title_heaven', kind: 'cosmetic', slot: 'title', name: '하늘이내려준자', desc: '전설 칭호', price: 800 },
   ...EL_NAMES.flatMap((n, e) => SKINS.map(k => ({ id: 'skin_' + e + '_' + k.v, kind: 'skin', slot: 'skin_' + e, el: e, variant: k.v, name: k.n + ' ' + n + ' 스킨', desc: n + ' 속성 몬스터 전체가 ' + k.n + ' 색으로 바뀌어요', price: k.p }))),
   { id: 'boost_eth', kind: 'item', name: '에테르 부스터', desc: '이번 스테이지 시작 에테르 +50%', price: 30 },
@@ -104,6 +108,14 @@ const ITEMS = [
   { id: 'cr_800', kind: 'crystal', amount: 800, name: '💠 연구 포인트 800', desc: '+25% 보너스 포함 대용량 묶음', price: 520 }
 ];
 
+// 무한 대전 웨이브 돌파 보상 (한 판에서 도달한 웨이브 기준, 계정당 1회)
+const INF_REWARDS = [
+  { w: 20, gems: 50 },
+  { w: 30, gems: 50, item: 'title_inf30' },
+  { w: 50, gems: 100, item: 'aura_inf' },
+  { w: 75, gems: 150, item: 'title_inf75' },
+  { w: 100, gems: 300, item: 'title_inf100' }
+];
 function publicUser(u) { return { id: u.id, name: u.name, gems: u.gems, owned: u.owned || [], equip: u.equip || {}, items: u.items || {}, crystalPending: u.crystal_pending || 0, rep: u.rep || null, bio: u.bio || '', admin: isAdmin(u) }; }
 
 async function addGems(uid, amount, reason) {
@@ -121,4 +133,4 @@ function wrap(fn) {
   };
 }
 
-module.exports = { sql, tx, json, body, hashPass, newSalt, makeToken, auth, isAdmin, kstDate, kstWeek, ITEMS, publicUser, addGems, wrap };
+module.exports = { INF_REWARDS, sql, tx, json, body, hashPass, newSalt, makeToken, auth, isAdmin, kstDate, kstWeek, ITEMS, publicUser, addGems, wrap };
