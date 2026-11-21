@@ -60,7 +60,7 @@
       const j = await api('/api/save');
       if (j.save && j.save.meta) {
         const sm = j.save.meta, lm = meta || {};
-        meta = Object.assign({ best: 0, dex: {} }, sm, { best: Math.max(sm.best || 0, lm.best || 0), stage: Math.max(sm.stage || 0, lm.stage || 0), dex: Object.assign({}, lm.dex || {}, sm.dex || {}), fuse: Object.assign({}, lm.fuse || {}, sm.fuse || {}), ach: Object.assign({}, lm.ach || {}, sm.ach || {}) });
+        meta = Object.assign({ best: 0, dex: {} }, sm, { best: Math.max(sm.best || 0, lm.best || 0), stage: Math.max(sm.stage || 0, lm.stage || 0), dex: Object.assign({}, lm.dex || {}, sm.dex || {}), fuse: Object.assign({}, lm.fuse || {}, sm.fuse || {}), ach: Object.assign({}, lm.ach || {}, sm.ach || {}), tri: Object.assign({}, lm.tri || {}, sm.tri || {}) });
         try { localStorage.setItem(SAVE + '_meta', JSON.stringify(meta)) } catch (e) { }
         if (j.save.run) { try { localStorage.setItem(SAVE + '_run', JSON.stringify(j.save.run)) } catch (e) { } }
       }
