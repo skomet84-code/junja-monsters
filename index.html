@@ -226,7 +226,7 @@ button:disabled{opacity:.4;cursor:default}
     <div class="logo">JUNJA<span class="lg2"> MONSTERS</span></div>
     <div class="sp"></div>
     <div class="chip">🌊 <span id="wv">1</span></div>
-    <div class="chip">💎 <span id="hp">20</span></div>
+    <div class="chip" title="남은 생명 · 적을 놓칠 때마다 1씩 줄어요 · 보스를 놓치면 즉시 끝">❤️ <span id="hp">20</span></div>
     <div class="chip">✨ <b id="eth">0</b></div>
     <button class="ib" id="bDex" title="도감">📖</button>
     <button class="ib" id="bMenu" title="메뉴">⚙️</button>
@@ -253,7 +253,7 @@ button:disabled{opacity:.4;cursor:default}
 <div id="cut"><div class="band"></div><img alt=""><div class="ct"><small></small><b></b></div></div>
 <div class="modal" id="mStart"><div class="card">
   <div class="title">준자몬스터즈</div><div class="sub">JUNJA MONSTERS DEFENSE</div>
-  <div class="how">🥚 아래 알을 눌러 몬스터를 소환하세요 (80 에테르)<br>🔁 <b>같은 몬스터 2마리</b>를 끌어서 겹치면 다음 단계로 진화해요<br>👑 10속성 × 5단계 = <b>몬스터 50종</b>. 5단계는 궁극기를 자동 발동해요<br>🌈 서로 다른 속성을 많이 배치하면 <b>속성 시너지</b>로 공격력이 올라가요<br>☄️ 적을 처치해 모은 기운으로 수호자 스킬을 쓰세요<br>🏁 <b>스테이지 = 6웨이브</b> (3·6웨이브 보스). 클리어하면 <b>군단 그대로</b> 다음 스테이지로! 랭킹은 <b>최고 스테이지</b><br>🎲 소환할 때 35% 확률로 <b>특성</b>(⚔️용맹 💨신속 🎯매의눈 🍀행운 🔮집중 👑황금)이 붙어요</div>
+  <div class="how">🥚 아래 알을 눌러 몬스터를 소환하세요 (80 에테르)<br>🔁 <b>같은 몬스터 2마리</b>를 끌어서 겹치면 다음 단계로 진화해요<br>👑 10속성 × 5단계 = <b>몬스터 50종</b>. 5단계는 궁극기를 자동 발동해요<br>🌈 서로 다른 속성을 많이 배치하면 <b>속성 시너지</b>로 공격력이 올라가요<br>☄️ 적을 처치해 모은 기운으로 수호자 스킬을 쓰세요<br>❤️ <b>생명</b>: 적을 1마리 놓칠 때마다 1씩 줄어요. <b>보스를 놓치면 그 자리에서 패배!</b><br>🏁 <b>스테이지 = 6웨이브</b> (3·6웨이브 보스). 클리어하면 <b>군단 그대로</b> 다음 스테이지로! 랭킹은 <b>최고 스테이지</b><br>🎲 소환할 때 35% 확률로 <b>특성</b>(⚔️용맹 💨신속 🎯매의눈 🍀행운 🔮집중 👑황금)이 붙어요</div>
   <div id="acct" class="acct"></div>
   <div class="stsel"><button id="stPrev">◀</button><div><small id="stZone">새싹 평원</small><b id="stN">STAGE 1</b><small id="stInfo"></small></div><button id="stNext">▶</button></div>
   <div class="row"><button class="btn gold" id="bNew">▶ STAGE 1 시작</button><button class="btn" id="bCont">이어하기</button></div>
@@ -345,14 +345,14 @@ button:disabled{opacity:.4;cursor:default}
   <div class="row"><button class="btn gold" data-close>닫기</button></div>
 </div></div>
 <div class="modal" id="mOver"><div class="card" style="text-align:center">
-  <h2 style="font-size:26px" id="overH">💥 수호석 파괴</h2>
+  <h2 style="font-size:26px" id="overH">💥 생명을 모두 잃었어요</h2>
   <p id="overTx"></p>
   <div class="row"><button class="btn" id="bLab2">🏛 연구소</button><button class="btn gold" id="bRetry">다시 도전</button></div>
   <div class="row"><button class="btn" id="bHome">🏠 처음 화면으로</button></div>
 </div></div>
 <script>
 'use strict';
-const BUILD='20261122113631';
+const BUILD='20261122114742';
 // ===================== DATA =====================
 const ELS=[
  {k:'fire',namesB:['불꽃알','불꽃냥','화염사자','홍염사자왕','태양사자제'],n:'화염',c:'#ff6a3d',c2:'#ffcf5a',d:'#7a1f10',egg:'불씨알',names:['불씨알','불꼬미','화염비룡','염룡','태양염제'],ult:'태양의 심판'},
@@ -381,7 +381,7 @@ const FUSE=[
  {a:0,b:5,p:5,n:'용암',d:'광역 충격 + 용암 화상'},
  {a:1,b:6,p:6,n:'빙하',d:'강력 둔화 + 빙결 확률 증가'},
  {a:1,b:3,p:3,n:'감전',d:'연쇄 번개가 젖은 적에게 추가 피해'},
- {a:1,b:2,p:2,n:'생명',d:'맹독 + 수호석 회복 확률'},
+ {a:1,b:2,p:2,n:'생명',d:'맹독 + 생명 회복 확률'},
  {a:2,b:5,p:5,n:'대지수호',d:'광역 기절 + 맹독'},
  {a:3,b:7,p:7,n:'뇌우',d:'초고속 공격 + 연쇄 번개'},
  {a:6,b:7,p:6,n:'눈보라',d:'둔화 + 밀쳐내기'},
@@ -406,7 +406,7 @@ const FUSE=[
  {a:2,b:3,p:3,n:'번개숲',d:'연쇄 번개 + 맹독'},
  {a:2,b:6,p:6,n:'서리꽃',d:'빙결 + 맹독'},
  {a:2,b:7,p:7,n:'꽃바람',d:'초고속 공격 + 맹독 확산'},
- {a:2,b:8,p:8,n:'별꽃',d:'별빛 치명타 + 수호석 회복',h:1},
+ {a:2,b:8,p:8,n:'별꽃',d:'별빛 치명타 + 생명 회복',h:1},
  {a:2,b:9,p:9,n:'독무',d:'맹독 중첩 + 체력 비례'},
  {a:3,b:4,p:3,n:'월광뇌',d:'연쇄 번개 + 약화'},
  {a:3,b:5,p:5,n:'지진뢰',d:'광역 기절 + 연쇄 번개'},
@@ -421,7 +421,7 @@ const FUSE=[
  {a:7,b:8,p:8,n:'유성풍',d:'초고속 별빛 저격'},
  {a:7,b:9,p:9,n:'흑풍',d:'밀쳐내기 + 약화'}];
 // 궁극 등급(★7 MYTHIC): 서로 다른 각성★6 특정 조합
-const MYTH=[{a:0,b:1,n:'태극룡황',u:'태극천멸',cd:20,d:'불 5배 + 물 4배 2연격 · 화상 · 밀쳐내기 · 둔화'},{a:3,b:5,n:'천둥거신',u:'뇌진천붕',cd:24,d:'전체 기절 2.2초 · 받는 피해 +40% · 낙뢰 5연타(각 1.5배)'},{a:4,b:8,n:'우주여제',u:'성월개벽',cd:24,d:'8초간 아군 공격 속도 +50% · 전체 5배 + 가장 강한 적에 유성 10연타(각 2배)'},{a:2,b:9,n:'생사의 군주',u:'윤회의 낙인',cd:24,d:'전체 5배 + 현재 체력 20% · 낙인(처치 시 에테르) · 수호석 +1'},{a:6,b:7,n:'빙풍신조',u:'절대폭풍',cd:22,d:'전체 빙결 3초 + 5배 + 밀쳐내기 + 4초 둔화'},{a:0,b:9,n:'멸망의 마룡',u:'종말의 업화',cd:22,d:'전체 6배 업화 + 체력 비례 피해 + 강한 화상'},{a:1,b:8,n:'은하해신',u:'은하의 조류',cd:24,d:'전체 6배 + 8초간 이동 -60% · 수호석 +2'},{a:2,b:3,n:'뇌목신',u:'천벌의 숲',cd:22,d:'전체 4배 + 맹독 + 낙뢰 8연타(각 2.5배·기절)'},{a:4,b:6,n:'빙월선녀',u:'얼어붙은 달빛',cd:24,d:'전체 빙결 3초 + 받는 피해 +50% + 4배'},{a:5,b:7,n:'사막거룡',u:'대사막 폭풍',cd:22,d:'전체 6배 + 크게 밀쳐내기 + 6초 둔화'}];
+const MYTH=[{a:0,b:1,n:'태극룡황',u:'태극천멸',cd:20,d:'불 5배 + 물 4배 2연격 · 화상 · 밀쳐내기 · 둔화'},{a:3,b:5,n:'천둥거신',u:'뇌진천붕',cd:24,d:'전체 기절 2.2초 · 받는 피해 +40% · 낙뢰 5연타(각 1.5배)'},{a:4,b:8,n:'우주여제',u:'성월개벽',cd:24,d:'8초간 아군 공격 속도 +50% · 전체 5배 + 가장 강한 적에 유성 10연타(각 2배)'},{a:2,b:9,n:'생사의 군주',u:'윤회의 낙인',cd:24,d:'전체 5배 + 현재 체력 20% · 낙인(처치 시 에테르) · 생명 +1'},{a:6,b:7,n:'빙풍신조',u:'절대폭풍',cd:22,d:'전체 빙결 3초 + 5배 + 밀쳐내기 + 4초 둔화'},{a:0,b:9,n:'멸망의 마룡',u:'종말의 업화',cd:22,d:'전체 6배 업화 + 체력 비례 피해 + 강한 화상'},{a:1,b:8,n:'은하해신',u:'은하의 조류',cd:24,d:'전체 6배 + 8초간 이동 -60% · 생명 +2'},{a:2,b:3,n:'뇌목신',u:'천벌의 숲',cd:22,d:'전체 4배 + 맹독 + 낙뢰 8연타(각 2.5배·기절)'},{a:4,b:6,n:'빙월선녀',u:'얼어붙은 달빛',cd:24,d:'전체 빙결 3초 + 받는 피해 +50% + 4배'},{a:5,b:7,n:'사막거룡',u:'대사막 폭풍',cd:22,d:'전체 6배 + 크게 밀쳐내기 + 6초 둔화'}];
 const TRAITS=[{id:'brave',ic:'⚔️',n:'용맹',d:'공격력 +25%',w:24},{id:'swift',ic:'💨',n:'신속',d:'공격 속도 +25%',w:24},{id:'eagle',ic:'🎯',n:'매의 눈',d:'사거리 +25% · 치명타 +10%',w:20},{id:'lucky',ic:'🍀',n:'행운',d:'처치 시 에테르 +50%',w:16},{id:'focus',ic:'🔮',n:'집중',d:'궁극기·스킬 충전 +35%',w:12},{id:'gold',ic:'👑',n:'황금',d:'공격력·속도 +20% · 사거리 +10% (희귀)',w:4}];
 const TR={};TRAITS.forEach(t=>TR[t.id]=t);
 function rollTrait(force){if(!force&&Math.random()>.35+.04*labL('trait'))return null;const tot=TRAITS.reduce((a,t)=>a+t.w,0);let r=Math.random()*tot;for(const t of TRAITS){r-=t.w;if(r<0)return t.id}return 'brave'}
@@ -432,7 +432,7 @@ const ULT={hit:2.5,time:3,d5:9,d6:11};
 // 삼위일체 히든: 서로 다른 세 속성의 각성 ★6 → 히든 ★7 (고유 스킬, 내부 s=6 + tri 표식)
 const TRI=[{e:[0,8,9],n:'혼돈의 불사조',u:'창세와 종말',cd:20,c:'#ff6a3d',d:'전체 화염 폭발(9배) + 강한 화상 + 받는 피해 +40%'},
  {e:[1,6,7],n:'설해의 용왕',u:'만년설 폭풍',cd:20,c:'#7fe3ff',d:'전체 빙결 2.5초 + 7배 피해 + 6초 둔화'},
- {e:[2,5,1],n:'가이아 세계수',u:'생명의 대지',cd:22,c:'#7dffb0',d:'수호석 +2 · 뿌리 속박(기절 2초) + 8배 피해'},
+ {e:[2,5,1],n:'가이아 세계수',u:'생명의 대지',cd:22,c:'#7dffb0',d:'생명 +2 · 뿌리 속박(기절 2초) + 8배 피해'},
  {e:[3,7,8],n:'천공의 뇌신',u:'천벌의 낙뢰',cd:18,c:'#fff36b',d:'전체 5배 감전(기절) + 낙뢰 10연타(각 3배)'},
  {e:[4,9,6],n:'월식의 여제',u:'영원한 밤',cd:22,c:'#c9a2ff',d:'6초간 적 받는 피해 +60% · 이동 -50% + 7배 피해'},
  {e:[0,5,3],n:'화산 거신',u:'대분화',cd:22,c:'#ff9a3e',d:'용암 운석 비(전체 8배) + 기절 1.5초'}];
@@ -450,11 +450,11 @@ function triSkill(m,i){const r=TRI[m.tri];m.ue=0;const live=S.enemies.filter(e=>
  const k=m.tri;
  if(k===0){for(const e of live){fx({k:'boom',x:e.x,y:e.y,c:'#ff6a3d',r1:60,life:.4});damage(e,D*9,m,true);e.burn=Math.max(e.burn,D*.4);e.burnT=4;e.vuln=Math.max(e.vuln,.4);burst(e.x,e.y,'#ffb347',10,220,4)}}
  else if(k===1){for(const e of live){stunE(e,e.t==='boss'?1:2.5);damage(e,D*7,m,true);e.slow=Math.max(e.slow,.5);e.slowT=6;fx({k:'ring',x:e.x,y:e.y,c:'#bff4ff',r0:6,r1:44,life:.4})}}
- else if(k===2){if(S.hp<20)S.hp=Math.min(20,S.hp+2);for(const e of live){stunE(e,e.t==='boss'?.8:2);damage(e,D*8,m,true);burst(e.x,e.y,'#7dffb0',10,200,4)}toast('🌳 생명의 대지 · 수호석 +2')}
+ else if(k===2){if(S.hp<20)S.hp=Math.min(20,S.hp+2);for(const e of live){stunE(e,e.t==='boss'?.8:2);damage(e,D*8,m,true);burst(e.x,e.y,'#7dffb0',10,200,4)}toast('🌳 생명의 대지 · 생명 +2')}
  else if(k===3){for(const e of live){damage(e,D*5,m,true);stunE(e,e.t==='boss'?.4:1)}for(let j=0;j<10;j++)setTimeout(()=>{const L=S.enemies.filter(e=>e.hp>0);if(!L.length)return;const e=L[Math.floor(Math.random()*L.length)];fx({k:'bolt',x:e.x,y:-20,x2:e.x,y2:e.y,c:'#fff36b',life:.3,w:7});damage(e,D*3,m,true);shake=6},j*110)}
  else if(k===4){S.nightT=6;for(const e of live){damage(e,D*7,m,true);e.vuln=Math.max(e.vuln,.6);e.slow=Math.max(e.slow,.5);e.slowT=6;burst(e.x,e.y,'#c9a2ff',10,200,4)}}
  else if(k===5){for(const e of live){fx({k:'meteor',x:e.x,y:e.y,c:'#ff7a2e',life:.5});setTimeout(()=>{if(e.hp>0){damage(e,D*8,m,true);stunE(e,e.t==='boss'?.6:1.5);burst(e.x,e.y,'#ff9a3e',12,240,4)}},300)}}}
-const GOD={cc:.25,cm:3,p2:'신의 일격',dp2:'모든 공격·스킬이 25% 확률로 치명타(피해 3배)',cost:3000,cd1:13,cd2:22,cd3:32,dmg:170,tg:8,lives:2,s3:'준자의 신벌',d3:'체력 40% 이하 일반 적 즉시 처치 · 보스는 최대 체력 25% 피해',n:'갓준자',t:'불사의 주인공',s1:'천상천하 유아독존',d1:'하늘을 가르는 황금 빛기둥 3연격(각 9배) · 전체 기절 · 받는 피해 +50%',s2:'불멸의 왕좌',d2:'수호석 +3 · 10초간 아군 전체 공격력 2.5배·공격 속도 +50%',p:'불사',dp:'스테이지마다 두 번, 수호석이 0이 되어도 쓰러지지 않아요'};
+const GOD={cc:.25,cm:3,p2:'신의 일격',dp2:'모든 공격·스킬이 25% 확률로 치명타(피해 3배)',cost:3000,cd1:13,cd2:22,cd3:32,dmg:170,tg:8,lives:2,s3:'준자의 신벌',d3:'체력 40% 이하 일반 적 즉시 처치 · 보스는 최대 체력 25% 피해',n:'갓준자',t:'불사의 주인공',s1:'천상천하 유아독존',d1:'하늘을 가르는 황금 빛기둥 3연격(각 9배) · 전체 기절 · 받는 피해 +50%',s2:'불멸의 왕좌',d2:'생명 +3 · 10초간 아군 전체 공격력 2.5배·공격 속도 +50%',p:'불사',dp:'스테이지마다 두 번, 생명이 0이 되어도 쓰러지지 않아요'};
 // ===== 🔱 신격 강화 (갓준자 전용 성장) =====
 const GOD_MAX=10,GODT=[{n:'강림',c:'#ffd75a'},{n:'광휘',c:'#fff3c0'},{n:'천상',c:'#9fe8ff'},{n:'초월',c:'#ff9af0'},{n:'진·갓준자',c:'#ffffff'}];
 function godTier(gl){return gl>=10?4:gl>=7?3:gl>=4?2:gl>=1?1:0}
@@ -465,19 +465,23 @@ function godUp(i){const m=S.slots[i];if(!m||m.s!==8)return;const gl=m.gl||0;if(g
  if(t1>t0){banner('🔱 신격 각성 · '+T.n+'!',godLvDesc(m.gl),T.c);shake=26;flash=.9;if(!window.__noFx&&!fxLite)cutIn(m,'신격 각성 · '+T.n);if(m.gl>=10)unlock('godmax')}else banner('🔱 신격 강화 Lv'+m.gl,godLvDesc(m.gl),'#ffe7a0');
  if(!S.running)saveRun();ui()}
 // ===== 💎 다이아 전투 스킬 =====
-const GSK={pillar:{n:'신의 빛기둥',p:10,d:'12초간 아군 전체 공격력 ×1.5 · 공격 속도 ×1.6 + 하늘 빛 일격'},stop:{n:'시간 정지',p:15,d:'6초간 모든 적이 멈춰요 (보스 포함)'}};const GSK_MAX=3;
-function gemOk(){return S&&S.running&&!S.over&&S.mode!=='raid'&&S.mode!=='daily'}
-function gemPop(){const P=$('#gemPop');if(P.classList.contains('on')){P.classList.remove('on');return}if(!gemOk()){toast('💎 스킬은 웨이브 진행 중에 쓸 수 있어요');return}const U=window.__JMO&&__JMO.USER;const left=GSK_MAX-(S.gemN||0);
- P.innerHTML=`<b>💎 다이아 스킬</b> <small>이번 판 ${left}회 남음 · 보유 💎${U?U.gems:0}</small>`+Object.entries(GSK).map(([k,v])=>`<button data-gk="${k}" ${left<=0||!U||U.gems<v.p?'disabled':''}><b>${k==='pillar'?'🌟':'⏳'} ${v.n}</b> <em>💎${v.p}</em><small>${v.d}</small></button>`).join('')+(U?'':'<small>로그인하면 쓸 수 있어요</small>');
- P.querySelectorAll('[data-gk]').forEach(b=>b.onclick=()=>gemUse(b.dataset.gk));P.classList.add('on')}
-async function gemUse(k){const J=window.__JMO;const P=$('#gemPop');P.classList.remove('on');if(!J||!J.USER){toast('로그인하면 💎 스킬을 쓸 수 있어요');return}if(!gemOk()||(S.gemN||0)>=GSK_MAX)return;
- try{const r=await J.api('/api/shop','POST',{action:'gemSkill',skill:k});if(window.__setUser)__setUser(r.user)}catch(e){toast('⚠️ '+e.message);return}
- if(!gemOk())return;S.gemN=(S.gemN||0)+1;const W=600;
+const GSK={pillar:{n:'신의 빛기둥',p:10,d:'12초간 아군 전체 공격력 ×1.5 · 공격 속도 ×1.6 + 하늘 빛 일격'},stop:{n:'시간 정지',p:15,d:'6초간 모든 적이 멈춰요 (보스 포함)'}};
+function gemOk(){return S&&S.running&&!S.over}
+async function gemPop(){const P=$('#gemPop');if(P.classList.contains('on')){P.classList.remove('on');return}if(!gemOk()){toast('💎 스킬은 웨이브 진행 중에 쓸 수 있어요');return}const J=window.__JMO,U=J&&J.USER;
+ if(!U){P.innerHTML='<b>💎 다이아 스킬</b><small>로그인하면 쓸 수 있어요</small>';P.classList.add('on');return}
+ P.innerHTML='<b>💎 다이아 스킬</b><small>불러오는 중…</small>';P.classList.add('on');let pr={pillar:GSK.pillar.p,stop:GSK.stop.p},gems=U.gems;
+ try{const r=await J.api('/api/shop','POST',{action:'gemPrice'});pr=r.prices;gems=r.gems}catch(e){}
+ if(!P.classList.contains('on'))return;
+ P.innerHTML=`<b>💎 다이아 스킬</b> <small>보유 💎${gems} · 연달아 쓰면 값이 1.5배씩 올라가요 (10분 지나면 원래대로)</small>`+Object.entries(GSK).map(([k,v])=>`<button data-gk="${k}" ${gems<pr[k]?'disabled':''}><b>${k==='pillar'?'🌟':'⏳'} ${v.n}</b> <em>💎${pr[k]}</em><small>${v.d}</small></button>`).join('');
+ P.querySelectorAll('[data-gk]').forEach(b=>b.onclick=()=>gemUse(b.dataset.gk))}
+async function gemUse(k){const J=window.__JMO;const P=$('#gemPop');P.classList.remove('on');if(!J||!J.USER){toast('로그인하면 💎 스킬을 쓸 수 있어요');return}if(!gemOk())return;
+ let r;try{r=await J.api('/api/shop','POST',{action:'gemSkill',skill:k});if(window.__setUser)__setUser(r.user)}catch(e){toast('⚠️ '+e.message);return}
+ if(!gemOk())return;
  if(k==='pillar'){S.pillarT=12;flash=.9;flashC='#fff3c0';shake=20;hitstop=fxLite?0:.12;snd(262,.3,'triangle',.08);setTimeout(()=>snd(392,.3,'triangle',.08),120);setTimeout(()=>snd(523,.7,'triangle',.08),240);banner('🌟 신의 빛기둥!','12초간 아군 공격력 ×1.5 · 공격 속도 ×1.6','#fff3c0');
-  const D=enemyHP(S.wave)*1.5;for(const e of S.enemies.filter(x=>x.hp>0)){fx({k:'bolt',x:e.x,y:-40,x2:e.x,y2:e.y,c:'#fff3c0',life:.45,w:14});damage(e,e.t==='boss'?D*.6:D,null,true);burst(e.x,e.y,'#fff3c0',12,240,4)}
+  const D=S.mode==='raid'?0:enemyHP(S.wave)*1.5;for(const e of S.enemies.filter(x=>x.hp>0)){fx({k:'bolt',x:e.x,y:-40,x2:e.x,y2:e.y,c:'#fff3c0',life:.45,w:14});if(D)damage(e,e.t==='boss'?D*.6:D,null,true);burst(e.x,e.y,'#fff3c0',12,240,4)}
   S.slots.forEach((o,j)=>{if(o){const q=SLOTP[j];fx({k:'pillar',x:q[0],y:q[1],c:'#ffd75a',life:1})}})}
  else{S.stopT=6;flash=.6;flashC='#bfe9ff';snd(1200,.5,'sine',.06,200);banner('⏳ 시간 정지!','6초간 모든 적이 멈춰요','#bfe9ff')}
- ui()}
+ if(r&&r.next)setTimeout(()=>toast('💎 다음 사용: 빛기둥 💎'+r.next.pillar+' · 시간 정지 💎'+r.next.stop),1400);ui()}
 function godSet(){const set=new Set();S.slots.forEach(m=>{if(m&&m.tri!=null&&!m.temp)set.add(m.tri)});return set}
 function canGod(){return S.mode!=='raid'&&godSet().size>=3&&!S.slots.some(m=>m&&m.s===8)}
 function mythRec(e1,e2){return MYTH.find(r=>(r.a===e1&&r.b===e2)||(r.a===e2&&r.b===e1))}
@@ -502,7 +506,7 @@ const ZONES=['새싹 평원','안개 숲','불꽃 협곡','심해 신전','천�
 function zoneName(n){const z=ZONES[Math.floor((n-1)/2)%ZONES.length];const lap=Math.floor((n-1)/20);return z+(lap?' '+['','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ'][Math.min(lap,5)]:'')}
 const INF=[{w:20,t:'💎50'},{w:30,t:'칭호 「무한의 도전자」 + 💎50'},{w:50,t:'오라 「무한의 고리」 + 💎100'},{w:75,t:'칭호 「불멸의 수호자」 + 💎150'},{w:100,t:'칭호 「무한의 지배자」 + 💎300'}];
 function nextInf(){const c=S.wave-1;const n=INF.find(r=>r.w>c);return n?'다음 돌파 보상 <b style="color:#b9a2ff">'+n.w+'웨이브</b> · '+n.t:'모든 돌파 보상 달성! 👑'}
-const STAGE={late:20,h2:1.8,carryEth:120,e0:6,hE:2.2,waves:6,span:10,cnt:2.1,sEth:2.2,bonus:1.6,enr:55,enrB:80,off:0,ef:1.3,h:1.6,boss:1.15,arm0:6,armK:.06};
+const STAGE={late:20,h2:1.8,carryEth:120,e0:6,hE:2.2,waves:6,span:10,cnt:2.1,sEth:2.2,bonus:1.6,enr:55,enrB:80,off:0,ef:1.3,h:1.6,boss:1,arm0:6,armK:.06};
 function effW(w){return S&&S.mode==='stage'?w*STAGE.span/STAGE.waves:w}
 function ethMul(){return S&&S.mode==='stage'?Math.pow(STAGE.ef,(S.stage||1)-1):1}
 function stageMulN(n){let m=n===1?.8:1;for(let k=2;k<=n;k++)m*=k<=STAGE.e0?STAGE.hE:k>STAGE.late?STAGE.h2:STAGE.h;return m}
@@ -540,7 +544,7 @@ const CARDS=[
  {id:'lucky',ic:'🥚',t:'행운의 알',d:'소환 시 25% 확률로 2단계로 부화',max:2},
  {id:'rain',ic:'🌈',t:'무지개 공명',d:'속성 시너지 효과 2배',max:1,r:1},
  {id:'guard',ic:'☄️',t:'수호자의 분노',d:'메테오·빙결 강화, 기운 +40 즉시 충전',max:3},
- {id:'hp',ic:'💎',t:'수호석 재건',d:'수호석 +6 회복 (최대치 초과 가능)',max:9},
+ {id:'hp',ic:'❤️',t:'생명 재건',d:'생명 +6 회복 (최대치 초과 가능)',max:9},
  {id:'speed',ic:'⚡',t:'질풍',d:'모든 몬스터 공격 속도 +20%',max:3}];
 function bf(id){return (S.buffs&&S.buffs[id])||0}
 function cardDesc(c,el){return c.el?EMO[el]+ELS[el].n+' '+c.d.slice(1):c.d}
@@ -555,7 +559,7 @@ function showBuffs(){const B=$('#buffs');if(!B)return;B.innerHTML=Object.entries
 function synergy(){const set=new Set();S.slots.forEach(m=>{if(!m)return;set.add(m.e);if(m.f!=null)set.add(m.f);if(m.f3!=null)set.add(m.f3)});const n=S.slots.some(m=>m&&m.s===8)?10:set.size;const v=n>=10?.6:n>=7?.35:n>=5?.2:n>=3?.1:0;return v*(bf('rain')?2:1)}
 function mstat(m){const pl=S&&S.pillarT>0;const gb=(S&&S.godBuff>0?2.5:1)*(1+.03*labL('atk'))*(pl?1.5:1);if(m.s===8)return{dmg:GOD.dmg*Math.pow(2.75,6)*(1+synergy())*(1+.15*Math.max(...S.up))*(1+.2*bf('el0'))*gb*(1+.3*(m.gl||0)),rate:2.4*(1+.2*bf('speed'))*(S.cosmoT>0?1.5:1)*(pl?1.6:1),range:620};const b=ST[ELS[m.e].k];const mul=cardMul(m.e)*(m.tri!=null?2.75*1.3:1)*Math.pow(2.75,m.s-1)*(1+synergy())*upMul(S.up[m.e])*(m.f!=null?1.25+.2*bf('fuse'):1)*(1+.4*bf('el'+m.e));const tb=m.trait==='brave'?1.25:m.trait==='gold'?1.2:1,ts=m.trait==='swift'?1.25:m.trait==='gold'?1.2:1,tr=m.trait==='eagle'?1.25:m.trait==='gold'?1.1:1;return{dmg:b[0]*mul*gb*tb,rate:b[1]*(1+.08*(m.s-1))*(1+.2*bf('speed'))*(S&&S.cosmoT>0?1.5:1)*(pl?1.6:1)*ts,range:(b[2]+12*(m.s-1))*tr}}
 // ===================== ENEMIES =====================
-const ET={slime:{hp:1,sp:52,r:15,c:'#7ad36b',g:1},runner:{hp:.6,sp:88,r:12,c:'#ff8f5a',g:1},golem:{hp:2.6,sp:36,r:19,c:'#8a8fa8',g:2},bat:{hp:.8,sp:70,r:13,c:'#b583ff',g:1},elite:{hp:6,sp:44,r:22,c:'#ff4f7b',g:5},boss:{hp:20,sp:36,r:32,c:'#ff2d55',g:25},gold:{hp:4,sp:108,r:16,c:'#ffd75a',g:0},split:{hp:.8,sp:50,r:17,c:'#7ad36b',g:1},mini:{hp:.25,sp:72,r:10,c:'#7ad36b',g:0},healer:{hp:1.1,sp:46,r:15,c:'#7dffb0',g:2},wyvern:{hp:.7,sp:80,r:14,c:'#b583ff',g:2}};
+const ET={slime:{hp:1,sp:52,r:15,c:'#7ad36b',g:1},runner:{hp:.6,sp:88,r:12,c:'#ff8f5a',g:1},golem:{hp:2.6,sp:36,r:19,c:'#8a8fa8',g:2},bat:{hp:.8,sp:70,r:13,c:'#b583ff',g:1},elite:{hp:6,sp:44,r:22,c:'#ff4f7b',g:5},boss:{hp:20,sp:31,r:32,c:'#ff2d55',g:25},gold:{hp:4,sp:108,r:16,c:'#ffd75a',g:0},split:{hp:.8,sp:50,r:17,c:'#7ad36b',g:1},mini:{hp:.25,sp:72,r:10,c:'#7ad36b',g:0},healer:{hp:1.1,sp:46,r:15,c:'#7dffb0',g:2},wyvern:{hp:.7,sp:80,r:14,c:'#b583ff',g:2}};
 const EINFO={split:'🟢 분열 슬라임: 쓰러지면 작은 슬라임 2마리로 갈라져요',healer:'✚ 치유사: 2초마다 주변 적의 체력을 회복해요 · 먼저 잡으세요!',wyvern:'🪽 비룡(비행): 🪨대지 속성은 공격할 수 없어요'};
 const BAL={g:1.29,cap:24,boss:.02,enr:40,enrB:65,arm0:18,armK:.035,armMax:.75,mid:.6,cnt:1.1,gap:.4,spd:1.2};
 function waveCount(w){if(S&&S.mode==='stage')return Math.min(30,Math.round((6+Math.floor(effW(w)*BAL.cnt))*STAGE.cnt));return Math.min(BAL.cap,6+Math.floor(w*BAL.cnt))}
@@ -644,7 +648,7 @@ function impact(sh){const e=sh.tgt,m=sh.m,k=sh.k;let d=sh.dmg;const crit=Math.ra
 function secondary(m,e,d,x,y){const k=ELS[m.f].k,c=ELS[m.f];const q=d*.35;
  if(k==='fire'){e.burn=Math.max(e.burn,d*.2);e.burnT=2.5;fx({k:'boom',x,y,c:c.c,r1:26,life:.25})}
  else if(k==='water'){e.slow=Math.max(e.slow,.3);e.slowT=1.5;for(const o of enemiesInRange(x,y,45))if(o!==e)damage(o,q,m);fx({k:'ring',x,y,c:c.c2,r0:6,r1:45,life:.3})}
- else if(k==='nature'){e.poison+=d*.1;e.poisonT=4;if(Math.random()<.02){S.hp=Math.min(20,S.hp+1);toast('🌿 수호석 +1')}}
+ else if(k==='nature'){e.poison+=d*.1;e.poisonT=4;if(Math.random()<.02){S.hp=Math.min(20,S.hp+1);toast('🌿 생명 +1')}}
  else if(k==='thunder'){const nx=S.enemies.filter(o=>o.hp>0&&o!==e&&Math.hypot(o.x-x,o.y-y)<120)[0];if(nx){fx({k:'bolt',x,y,x2:nx.x,y2:nx.y,c:c.c,life:.15});damage(nx,q*1.5,m)}}
  else if(k==='moon'){e.vuln=Math.min(.4,e.vuln+.04)}
  else if(k==='earth'){for(const o of enemiesInRange(x,y,50))if(o!==e)damage(o,q,m);if(Math.random()<.1)stunE(e,.5)}
@@ -659,7 +663,7 @@ function godSkill1(m,i){m.ue=0;const D=mstat(m).dmg,p=SLOTP[i];if(!window.__noFx
  for(let j=0;j<3;j++)setTimeout(()=>{if(S.over)return;flash=fxLite?.08:.35;flashC='#ffe7a0';shake=fxLite?3:14;for(const e of S.enemies.filter(x=>x.hp>0)){fx({k:'bolt',x:e.x,y:-40,x2:e.x,y2:e.y,c:j===1?'#ffffff':'#ffd75a',life:.4,w:14});fx({k:'ring',x:e.x,y:e.y,c:'#fff3c0',r0:6,r1:70,life:.35,w:6});damage(e,D*9,m,true);burst(e.x,e.y,'#ffe7a0',14,280,5)}snd(260-j*50,.3,'square',.06,80)},150+j*260)}
 function godSkill2(m,i){m.ue2=0;const p=SLOTP[i];if(!window.__noFx)cutIn(m,GOD.s2);banner('🔱 '+GOD.s2,GOD.d2,'#ffe7a0');S.hp=Math.min(Math.max(S.hp,20),S.hp+3);S.godBuff=10;S.cosmoT=Math.max(S.cosmoT||0,10);shake=fxLite?4:16;flash=fxLite?.12:.5;flashC='#ffd75a';snd(392,.4,'triangle',.08,784);setTimeout(()=>snd(523,.5,'triangle',.08,1046),200);
  for(let k=0;k<3;k++)fx({k:'ring',x:p[0],y:p[1],c:k?'#ffd75a':'#ffffff',r0:20+k*20,r1:420+k*160,life:.7+k*.15,w:10});
- S.slots.forEach((o,j)=>{if(o){const q=SLOTP[j];fx({k:'ring',x:q[0],y:q[1],c:'#ffd75a',r0:8,r1:56,life:.5,w:5});burst(q[0],q[1],'#ffe7a0',10,160,3.5)}});toast('🔱 10초간 아군 전체 공격력 2.5배 · 공격 속도 +50% · 수호석 +3')}
+ S.slots.forEach((o,j)=>{if(o){const q=SLOTP[j];fx({k:'ring',x:q[0],y:q[1],c:'#ffd75a',r0:8,r1:56,life:.5,w:5});burst(q[0],q[1],'#ffe7a0',10,160,3.5)}});toast('🔱 10초간 아군 전체 공격력 2.5배 · 공격 속도 +50% · 생명 +3')}
 function godSkill3(m,i){m.ue3=0;const p=SLOTP[i];if(!window.__noFx)cutIn(m,GOD.s3);banner('🔱 '+GOD.s3,GOD.d3,'#ffe7a0');shake=fxLite?6:28;hitstop=fxLite?0:.12;flash=fxLite?.15:.75;flashC='#ffffff';snd(50,1,'sawtooth',.12,20);
  fx({k:'ring',x:p[0],y:p[1],c:'#ffffff',r0:10,r1:1000,life:.8,w:18});let n=0;
  for(const e of S.enemies.filter(x=>x.hp>0)){fx({k:'bolt',x:e.x,y:-40,x2:e.x,y2:e.y,c:'#ffffff',life:.45,w:16});if(e.t!=='boss'&&e.t!=='raid'&&e.hp<=e.mhp*.4){damage(e,e.hp+1,m,true);n++}else damage(e,hpP(e,.25)+mstat(m).dmg*4,m,true);burst(e.x,e.y,'#fff3c0',16,300,5)}
@@ -692,9 +696,9 @@ function mythSkill(m,i){const r=mythRec(m.e,m.f);if(!r)return ultimate(m,i);cons
   for(let j=0;j<5;j++)setTimeout(()=>{flash=.25;flashC='#fff36b';for(const e of S.enemies.filter(x=>x.hp>0)){fx({k:'bolt',x:e.x,y:-20,x2:e.x,y2:e.y,c:'#fff36b',life:.3,w:6});damage(e,D*1.5,m,true)}shake=10;snd(200,.15,'square',.05,60)},200+j*170)}
  else if(id===2){S.cosmoT=8;for(const e of live){damage(e,D*5,m,true);fx({k:'star',x:e.x,y:e.y,c:'#fff3b0',life:.4})}const t=live.reduce((a,b)=>a.hp>b.hp?a:b);
   for(let j=0;j<10;j++)setTimeout(()=>{if(t.hp>0){fx({k:'meteor',x:t.x,y:t.y,c:'#fff3b0',life:.4});damage(t,D*2,m,true);burst(t.x,t.y,'#fff8d0',12,240,4);shake=6}},j*90);toast('🌌 8초간 아군 전체 공격 속도 +50%')}
- else if(id===3){for(const e of live){damage(e,D*5+hpP(e,.2),m,true);e.mark=1;e.vuln=Math.max(e.vuln,.3);burst(e.x,e.y,'#b6ff8a',10,200,4)}if(S.hp<20){S.hp++;toast('🌿 윤회의 낙인 · 수호석 +1')}}
+ else if(id===3){for(const e of live){damage(e,D*5+hpP(e,.2),m,true);e.mark=1;e.vuln=Math.max(e.vuln,.3);burst(e.x,e.y,'#b6ff8a',10,200,4)}if(S.hp<20){S.hp++;toast('🌿 윤회의 낙인 · 생명 +1')}}
  else if(id===5){for(const e of live){fx({k:'boom',x:e.x,y:e.y,c:'#ff3d6a',r1:70,life:.45});damage(e,D*6+hpP(e,.12),m,true);e.burn=Math.max(e.burn,D*.4);e.burnT=4;burst(e.x,e.y,'#ff5c7a',12,240,4)}}
- else if(id===6){for(const e of live){damage(e,D*6,m,true);e.slow=Math.max(e.slow,.6);e.slowT=8;fx({k:'ring',x:e.x,y:e.y,c:'#9fd8ff',r0:6,r1:50,life:.45})}if(S.hp<20)S.hp=Math.min(20,S.hp+2);toast('🌌 은하의 조류 · 수호석 +2')}
+ else if(id===6){for(const e of live){damage(e,D*6,m,true);e.slow=Math.max(e.slow,.6);e.slowT=8;fx({k:'ring',x:e.x,y:e.y,c:'#9fd8ff',r0:6,r1:50,life:.45})}if(S.hp<20)S.hp=Math.min(20,S.hp+2);toast('🌌 은하의 조류 · 생명 +2')}
  else if(id===7){for(const e of live){damage(e,D*4,m,true);e.poison+=D*.3;e.poisonT=5;fx({k:'ring',x:e.x,y:e.y,c:'#c9ff6b',r0:6,r1:40,life:.4})}for(let j=0;j<8;j++)setTimeout(()=>{const L=S.enemies.filter(e=>e.hp>0);if(!L.length)return;const e=L[Math.floor(Math.random()*L.length)];fx({k:'bolt',x:e.x,y:-20,x2:e.x,y2:e.y,c:'#c9ff6b',life:.3,w:7});damage(e,D*2.5,m,true);e.poison+=D*.15;e.poisonT=5;stunE(e,e.t==='boss'?.3:.8);shake=6},j*90)}
  else if(id===8){for(const e of live){stunE(e,e.t==='boss'?1.2:3);e.vuln=Math.max(e.vuln,.5);damage(e,D*4,m,true);fx({k:'ring',x:e.x,y:e.y,c:'#d9c9ff',r0:6,r1:44,life:.4});burst(e.x,e.y,'#e8dcff',10,200,4)}}
  else if(id===9){for(const e of live){kb(e,e.t==='boss'?60:220);damage(e,D*6,m,true);e.slow=Math.max(e.slow,.5);e.slowT=6;burst(e.x,e.y,'#e9d3a4',12,240,4)}shake=24}
@@ -715,7 +719,7 @@ function ultimate(m,i){if(m.s===7&&!m._sub&&m.f!=null&&mythRec(m.e,m.f))return m
   else if(k==='dark'){damage(e,D*.5+hpP(e,.22),m,true);e.vuln=.45}
   burst(e.x,e.y,el.c,8,220,4)}
  if(k==='star'){const t=live.reduce((a,b)=>a.hp>b.hp?a:b);for(let j=0;j<8;j++)setTimeout(()=>{if(t.hp>0){fx({k:'meteor',x:t.x,y:t.y,c:'#fff3b0',life:.4});damage(t,D*.55,m,true);burst(t.x,t.y,'#fff8d0',12,240,4);shake=8}},j*90)}
- if(k==='nature'){S.hp=Math.min(20,S.hp+1);toast('🌿 수호석 +1 회복')}}
+ if(k==='nature'){S.hp=Math.min(20,S.hp+1);toast('🌿 생명 +1 회복')}}
 // guardian skills
 function meteor(){if(S.energy<60||!S.running)return;const live=S.enemies.filter(e=>e.hp>0);if(!live.length)return;S.energy-=60;mis('skill');
  let best=live[0],bc=0;for(const e of live){const c=enemiesInRange(e.x,e.y,90).length;if(c>bc){bc=c;best=e}}const x=best.x,y=best.y;
@@ -744,7 +748,7 @@ function update(dt){if(S.hold)return;
    if(e.stun>0){e.stun-=dt;if(e.stun<=0)e.stunImm=1.2;continue}
    e.d+=e.sp*(1-e.slow)*dt*(S.enraged?1.5:1);e.maxd=Math.max(e.maxd||0,e.d);const p=posAt(e.d);e.x=p[0];e.y=p[1];
    if(e.d>=PLEN&&e.t==='gold'){e.hp=0;toast('💨 황금 슬라임이 도망쳤어요');continue}
-   if(e.d>=PLEN){e.hp=0;e.leak=1;const l=e.t==='boss'?5:e.t==='elite'?2:1;S.hp-=l;shake=10;flash=.3;flashC='#ff2d55';snd(70,.3,'sawtooth',.08,40);toast('💥 수호석 -'+l);if(S.hp<=0){gameOver();return}}}
+   if(e.d>=PLEN){e.hp=0;e.leak=1;if(e.t==='boss'){S.hp=0;S.bossLeak=1;shake=24;flash=.7;flashC='#ff2d55';snd(60,.6,'sawtooth',.1,30);banner('👑 보스를 놓쳤어요!','보스가 방어선을 뚫었어요','#ff5c7a')}else{S.hp-=1;shake=8;flash=.25;flashC='#ff2d55';snd(70,.3,'sawtooth',.08,40);toast('👾 적을 놓쳤어요 · 남은 생명 '+Math.max(0,S.hp))}if(S.hp<=0){gameOver();return}}}
   S.enemies=S.enemies.filter(e=>e.hp>0);
   S.slots.forEach((m,i)=>{if(!m)return;if(m.frz>0){m.frz-=dt;return}m.cd-=dt;if(m.cd<=0){if(attack(m,i))m.cd=1/mstat(m).rate;else m.cd=.1}
    if(m.tri!=null){m.ue=Math.min(100,m.ue+uf(m)*dt*100/TRI[m.tri].cd*(1+.3*bf('ult')));if(m.ue>=100&&tsT<=0&&S.enemies.some(e=>e.hp>0))triSkill(m,i)}
@@ -772,15 +776,15 @@ function startWave(){if(S.running||S.over||cardsOpen)return;if(new Set(S.slots.f
  {const we=waveEl(S.wave),wk=weakTo(we).map(a=>EMO[a]+ELS[a].n).join(' ');const ar=Math.round(armorA()*100);if(S.mode==='stage'?(S.stage===STAGE.arm0&&lw()===1):S.wave===BAL.arm0+1)setTimeout(()=>toast('🛡 이제부터 적이 철갑을 둘러요 · ★6 각성은 철갑 무시, ★7 궁극은 추가 피해!'),1500);banner((S.mode==='stage'?(lw()===STAGE.waves?'👑 STAGE '+S.stage+' 보스 · ':isBossW(S.wave)?'⚠️ BOSS ':'STAGE '+S.stage+' · '+lw()+'/'+STAGE.waves+' · '):(S.wave%5===0?'⚠️ BOSS ':'WAVE '+S.wave+' · '))+EMO[we]+ELS[we].n+(isBossW(S.wave)?' 마왕':''),'약점: '+wk+(ar?' · 🛡 철갑 '+ar+'%':''),isBossW(S.wave)?'#ff5c7a':ELS[we].c)}snd(392,.15,'triangle',.06);ui()}
 function stageClear(){S.over=true;S.running=false;if(S.coop&&window.coopFinish)setTimeout(()=>coopFinish(true),60);mis('stage');spXP(20+S.stage*5);const cardGot=addCards(Math.min(15,3+Math.floor(S.stage/2)),[...new Set(S.slots.filter(Boolean).filter(m=>m.s<8).map(m=>m.e))]);try{localStorage.removeItem(SAVE+'_run')}catch(e){}const first=S.stage>(meta.stage||0);meta.stage=Math.max(meta.stage||0,S.stage);meta.sel=meta.stage+1;const cr=12+S.stage*4+(first?15:0);meta.crystal=(meta.crystal||0)+cr;saveMeta();
  $('#overH').innerHTML='🎉 STAGE '+S.stage+' CLEAR!<small style="display:block;font-size:13px;color:#b9a8d8;font-weight:700">'+zoneName(S.stage)+' 정복</small>';$('#bRetry').textContent='▶ STAGE '+(S.stage+1)+' (군단 유지)';
- $('#overTx').innerHTML='남은 수호석 <b style="color:var(--gold)">'+Math.max(0,S.hp)+'</b> · 처치 '+S.kills+'마리<br>최고 기록: <b style="color:var(--gold)">STAGE '+meta.stage+'</b><br><br><b style="color:#7fe3ff;font-size:17px">💠 준자 결정 +'+cr+(first?' (첫 클리어 보너스!)':'')+'</b><br><b style="color:#ffd75a">🃏 카드 '+cardTxt(cardGot)+'</b><br>🛡 지금 군단·강화·축복 그대로 다음 스테이지로 이어져요';
+ $('#overTx').innerHTML='남은 생명 <b style="color:var(--gold)">'+Math.max(0,S.hp)+'</b> · 처치 '+S.kills+'마리<br>최고 기록: <b style="color:var(--gold)">STAGE '+meta.stage+'</b><br><br><b style="color:#7fe3ff;font-size:17px">💠 준자 결정 +'+cr+(first?' (첫 클리어 보너스!)':'')+'</b><br><b style="color:#ffd75a">🃏 카드 '+cardTxt(cardGot)+'</b><br>🛡 지금 군단·강화·축복 그대로 다음 스테이지로 이어져요';
  banner('🎉 STAGE '+S.stage+' CLEAR!',zoneName(S.stage)+' 정복','#ffd75a');shake=10;flash=.4;flashC='#ffe7a0';snd(523,.2,'triangle',.07);setTimeout(()=>snd(784,.2,'triangle',.07),150);setTimeout(()=>snd(1046,.4,'triangle',.07),300);
  if(window.onStageClear)setTimeout(()=>onStageClear(S.stage,Math.max(0,S.hp),S.kills),50);setTimeout(()=>$('#mOver').classList.add('on'),700)}
-function gameOver(){if(!S.over&&S.mode!=='raid'&&(S.godRes||0)<GOD.lives&&S.slots.some(m=>m&&m.s===8)){S.godRes=(S.godRes||0)+1;S.hp=8;for(const e of S.enemies)e.d=Math.max(0,e.d-700);banner('🔱 불사','갓준자는 쓰러지지 않는다 · 수호석 8','#ffe7a0');shake=24;flash=.8;flashC='#fff3c0';const gi=S.slots.findIndex(m=>m&&m.s===8);if(gi>=0){const p=SLOTP[gi];for(let k=0;k<3;k++)fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:10,r1:700+k*150,life:.8+k*.15,w:12})}snd(523,.6,'triangle',.09,1046);return}
+function gameOver(){if(!S.over&&S.mode!=='raid'&&(S.godRes||0)<GOD.lives&&S.slots.some(m=>m&&m.s===8)){S.godRes=(S.godRes||0)+1;S.hp=8;S.bossLeak=0;for(const e of S.enemies)e.d=Math.max(0,e.d-700);banner('🔱 불사','갓준자는 쓰러지지 않는다 · 생명 8','#ffe7a0');shake=24;flash=.8;flashC='#fff3c0';const gi=S.slots.findIndex(m=>m&&m.s===8);if(gi>=0){const p=SLOTP[gi];for(let k=0;k<3;k++)fx({k:'ring',x:p[0],y:p[1],c:'#ffd75a',r0:10,r1:700+k*150,life:.8+k*.15,w:12})}snd(523,.6,'triangle',.09,1046);return}
 if(S.mode==='stage'){if(!S.over&&window.tryRevive&&tryRevive())return;if(!S.over&&S.coop&&window.coopDown&&coopDown())return;S.over=true;if(S.coop&&window.coopFinish)setTimeout(()=>coopFinish(false),60);S.running=false;try{localStorage.removeItem(SAVE+'_run')}catch(e){}const cr=Math.floor(lw()*1.2)+(S.stage-1)*2;meta.crystal=(meta.crystal||0)+cr;const cg=addCards(Math.min(8,1+Math.floor(S.stage/3)));saveMeta();
- $('#overH').innerHTML='💥 수호석 파괴';$('#bRetry').textContent=(()=>{try{const c=JSON.parse(localStorage.getItem(SAVE+'_cp')||'null');return c&&c.stage===S.stage?'↺ STAGE '+S.stage+' 시작 상태로 재도전':'다시 도전'}catch(e){return '다시 도전'}})();
+ $('#overH').innerHTML=S.bossLeak?'👑 보스를 놓쳤어요':'💥 생명을 모두 잃었어요';$('#bRetry').textContent=(()=>{try{const c=JSON.parse(localStorage.getItem(SAVE+'_cp')||'null');return c&&c.stage===S.stage?'↺ STAGE '+S.stage+' 시작 상태로 재도전':'다시 도전'}catch(e){return '다시 도전'}})();
  $('#overTx').innerHTML='<b style="color:var(--gold)">STAGE '+S.stage+'</b> · '+lw()+'/'+STAGE.waves+' 웨이브에서 막혔어요.<br>최고 기록: STAGE '+(meta.stage||0)+' · 처치 '+S.kills+'마리<br><br><b style="color:#7fe3ff;font-size:17px">💠 준자 결정 +'+cr+'</b><br><b style="color:#ffd75a">🃏 카드 '+cardTxt(cg)+'</b><br>연구소·🃏카드로 강해져서 다시 도전해 보세요';
  if(window.onGameOver)setTimeout(()=>onGameOver(S.stage-1,S.kills,'stage'),50);setTimeout(()=>$('#mOver').classList.add('on'),600);return}
- S.over=true;S.running=false;if(S.mode!=='daily'){try{localStorage.removeItem(SAVE+'_run')}catch(e){}}if(window.onGameOver)setTimeout(()=>onGameOver(S.wave-1,S.kills,S.mode||'normal'),50);const w=S.wave;const nb=w-1>meta.best;if(nb){meta.best=w-1}const cr=Math.floor((w-1)*1.5)+Math.floor((w-1)/5)*5+(nb?10:0);meta.crystal=(meta.crystal||0)+cr;const cg=S.mode==='daily'?{}:addCards(Math.min(15,Math.floor((w-1)/3)));spXP(Math.min(150,(w-1)*3));saveMeta()
+ S.over=true;S.running=false;$('#overH').innerHTML=S.bossLeak?'👑 보스를 놓쳤어요':'💥 생명을 모두 잃었어요';if(S.mode!=='daily'){try{localStorage.removeItem(SAVE+'_run')}catch(e){}}if(window.onGameOver)setTimeout(()=>onGameOver(S.wave-1,S.kills,S.mode||'normal'),50);const w=S.wave;const nb=w-1>meta.best;if(nb){meta.best=w-1}const cr=Math.floor((w-1)*1.5)+Math.floor((w-1)/5)*5+(nb?10:0);meta.crystal=(meta.crystal||0)+cr;const cg=S.mode==='daily'?{}:addCards(Math.min(15,Math.floor((w-1)/3)));spXP(Math.min(150,(w-1)*3));saveMeta()
  $('#overTx').innerHTML='WAVE <b style="color:var(--gold)">'+w+'</b>에서 막혔어요.<br>최고 기록: WAVE '+meta.best+' 클리어<br>처치 '+S.kills+'마리<br><br><b style="color:#7fe3ff;font-size:17px">💠 준자 결정 +'+cr+(nb?' (신기록 보너스!)':'')+'</b>'+(Object.keys(cg).length?'<br><b style="color:#ffd75a">🃏 카드 '+cardTxt(cg)+'</b>':'')+'<br>연구소에서 영구 능력을 올려 보세요';setTimeout(()=>$('#mOver').classList.add('on'),600)}
 // ===================== ACTIONS =====================
 function summonCost(){return (S&&S.mode==='daily')?SUMMON:SUMMON-3*((meta.lab||{}).cost||0)}
@@ -1170,7 +1174,7 @@ function evolveAll(){let n=0,guard=0;while(guard++<20){let done=false;for(let i=
 function pairCount(){let n=0;for(let i=0;i<SLOTS;i++){const a=S.slots[i];if(!a||a.s>=5)continue;for(let j=i+1;j<SLOTS;j++)if(canMerge(a,S.slots[j])){n++;break}}return n}
 function iconCanvas(el,st,size,f2,f3,tri,vb){if(tri!=null&&SPR['tri'+tri]){const c=document.createElement('canvas');c.width=c.height=size*2;const g=c.getContext('2d');g.drawImage(SPR['tri'+tri],0,0,size*2,size*2);return c}const c=document.createElement('canvas');c.width=c.height=size*2;const g=c.getContext('2d');g.scale(2,2);const r=SPR[el+'_'+Math.min(st,5)]?size*(st===7?.3:st===6?.36:.4):size*(st===1?.4:.3);drawMon(g,el,st,size/2,SPR[el+'_'+Math.min(st,5)]?size*.6:size/2+(st===1?0:size*.05),r,0,1,0,f2,f3,vb);return c}
 function buildSummon(){const box=$('#summon');box.innerHTML='';ELS.forEach((e,i)=>{const b=document.createElement('button');b.className='sm';b.appendChild(iconCanvas(i,1,40));b.insertAdjacentHTML('beforeend',`<span style="color:${e.c}">${e.n}</span><i>${summonCost()}</i>`);b.onclick=()=>summon(i);if(S&&S.allowed&&!S.allowed.includes(i))b.style.opacity=.25;box.appendChild(b)})}
-function ui(){try{const gbn=$('#gemBtn');if(gbn)gbn.classList.toggle('on',S.running&&S.mode!=='raid'&&S.mode!=='daily');if(!S.running)$('#gemPop').classList.remove('on')}catch(x){}try{tutCheck();}catch(x){}try{goalUI();const gc=$('#gamC');if(gc)gc.textContent=gambleCost()+(S.gp?' · 천장 '+(GAMBLE.pity-S.gp):'')}catch(x){}const info=$('#info');const m=S.sel>=0?S.slots[S.sel]:null;
+function ui(){try{const gbn=$('#gemBtn');if(gbn)gbn.classList.toggle('on',!!S.running);if(!S.running)$('#gemPop').classList.remove('on')}catch(x){}try{tutCheck();}catch(x){}try{goalUI();const gc=$('#gamC');if(gc)gc.textContent=gambleCost()+(S.gp?' · 천장 '+(GAMBLE.pity-S.gp):'')}catch(x){}const info=$('#info');const m=S.sel>=0?S.slots[S.sel]:null;
  if(m){const el=ELS[m.e],st=mstat(m);const tf=m.s===6&&m.tri==null?triFind(S.sel):null;const nxt=m.tri!=null?`<span style="color:${TRI[m.tri].c}">🔮 삼위일체 히든 · 「${TRI[m.tri].u}」 ${TRI[m.tri].cd}초</span><br><span style="font-size:11px;color:#e8d9ff">${TRI[m.tri].d}</span>`:tf?`<span style="color:#e8d9ff">🔮 ${TRI[tf.k].e.map(x=>EMO[x]).join('+')} 삼위 합체 가능!</span>`:m.s===8?`<span style="color:#fff3c0;font-size:11px">신격 +${(m.gl||0)*30}% · ${GOD.tg+Math.floor((m.gl||0)/2)}명 공격 · 치명 ${Math.round((GOD.cc+.015*(m.gl||0))*100)}%${(m.gl||0)>=10?'(×4)':''}</span><br><span style="color:#ffe7a0;font-size:11px">🔱 스킬 ${[GOD.cd1,GOD.cd2,GOD.cd3].map(c=>Math.round(c*(1-.03*(m.gl||0)))).join('·')}초 · 불사 ${GOD.lives-(S.godRes||0)}회</span>`:m.s<5?`다음: <b style="font-size:12px">${(m.v&&hasB(m.e,m.s+1)?el.namesB:el.names)[m.s]}</b> `:m.s===5?`궁극기 자동 · <span style="color:#ff9ad5">✦ 같은 속성 ★3 이상과 합치면 각성!</span>`:m.s===6?`<span style="color:#ffd75a">👑 궁극 짝: ${MYTH.filter(r=>r.a===m.e||r.b===m.e).map(r=>EMO[r.a===m.e?r.b:r.a]+ELS[r.a===m.e?r.b:r.a].n).join('·')} 각성</span>`:`<span style="color:#ffd75a">👑 고유 스킬 「${mythRec(m.e,m.f).u}」 · 쿨타임 ${mythRec(m.e,m.f).cd}초</span><br><span style="font-size:11px;color:#e8d9ff">${mythRec(m.e,m.f).d}</span>`;
   info.innerHTML='';info.appendChild(iconCanvas(m.e,m.s,42,m.f,m.f3,m.tri,m.v));const pj=partner(S.sel),isF=pj>=0&&canFuse(m,S.slots[pj]),isM=pj>=0&&canMyth(m,S.slots[pj]),isA=pj>=0&&!canMerge(m,S.slots[pj])&&canAwaken(m,S.slots[pj]);info.insertAdjacentHTML('beforeend',`<div class="tx"><b>${monName(m)}</b> <span class="st">${m.tri!=null?'<span style="color:#e8d9ff">🔮★7 HIDDEN</span>':m.s===8?'<span style="color:'+GODT[godTier(m.gl||0)].c+'">🔱 ★8 GOD · '+GODT[godTier(m.gl||0)].n+' · 신격 '+(m.gl||0)+'/'+GOD_MAX+'</span>':m.s===7?'<span style="color:#ffd75a">👑★7 MYTHIC</span>':m.s===6?'<span style="color:#ff9ad5">★★★★★★</span>':'★'.repeat(m.s)}</span> · ${m.s===8?'전 속성':el.n}${m.trait?` <span style="color:${m.trait==='gold'?'#ffd75a':'#b9f6ca'};font-size:12px">${TR[m.trait].ic} ${TR[m.trait].n}(${TR[m.trait].d})</span>`:''}<br>공격 ${Math.round(st.dmg)} · 속도 ${st.rate.toFixed(1)}/초${m.f!=null?' · '+EMO[m.f]+'융합':''}<br>${isF?'<span style="color:#d08bff">🔀 '+(recipe(m.e,S.slots[pj].e).n)+' 융합 가능!</span>':nxt}</div><div class="acts3">${(m.s<6||isM)?`<button class="btn evo${pj>=0?' on':''}" id="bEvo">${isM?'👑 궁극':isF?'🔀 융합':(m.s===5||isA)?'✦ 각성':'✨ 진화'}<small>${pj>=0?(isM?mythCost():isF?FUSECOST[m.s]:(isA||m.s===5)?awkCost():MERGE[m.s])+'✨':'짝 필요'}</small></button>`:''}${m.s===8?'':`<button class="btn gold" id="bUp">⬆ 강화 +${S.up[m.e]}${UPT[upTierOf(S.up[m.e])].n?' '+UPT[upTierOf(S.up[m.e])].n:''}<small>${upCost(m.e)}✨</small></button>`}${tf?`<button class="btn evo on" id="bTri" style="background:linear-gradient(135deg,#e8d9ff,#7a4ad8);color:#1a0d3a">🔮 삼위 합체<small>${TRICOST}✨</small></button>`:''}${m.tri!=null&&canGod()?`<button class="btn evo on" id="bGod" style="background:linear-gradient(135deg,#fff3c0,#d9a54e);color:#3a2400">🔱 갓준자 강림<small>${godCost()}✨</small></button>`:m.tri!=null?`<button class="btn" id="bGodInfo">🔱 갓준자<small>히든 ${godSet().size}/3</small></button>`:''}${m.s===8?((m.gl||0)<GOD_MAX?`<button class="btn evo on" id="bGodUp" style="background:linear-gradient(135deg,#fff3c0,#b98a2e);color:#3a2400">🔱 신격 강화<small>Lv${m.gl||0}→${(m.gl||0)+1} · ${godCost(m.gl||0)}✨</small></button>`:'<button class="btn" disabled>🔱 신격 MAX</button>'):`<button class="btn red" id="bSell">판매<small>+${sellValue(m)}</small></button>`}</div>`);{const bt=$('#bTri');if(bt)bt.onclick=()=>triMerge(S.sel);const bg=$('#bGod');if(bg)bg.onclick=()=>godAscend(S.sel);const bi=$('#bGodInfo');if(bi)bi.onclick=()=>toast('🔱 서로 다른 🔮삼위일체 히든 3종을 모으면 갓준자로 강림!')}{const bs=$('#bSell');if(bs)bs.onclick=()=>sell(S.sel);const gu=$('#bGodUp');if(gu)gu.onclick=()=>godUp(S.sel)}{const bu=$('#bUp');if(bu)bu.onclick=()=>upgrade(m.e)}const be=$('#bEvo');if(be)be.onclick=()=>evolveSel()}
  else if(S.mode==='raid'){const rb=S.enemies.find(e=>e.t==='raid');info.innerHTML=rb?`<div class="tx" style="text-align:center"><b>🐲 월드 보스 레이드 · ${EMO[rb.el]} ${rb.name}</b><br>약점 <span class="st">${weakTo(rb.el).map(a=>EMO[a]+ELS[a].n).join(' ')}</span> · 내 도감 최강 군단 출전<br>☄️ 메테오·❄️ 빙결도 쓸 수 있어요!</div>`:''}
@@ -1205,7 +1209,7 @@ $('#bSaveQuit').onclick=()=>{if(S.mode==='daily'||S.mode==='raid'){if(!confirm('
 $('#bSnd').onclick=()=>{sound=!sound;$('#bSnd').textContent=sound?'🔊 효과음 켜짐':'🔇 효과음 꺼짐'};
 const LAB=[
  {id:'eth',ic:'💰',t:'시작 에테르',d:'새 게임 시작 에테르 +40',max:10,c:l=>8+l*6},
- {id:'hp',ic:'💎',t:'수호석 강화',d:'시작 수호석 +2',max:5,c:l=>12+l*10},
+ {id:'hp',ic:'❤️',t:'생명 강화',d:'시작 생명 +2',max:5,c:l=>12+l*10},
  {id:'cost',ic:'🥚',t:'소환술 연구',d:'소환 비용 -3 에테르',max:8,c:l=>15+l*10},
  {id:'card',ic:'✨',t:'첫 축복',d:'새 게임 시작 시 축복 카드 1장',max:1,c:l=>60},
  {id:'up',ic:'⬆',t:'강화 연구',d:'모든 속성 강화 비용 -8%',max:5,c:l=>20+l*15},

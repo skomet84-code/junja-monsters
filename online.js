@@ -165,7 +165,7 @@
     $('#mRank').classList.add('on'); $('#rkList').innerHTML = '<p>불러오는 중…</p>'; $('#rkInfo').textContent = '';
     try {
       const j = await api('/api/score?mode=' + rkMode);
-      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 스테이지 랭킹 · 최고 스테이지 (같으면 남은 수호석)' : '♾️ ' + j.period + ' 무한 대전 주간 랭킹 · 최고 웨이브 (월요일 초기화)<br><small style="color:#b9a2ff">🎁 돌파 보상: 20웨이브 💎50 · 30 「무한의 도전자」 · 50 「무한의 고리」 오라 · 75 「불멸의 수호자」 · 100 「무한의 지배자」</small>')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? 'STAGE ' + j.me.wave : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
+      $('#rkInfo').innerHTML = (rkMode === 'daily' ? '📅 ' + j.period + ' 오늘의 도전 · 모두 같은 조건 (속성 6종 제한)' : (rkMode === 'stage' ? '🗓 ' + j.period + ' 주간 스테이지 랭킹 · 최고 스테이지 (같으면 남은 생명)' : '♾️ ' + j.period + ' 무한 대전 주간 랭킹 · 최고 웨이브 (월요일 초기화)<br><small style="color:#b9a2ff">🎁 돌파 보상: 20웨이브 💎50 · 30 「무한의 도전자」 · 50 「무한의 고리」 오라 · 75 「불멸의 수호자」 · 100 「무한의 지배자」</small>')) + ` · 참가 ${j.total}명` + (j.me ? `<br><b style="color:#ffd75a">내 순위 ${j.me.rank}위 · ${rkMode === 'stage' ? 'STAGE ' + j.me.wave : 'WAVE ' + j.me.wave}</b>` : (USER ? '' : '<br>로그인하면 내 순위가 표시돼요'));
       $('#rkList').innerHTML = j.top.length ? j.top.map((t, ix) => `<div class="rk${t.me ? ' me' : ''}" data-pf="${esc(t.name)}" data-ix="${ix}"><div class="n">${t.rank <= 3 ? ['🥇', '🥈', '🥉'][t.rank - 1] : t.rank}</div><div class="nm">${t.title ? `<small>「${esc(titleName(t.title))}」</small>` : ''}${esc(t.name)}</div><div class="w">${rkMode === 'stage' ? 'STAGE ' + t.wave : 'WAVE ' + t.wave}</div><small style="color:#9aa4c2;width:56px;text-align:right">${rkMode === 'stage' ? '💎' + t.kills : t.kills + '마리'}</small></div>`).join('') : '<p>아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!</p>';
       j.top.forEach((t, ix) => { const row = document.querySelector(`.rk[data-ix="${ix}"]`); if (!row) return; const slot = document.createElement('div'); slot.className = 'rkic'; if (t.rep) slot.appendChild(iconCanvas(t.rep.e, t.rep.s, 34, t.rep.f)); row.insertBefore(slot, row.children[1]); row.onclick = () => openProfile(t.name) });
     } catch (e) { $('#rkList').innerHTML = '<p>랭킹을 불러오지 못했어요: ' + esc(e.message) + '</p>' }
@@ -176,7 +176,7 @@
   // ===== 상점 (탭: 전투 아이템 · 연구 포인트 · 스킨 · 꾸미기) =====
   let SHOP = null, shTab = 'item';
   const IT_IC = { myth_call: '📕', boost_eth: '💰', shield: '🛡', egg: '🥚', bless: '📜', revive: '🪶', cr_100: '💠', cr_300: '💠', cr_800: '💠' };
-  const SH_NOTE = { item: '스테이지 시작 전에 골라서 써요. 오늘의 도전·레이드에서는 쓸 수 없어요.', crystal: '연구소에서 시작 에테르·수호석·소환 비용 등 <b>영구 능력</b>을 올리는 포인트예요.', skin: '속성별로 몬스터 색이 바뀌어요. <b>능력치에는 영향이 없어요.</b>', cosmetic: '오라·맵 테마·칭호. <b>승패에 영향이 없어요.</b>' };
+  const SH_NOTE = { item: '스테이지 시작 전에 골라서 써요. 오늘의 도전·레이드에서는 쓸 수 없어요.', crystal: '연구소에서 시작 에테르·생명·소환 비용 등 <b>영구 능력</b>을 올리는 포인트예요.', skin: '속성별로 몬스터 색이 바뀌어요. <b>능력치에는 영향이 없어요.</b>', cosmetic: '오라·맵 테마·칭호. <b>승패에 영향이 없어요.</b>' };
   function skinPreview(it) { const prev = EQUIP[it.slot]; EQUIP[it.slot] = it.id; const c = iconCanvas(it.el, 5, 52); if (prev) EQUIP[it.slot] = prev; else delete EQUIP[it.slot]; return c }
   async function claimCrystal() {
     if (!USER || !USER.crystalPending) return 0;
@@ -247,7 +247,7 @@
   document.querySelectorAll('[data-sh]').forEach(b => b.onclick = () => { shTab = b.dataset.sh; renderShop() });
 
   // ===== 스테이지 준비: 전투 아이템 고르기 =====
-  const PREP = [['boost_eth', '💰', '에테르 부스터', '시작 에테르 +50%'], ['shield', '🛡', '수호석 방패', '시작 수호석 +5'], ['egg', '🥚', '황금 알', '★3 몬스터 1마리'], ['bless', '📜', '축복 두루마리', '축복 카드 1장'], ['myth_call', '📕', '궁극 소환서', '★7 궁극 몬스터 3웨이브 소환']];
+  const PREP = [['boost_eth', '💰', '에테르 부스터', '시작 에테르 +50%'], ['shield', '🛡', '생명 방패', '시작 생명 +5'], ['egg', '🥚', '황금 알', '★3 몬스터 1마리'], ['bless', '📜', '축복 두루마리', '축복 카드 1장'], ['myth_call', '📕', '궁극 소환서', '★7 궁극 몬스터 3웨이브 소환']];
   document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mPrep"><div class="card" style="text-align:center"><div style="color:#ffd75a;letter-spacing:3px;font-size:12px;font-weight:900">READY</div><h2 id="ppT" style="margin:2px 0"></h2><p id="ppZ" style="margin:0 0 8px;color:#b9a8d8"></p><div id="ppL"></div><p id="ppR" style="font-size:12px"></p><div class="row"><button class="btn" id="ppShop">🛍 아이템 사기</button><button class="btn gold" id="ppGo">⚔️ 출전!</button></div><div class="row"><button class="btn" data-close>취소</button></div></div></div>`);
   let prepSel = {};
   function openPrep(n, start) {
@@ -256,7 +256,7 @@
     $('#ppT').textContent = 'STAGE ' + n; $('#ppZ').textContent = zoneName(n) + ' · ' + STAGE.waves + '웨이브';
     const draw = () => {
       $('#ppL').innerHTML = PREP.map(([id, ic, nm, d]) => { const c = it[id] || 0; return `<button class="ppi${prepSel[id] ? ' on' : ''}" data-pp="${id}" ${c ? '' : 'disabled'}><span>${ic}</span><b>${nm}</b><small>${d}</small><i>${c}개</i></button>` }).join('');
-      $('#ppR').innerHTML = (it.revive || 0) ? `🪶 부활의 깃털 ${it.revive}개 보유 · 수호석이 0이 되면 쓸지 물어봐요` : '🪶 부활의 깃털이 있으면 쓰러져도 한 번 부활할 수 있어요';
+      $('#ppR').innerHTML = (it.revive || 0) ? `🪶 부활의 깃털 ${it.revive}개 보유 · 생명이 0이 되면 쓸지 물어봐요` : '🪶 부활의 깃털이 있으면 쓰러져도 한 번 부활할 수 있어요';
       document.querySelectorAll('[data-pp]').forEach(b => b.onclick = () => { prepSel[b.dataset.pp] = !prepSel[b.dataset.pp]; draw() });
     };
     draw();
@@ -280,17 +280,17 @@
   { const b = $('#bRetry'); const orig = b.onclick; b.onclick = () => { const it = (USER && USER.items) || {}; if (USER && S.mode === 'stage' && PREP.some(([id]) => it[id] > 0)) { const ns = stageNextState(); meta.sel = ns.stage; $('#mOver').classList.remove('on'); openPrep(ns.stage, () => { begin(ns); saveRun(); if (!ns.carry && !ns.cpLoaded && (meta.lab || {}).card) offerCards() }) } else orig() } }
 
   // ===== 부활의 깃털 =====
-  document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mRev"><div class="card" style="text-align:center"><div style="font-size:54px">🪶</div><h2>부활할까요?</h2><p id="rvT"></p><div class="row"><button class="btn" id="rvNo">포기하기</button><button class="btn gold" id="rvYes">부활! (수호석 10)</button></div></div></div>`);
+  document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="mRev"><div class="card" style="text-align:center"><div style="font-size:54px">🪶</div><h2>부활할까요?</h2><p id="rvT"></p><div class="row"><button class="btn" id="rvNo">포기하기</button><button class="btn gold" id="rvYes">부활! (생명 10)</button></div></div></div>`);
   window.tryRevive = () => {
     if (!USER || S.mode !== 'stage' || S.revived || !((USER.items || {}).revive > 0)) return false;
-    S.hold = 1; S.revived = 1;
+    S.hold = 1; S.revived = 1; S.bossLeak = 0;
     $('#rvT').innerHTML = `STAGE ${S.stage} · ${S.wave - (S.base || 0)}/' + STAGE.waves + ' 웨이브<br>부활의 깃털 <b style="color:#ffd75a">${USER.items.revive}개</b> 보유`;
     $('#mRev').classList.add('on');
     $('#rvYes').onclick = async () => {
       $('#rvYes').disabled = true;
       try {
         const r = await api('/api/shop', 'POST', { action: 'use', items: ['revive'] }); setUser(r.user);
-        if (r.used.includes('revive')) { S.hp = 10; for (const e of S.enemies) e.d = Math.max(0, e.d - 500); banner('🪶 부활!', '수호석 10 · 적을 밀어냈어요', '#ffd75a'); flash = .5; flashC = '#fff3c0'; $('#mRev').classList.remove('on'); S.hold = 0; ui(); return }
+        if (r.used.includes('revive')) { S.hp = 10; for (const e of S.enemies) e.d = Math.max(0, e.d - 500); banner('🪶 부활!', '생명 10 · 적을 밀어냈어요', '#ffd75a'); flash = .5; flashC = '#fff3c0'; $('#mRev').classList.remove('on'); S.hold = 0; ui(); return }
       } catch (e) { toast('⚠️ ' + e.message) } finally { $('#rvYes').disabled = false }
       $('#mRev').classList.remove('on'); S.hold = 0; gameOver();
     };
@@ -518,15 +518,15 @@
     if (!S || !S.coop) return;
     if (m.type === 'energy') { S.energy = Math.min(100, (S.energy || 0) + 30); toast('⚡ ' + m.from + '님이 기운 +30을 보냈어요!'); }
     else if (m.type === 'revive' && S.coopDown) {
-      clearInterval(cdTimer); $('#coopDown').classList.remove('on'); S.coopDown = false; S.coopRev = 1; S.hold = 0; S.hp = 10;
+      clearInterval(cdTimer); $('#coopDown').classList.remove('on'); S.coopDown = false; S.coopRev = 1; S.hold = 0; S.hp = 10; S.bossLeak = 0;
       for (const e of S.enemies) e.d = Math.max(0, e.d - 500);
-      banner('🪶 ' + m.from + '님이 부활시켜 줬어요!', '수호석 10 · 다시 싸워요', '#ffd75a'); flash = .5; flashC = '#fff3c0'; ui();
+      banner('🪶 ' + m.from + '님이 부활시켜 줬어요!', '생명 10 · 다시 싸워요', '#ffd75a'); flash = .5; flashC = '#fff3c0'; ui();
     }
   }
   function coopPanel() {
     const P = $('#coopP'); if (!S || !S.coop) { P.innerHTML = ''; return }
     const p = coopLast, nm = esc2(COOP && COOP.partner || '친구');
-    const stx = !p ? '연결 중…' : p.left ? '나갔어요' : p.cleared ? '🎉 클리어!' : p.out ? '💀 탈락' : !p.alive ? '💥 쓰러짐! 부활 필요' : `${p.wave}/6 웨이브 · 💎${p.hp}`;
+    const stx = !p ? '연결 중…' : p.left ? '나갔어요' : p.cleared ? '🎉 클리어!' : p.out ? '💀 탈락' : !p.alive ? '💥 쓰러짐! 부활 필요' : `${p.wave}/6 웨이브 · ❤️${p.hp}`;
     const canRev = p && !p.alive && !p.cleared && !p.left && !p.out;
     P.innerHTML = `🤝 <b>${nm}</b> ${stx}<div class="cb"><button id="cpEn" ${Date.now() < enCd || (S.energy || 0) < 25 || !p || p.left ? 'disabled' : ''}>⚡ 기운 보내기<br><small>내 기운 25</small></button>${canRev ? `<button id="cpRv">🪶 부활<br><small>내 에테르 30%</small></button>` : ''}</div>`;
     const en = $('#cpEn'); if (en) en.onclick = async () => { if ((S.energy || 0) < 25) return; S.energy -= 25; enCd = Date.now() + 20000; coopPanel(); try { await api('/api/coop', 'POST', { action: 'send', code: S.coop.code, type: 'energy' }); toast('⚡ 기운을 보냈어요') } catch (e) { toast('⚠️ ' + e.message) } };
