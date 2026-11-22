@@ -67,6 +67,16 @@ module.exports = L.wrap(async (req, res) => {
     const fresh = last || (await L.sql(`SELECT ${RET} FROM users WHERE id=$1`, [u.id]))[0];
     return L.json(res, 200, { used, user: L.publicUser(fresh) });
   }
+  if (b.action === 'gemSkill') {
+    // 전투 중 다이아 스킬: 보석 즉시 차감 (모자라면 아무것도 안 바뀜)
+    const SK = { pillar: { price: 10, name: '💎 신의 빛기둥' }, stop: { price: 15, name: '💎 시간 정지' } };
+    const sk = SK[b.skill];
+    if (!sk) return L.json(res, 400, { error: 'skill' });
+    const r = await L.sql(`UPDATE users SET gems=gems-$2::int WHERE id=$1 AND gems>=$2::int RETURNING ${RET}`, [u.id, sk.price]);
+    if (!r[0]) return L.json(res, 400, { error: '보석이 부족해요' });
+    await L.sql('INSERT INTO gem_log(user_id,amount,reason) VALUES($1,$2,$3)', [u.id, -sk.price, '전투 스킬: ' + sk.name]);
+    return L.json(res, 200, { user: L.publicUser(r[0]), skill: b.skill });
+  }
   if (b.action === 'passClaim') {
     // 시즌 패스 프리미엄 서버 보상: 3단계마다 카드 팩 1개, 30단계는 칭호 추가 (순서대로 한 번씩)
     const season = L.kstSeason(), pid = 'pass_' + season, key = 'pc_' + season;
