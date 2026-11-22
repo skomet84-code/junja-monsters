@@ -270,7 +270,7 @@
       if (used.includes('boost_eth')) S.eth = Math.round(S.eth * 1.5);
       if (used.includes('shield')) S.hp += 5;
       if (used.includes('myth_call')) summonMythTemp();
-      if (used.includes('egg')) { const i = S.slots.findIndex((x, k) => !x && k < S.unlocked); if (i >= 0) { const e = Math.floor(Math.random() * 10); S.slots[i] = mkMon(e, 3); if (hasB(e, 3) && Math.random() < .5) S.slots[i].v = 1; S.slots[i].trait = rollTrait(true); reg(S.slots[i]) } }
+      if (used.includes('egg')) { const i = S.slots.findIndex((x, k) => !x && k < S.unlocked); if (i >= 0) { const ok = (typeof elsOpen === 'function' ? elsOpen() : [0,1,2,3,4,5,6,7,8,9]); const e = ok[Math.floor(Math.random() * ok.length)]; S.slots[i] = mkMon(e, 3); if (hasB(e, 3) && Math.random() < .5) S.slots[i].v = 1; S.slots[i].trait = rollTrait(true); reg(S.slots[i]) } }
       if (used.length) { banner('🎒 아이템 사용', used.map(u => IT_IC[u]).join(' '), '#ffd75a'); saveRun(); ui() }
       if (used.includes('bless')) { const tb = () => { if (cardsOpen) return setTimeout(tb, 500); offerCards() }; setTimeout(tb, 500) }
     };
